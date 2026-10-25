@@ -139,7 +139,7 @@ export function AppearanceEditor({ initial, storeName, tagline, currency, defaul
         {dirty && <><span className="text-sm font-semibold text-danger" role="status">Unsaved changes</span><button type="button" className="btn btn-ghost btn-sm" onClick={() => { setV(initialRef.current); setSlide(0); }}><RotateCcw className="size-4" aria-hidden />Discard</button></>}
       </>}>
       <input type="hidden" name="payload" value={JSON.stringify(v)} />
-      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+      <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="min-w-0">
           <div role="tablist" aria-label="Appearance sections" onKeyDown={onTabKey} className="-mx-4 mb-5 flex gap-1 overflow-x-auto border-b border-line px-4 sm:mx-0 sm:px-0">
             {TABS.map(([id, label]) => (

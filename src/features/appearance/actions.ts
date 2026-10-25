@@ -40,6 +40,8 @@ export async function saveAppearance(_p: ActionState, form: FormData): Promise<A
     const p = parse(payload, jsonField(form, "payload"));
     if (!p.ok) return p.state;
     const d = p.data;
+    const empty = d.hero.slides.findIndex((sl) => !sl.image && !Object.keys(sl.title).length);
+    if (empty >= 0) return fail(`Slide ${empty + 1} needs an image or a title`);
     if (new Set(d.home.sections.map((s) => s.id)).size !== SECTION_IDS.length) return fail("Each homepage section must appear exactly once");
     await saveSettings("branding", d.branding as Settings["branding"]);
     await saveSettings("hero", { slides: d.hero.slides as Settings["hero"]["slides"] });
