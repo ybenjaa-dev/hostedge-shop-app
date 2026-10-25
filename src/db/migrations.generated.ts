@@ -63,5 +63,13 @@ export const MIGRATIONS: { name: string; statements: string[] }[] = [
     "statements": [
       "ALTER TABLE `products` ADD `specs` text DEFAULT '{}' NOT NULL;"
     ]
+  },
+  {
+    "name": "0002_quantity_offers",
+    "statements": [
+      "ALTER TABLE `bundles` ADD `price` integer;",
+      "ALTER TABLE `bundles` ADD `label` text;",
+      "ALTER TABLE `bundles` ADD `popular` integer DEFAULT false NOT NULL;"
+    ]
   }
 ];
