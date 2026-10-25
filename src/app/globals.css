@@ -210,3 +210,5 @@ input[type=number]::-webkit-inner-spin-button { display: none; }
 .v4 .offer-card.is-on { border-width: 2px; padding: calc(0.8rem - 1px) calc(1rem - 1px); border-color: var(--brand); background: var(--brand-soft); box-shadow: none; }
 .v4 .offer-flag, .v4 .offer-save { border-radius: 2px; }
 .v4 .offer-radio { border-width: 1px; }
+
+.v4 .offer-thumb { border-radius: 0; }
