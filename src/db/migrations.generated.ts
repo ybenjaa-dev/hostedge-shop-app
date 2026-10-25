@@ -71,5 +71,11 @@ export const MIGRATIONS: { name: string; statements: string[] }[] = [
       "ALTER TABLE `bundles` ADD `label` text;",
       "ALTER TABLE `bundles` ADD `popular` integer DEFAULT false NOT NULL;"
     ]
+  },
+  {
+    "name": "0003_bundle_images",
+    "statements": [
+      "ALTER TABLE `bundles` ADD `image` text;"
+    ]
   }
 ];

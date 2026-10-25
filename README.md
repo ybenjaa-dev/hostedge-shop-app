@@ -62,6 +62,7 @@ Admin → Products → *Quantity offers*: add a fixed total price for 2, 3, … 
 - For products with variants priced differently, the pack price scales with the variant's price.
 - All units in a pack share the options chosen above the cards (one variant per order line).
 - Fixed offers are stored in the existing `bundles` table (`price`, `label`, `popular`); they show up read-only under Coupons & bundles. Store-wide "buy 3, save 15%" percentage bundles still work and also appear as cards.
+- Each offer can have its own **photo** (e.g. a picture of the 3-pack): upload it on the offer row in the product form, or on a store-wide percentage bundle under Coupons & bundles. It shows as a thumbnail on the offer card.
 - Sample data seeds offers on the featured products.
 
 ### Storefront

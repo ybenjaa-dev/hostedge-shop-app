@@ -17,7 +17,7 @@ const variantSchema = z.array(z.object({
   sku: z.string().trim().max(60).optional().nullable(), price: z.string().max(20).optional().nullable(), stock: z.coerce.number().int().min(0).max(1_000_000),
 })).max(100);
 const offerSchema = z.array(z.object({
-  qty: z.coerce.number().int().min(2).max(1000), price: z.string().trim().min(1).max(20), label: z.string().trim().max(30).optional().nullable(), popular: z.boolean().optional(),
+  qty: z.coerce.number().int().min(2).max(1000), price: z.string().trim().min(1).max(20), label: z.string().trim().max(30).optional().nullable(), popular: z.boolean().optional(), image: z.string().regex(/^uploads\/[A-Za-z0-9._-]{4,120}$/).optional().nullable(),
 })).max(6);
 const imageSchema = z.array(z.object({ key: z.string().min(1).max(200), alt: z.string().max(200).optional().nullable() })).max(20);
 
@@ -58,7 +58,7 @@ export async function saveProductAction(_p: ActionState, form: FormData): Promis
     });
     // quantity offers: replace this product's fixed-price bundles
     stmts.push(db.prepare("DELETE FROM bundles WHERE product_id = ? AND price IS NOT NULL").bind(pid));
-    offers.forEach((o) => stmts.push(db.prepare("INSERT INTO bundles (id, product_id, min_qty, percent, price, label, popular, active) VALUES (?,?,?,?,?,?,?,1)").bind(newId(), pid, o.qty, 0, money(o.price, cur), o.label || null, o.popular ? 1 : 0)));
+    offers.forEach((o) => stmts.push(db.prepare("INSERT INTO bundles (id, product_id, min_qty, percent, price, label, popular, image, active) VALUES (?,?,?,?,?,?,?,?,1)").bind(newId(), pid, o.qty, 0, money(o.price, cur), o.label || null, o.popular ? 1 : 0, o.image || null)));
     await db.batch(stmts);
     await audit(user, id ? "product.update" : "product.create", "product", pid);
     revalidatePath("/", "layout");
