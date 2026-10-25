@@ -1,6 +1,7 @@
 "use client";
 import { Check, Flame, Star } from "lucide-react";
 import type { Offer } from "@/lib/pricing";
+import { fileUrl } from "@/lib/storage";
 import { useT } from "../store-context";
 
 /**
@@ -23,6 +24,7 @@ export function OfferCards({ offers, qty, setQty, maxQty, fmt, customQty, setCus
             <label key={o.qty} className={`offer-card ${on ? "is-on" : ""} ${off ? "is-off" : ""} ${o.popular || o.best ? "is-flag" : ""}`}>
               <input type="radio" name="offer-qty" className="sr-only" checked={on} disabled={off} onChange={() => { setCustomQty(false); setQty(o.qty); }} />
               <span className="offer-radio" aria-hidden>{on && <Check className="size-3.5" strokeWidth={3.5} />}</span>
+              {o.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(o.image)} alt="" loading="lazy" className="offer-thumb" />}
               <span className="min-w-0 flex-1">
                 <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
                   <span className="offer-count">{o.qty === 1 ? t("offer.one") : t("offer.many", { n: o.qty })}</span>

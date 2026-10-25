@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, Loader2, Plus, Sparkles, Star, Tag, Trash2, Upload, Wand2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Plus, Sparkles, Star, Tag, Trash2, Upload, Wand2, X } from "lucide-react";
 import { AdminForm } from "@/features/admin/components/admin-form";
 import { Field, I18nField, Toggle, uploadImage } from "@/features/admin/components/fields";
 import { saveProductAction } from "./actions";
@@ -8,7 +8,7 @@ import { fileUrl } from "@/lib/storage";
 import type { I18n } from "@/lib/i18n-core";
 
 type Img = { key: string; alt: string | null };
-type Offer = { qty: number; price: string; label: string; popular: boolean };
+type Offer = { qty: number; price: string; label: string; popular: boolean; image: string };
 type Var = { id?: string; name: string; options: Record<string, string>; sku: string; price: string; stock: number };
 
 export type ProductFormData = {
@@ -19,6 +19,25 @@ export type ProductFormData = {
 
 const parseOptions = (s: string) => Object.fromEntries(s.split(/[;,]/).map((p) => p.split("=").map((x) => x.trim())).filter((p) => p[0] && p[1]) as [string, string][]);
 const fmtOptions = (o: Record<string, string>) => Object.entries(o).map(([k, v]) => `${k}=${v}`).join("; ");
+
+/** Small picture picker for one offer ("3-pack photo"). */
+function OfferImage({ value, onChange }: { value: string; onChange: (k: string) => void }) {
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  return (
+    <div>
+      <span className="label">Photo</span>
+      <div className="flex items-center gap-1.5">
+        <label className="relative grid size-11 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-lg border border-dashed border-line bg-sunken hover:border-ink/40" title={value ? "Replace photo" : "Add a photo of this pack"}>
+          {value ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(value)} alt="" className="size-full object-cover" /> : busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Upload className="size-4 text-muted" aria-hidden />}
+          <input type="file" accept="image/jpeg,image/png,image/webp,image/avif" className="sr-only" disabled={busy} aria-label="Offer photo" onChange={async (e) => { const f = e.target.files?.[0]; e.target.value = ""; if (!f) return; setBusy(true); setErr(""); const r = await uploadImage(f); setBusy(false); if (r.ok) onChange(r.key); else setErr(r.error); }} />
+        </label>
+        {value && <button type="button" aria-label="Remove offer photo" className="btn btn-ghost btn-sm !px-1.5" onClick={() => onChange("")}><X className="size-4" /></button>}
+      </div>
+      {err && <p role="alert" className="err">{err}</p>}
+    </div>
+  );
+}
 
 export function ProductForm({ data, categories }: { data: ProductFormData; categories: { id: string; label: string }[] }) {
   const [images, setImages] = useState<Img[]>(data.images);
@@ -38,7 +57,7 @@ export function ProductForm({ data, categories }: { data: ProductFormData; categ
     return () => el.removeEventListener("input", on);
   }, []);
   const updOffer = (i: number, patch: Partial<Offer>) => setOffers((o) => o.map((x, k) => (k === i ? { ...x, ...patch } : patch.popular ? { ...x, popular: false } : x)));
-  const suggest = () => setOffers([2, 3].map((q, i) => ({ qty: q, price: String(Math.round(base * q * (i === 0 ? 0.9 : 0.82))), label: "", popular: i === 0 })));
+  const suggest = () => setOffers([2, 3].map((q, i) => ({ qty: q, price: String(Math.round(base * q * (i === 0 ? 0.9 : 0.82))), label: "", popular: i === 0, image: "" })));
 
   const move = (from: number, to: number) => {
     if (to < 0 || to >= images.length) return;
@@ -74,7 +93,7 @@ export function ProductForm({ data, categories }: { data: ProductFormData; categ
     <AdminForm action={saveProductAction} submitLabel={data.id ? "Save product" : "Create product"} className="space-y-5">
       {data.id && <input type="hidden" name="id" value={data.id} />}
       <input type="hidden" name="images" value={JSON.stringify(images)} />
-      <input type="hidden" name="offers" value={JSON.stringify(offers.filter((o) => o.qty >= 2 && o.price).map((o) => ({ qty: o.qty, price: o.price, label: o.label, popular: o.popular })))} />
+      <input type="hidden" name="offers" value={JSON.stringify(offers.filter((o) => o.qty >= 2 && o.price).map((o) => ({ qty: o.qty, price: o.price, label: o.label, popular: o.popular, image: o.image })))} />
       <input type="hidden" name="variants" value={JSON.stringify(variants.map((v) => ({ ...v, price: v.price || null, sku: v.sku || null })))} />
       <div className="grid gap-5 lg:grid-cols-[1fr_22rem]">
         <div className="space-y-5">
@@ -144,10 +163,11 @@ export function ProductForm({ data, categories }: { data: ProductFormData; categ
                 const bad = price >= full && full > 0;
                 return (
                   <div key={i} className="rounded-xl border border-line p-3">
-                    <div className="grid items-end gap-2 sm:grid-cols-[6rem_1fr_1fr_auto_auto]">
-                      <Field label="Buy"><input className="field" type="number" min={2} max={1000} value={o.qty} onChange={(e) => updOffer(i, { qty: Math.max(2, parseInt(e.target.value || "2", 10) || 2) })} /></Field>
-                      <Field label="For (total price)"><input className="field" inputMode="decimal" value={o.price} onChange={(e) => updOffer(i, { price: e.target.value })} placeholder={base ? String(Math.round(base * o.qty * 0.9)) : ""} /></Field>
-                      <Field label="Badge (optional)"><input className="field" maxLength={30} value={o.label} onChange={(e) => updOffer(i, { label: e.target.value })} placeholder="Family pack" /></Field>
+                    <div className="flex flex-wrap items-end gap-2">
+                      <OfferImage value={o.image} onChange={(k) => updOffer(i, { image: k })} />
+                      <div className="w-20"><Field label="Buy"><input className="field" type="number" min={2} max={1000} value={o.qty} onChange={(e) => updOffer(i, { qty: Math.max(2, parseInt(e.target.value || "2", 10) || 2) })} /></Field></div>
+                      <div className="min-w-[7.5rem] flex-1"><Field label="For (total price)"><input className="field" inputMode="decimal" value={o.price} onChange={(e) => updOffer(i, { price: e.target.value })} placeholder={base ? String(Math.round(base * o.qty * 0.9)) : ""} /></Field></div>
+                      <div className="min-w-[7.5rem] flex-1"><Field label="Badge (optional)"><input className="field" maxLength={30} value={o.label} onChange={(e) => updOffer(i, { label: e.target.value })} placeholder="Family pack" /></Field></div>
                       <button type="button" aria-pressed={o.popular} className={`btn btn-sm ${o.popular ? "btn-primary" : "btn-outline"}`} onClick={() => updOffer(i, { popular: !o.popular })}><Star className="size-4" />Most popular</button>
                       <button type="button" aria-label="Remove offer" className="btn btn-ghost btn-sm text-danger" onClick={() => setOffers(offers.filter((_, k) => k !== i))}><Trash2 className="size-4" /></button>
                     </div>
@@ -156,7 +176,7 @@ export function ProductForm({ data, categories }: { data: ProductFormData; categ
                 );
               })}
             </div>
-            {offers.length < 6 && <button type="button" className="btn btn-outline btn-sm mt-3" onClick={() => { const q = (offers.at(-1)?.qty ?? 1) + 1; setOffers([...offers, { qty: q, price: base ? String(Math.round(base * q * 0.9)) : "", label: "", popular: false }]); }}><Plus className="size-4" />Add offer</button>}
+            {offers.length < 6 && <button type="button" className="btn btn-outline btn-sm mt-3" onClick={() => { const q = (offers.at(-1)?.qty ?? 1) + 1; setOffers([...offers, { qty: q, price: base ? String(Math.round(base * q * 0.9)) : "", label: "", popular: false, image: "" }]); }}><Plus className="size-4" />Add offer</button>}
           </section>
 
           <section className="card space-y-4 p-5">

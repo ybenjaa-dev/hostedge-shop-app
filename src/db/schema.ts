@@ -165,6 +165,8 @@ export const bundles = sqliteTable("bundles", {
   /** Optional badge text on the offer card, e.g. "Family pack". */
   label: text("label"),
   popular: integer("popular", { mode: "boolean" }).notNull().default(false),
+  /** Optional picture for the offer card (R2 key), e.g. a photo of the 3-pack. */
+  image: text("image"),
   active: integer("active", { mode: "boolean" }).notNull().default(true),
 });
 

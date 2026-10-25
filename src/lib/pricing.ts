@@ -11,6 +11,8 @@ export type BundleRule = {
   basePrice?: number | null;
   label?: string | null;
   popular?: boolean;
+  /** Picture for the offer card (R2 key). */
+  image?: string | null;
 };
 export type CouponRule = {
   code: string;
@@ -91,7 +93,7 @@ export function bundleLineTotal(productId: string, unit: number, qty: number, bu
   return Math.min(gross, best);
 }
 
-export type Offer = { qty: number; total: number; compareAt: number; perUnit: number; savePct: number; saved: number; label: string | null; popular: boolean; best: boolean };
+export type Offer = { qty: number; total: number; compareAt: number; perUnit: number; savePct: number; saved: number; label: string | null; popular: boolean; best: boolean; image: string | null };
 
 /** Offer cards for the product page: 1 unit at the normal price, then one card per tier size (fixed-price or percentage) with the real price after bundles. */
 export function offersFor(productId: string, unit: number, bundles: BundleRule[] = []): Offer[] {
@@ -101,7 +103,8 @@ export function offersFor(productId: string, unit: number, bundles: BundleRule[]
     const total = bundleLineTotal(productId, unit, qty, bundles);
     const compareAt = unit * qty;
     const meta = bundles.find((b) => b.productId === productId && b.minQty === qty && b.price != null);
-    return { qty, total, compareAt, perUnit: Math.round(total / qty), savePct: compareAt > 0 ? Math.round(((compareAt - total) / compareAt) * 100) : 0, saved: compareAt - total, label: meta?.label ?? null, popular: !!meta?.popular, best: false };
+    const image = meta?.image ?? bundles.find((b) => (b.productId === productId || b.productId === null) && b.minQty === qty && b.image)?.image ?? null;
+    return { qty, total, compareAt, perUnit: Math.round(total / qty), savePct: compareAt > 0 ? Math.round(((compareAt - total) / compareAt) * 100) : 0, saved: compareAt - total, label: meta?.label ?? null, popular: !!meta?.popular, best: false, image };
   });
   if (list.length > 1) {
     const bestIdx = list.reduce((bi, o, i) => (o.savePct > list[bi]!.savePct ? i : bi), 0);
