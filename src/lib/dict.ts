@@ -31,6 +31,7 @@ const en = {
   "p.disclaimer": "Food supplements are not a substitute for a varied and balanced diet. Do not exceed the recommended daily dose. Keep out of reach of children. If you are pregnant, breastfeeding, taking medication or have a medical condition, ask a health professional before use.",
   "home.clear": "Clear labels, no guesswork", "home.clearD": "Every product page shows the serving size, the dose of each ingredient and how to take it.",
   "p.shade": "Shade", "p.shades": "{n} shades", "p.pickShade": "Choose your shade", "p.ritual": "The ritual", "p.pickedFor": "Our pick", "home.concern": "Shop by concern",
+  "p.from": "From", "home.bundle": "Buy 2, save 10% — buy 3, save 15%", "home.byPet": "Shop by pet", "home.byPetD": "Who are we shopping for?", "home.stages": "Shop by life stage", "p.suitable": "Suitable for", "p.stage": "Life stage", "p.size": "Size", "p.ingredients": "Ingredients", "p.feeding": "Feeding guide", "p.feedingD": "A daily amount by pet weight. Split it into two meals and always keep fresh water available.", "p.petWeight": "Pet weight", "p.dailyAmount": "Daily amount", "p.care": "Care", "p.petSafe": "Safe materials, checked before they ship", "p.heavy": "Heavy item? We carry it to your door — pay the courier on delivery", "home.perks": "Good for pets, good for you", "p.fitsLabel": "Made for",
 } as const;
 
 export type DictKey = keyof typeof en;
@@ -66,6 +67,7 @@ const fr: D = {
   "p.disclaimer": "Les compléments alimentaires ne se substituent pas à une alimentation variée et équilibrée. Ne pas dépasser la dose journalière recommandée. Tenir hors de portée des enfants. En cas de grossesse, d'allaitement, de traitement médical ou de pathologie, demandez l'avis d'un professionnel de santé avant utilisation.",
   "home.clear": "Des étiquettes claires, sans devinettes", "home.clearD": "Chaque fiche produit indique la portion, la dose de chaque ingrédient et le mode d'emploi.",
   "p.shade": "Teinte", "p.shades": "{n} teintes", "p.pickShade": "Choisissez votre teinte", "p.ritual": "Le rituel", "p.pickedFor": "Notre coup de cœur", "home.concern": "Acheter par besoin",
+  "p.from": "Dès", "home.bundle": "2 achetés, 10 % offerts — 3 achetés, 15 %", "home.byPet": "Acheter par animal", "home.byPetD": "Pour qui fait-on les courses ?", "home.stages": "Acheter par âge", "p.suitable": "Convient à", "p.stage": "Stade de vie", "p.size": "Taille", "p.ingredients": "Composition", "p.feeding": "Guide de rations", "p.feedingD": "Une quantité quotidienne selon le poids. Répartissez-la en deux repas et laissez toujours de l'eau fraîche.", "p.petWeight": "Poids de l'animal", "p.dailyAmount": "Quantité par jour", "p.care": "Entretien", "p.petSafe": "Matières sûres, contrôlées avant l'envoi", "p.heavy": "Colis lourd ? On le porte jusqu'à votre porte — payez le livreur à la livraison", "home.perks": "Bon pour eux, bon pour vous", "p.fitsLabel": "Conçu pour",
 };
 
 const ar: D = {
@@ -98,6 +100,7 @@ const ar: D = {
   "p.disclaimer": "المكملات الغذائية ليست بديلاً عن نظام غذائي متنوع ومتوازن. لا تتجاوز الجرعة اليومية الموصى بها. يحفظ بعيداً عن متناول الأطفال. في حالة الحمل أو الرضاعة أو تناول أدوية أو وجود مرض، استشر مختصاً في الصحة قبل الاستعمال.",
   "home.clear": "ملصقات واضحة دون تخمين", "home.clearD": "تعرض كل صفحة منتج الحصة والجرعة لكل مكوّن وطريقة الاستعمال.",
   "p.shade": "اللون", "p.shades": "{n} ألوان", "p.pickShade": "اختاري لونك", "p.ritual": "الروتين", "p.pickedFor": "اختيارنا لكِ", "home.concern": "تسوّقي حسب احتياجك",
+  "p.from": "ابتداءً من", "home.bundle": "اشترِ 2 ووفّر 10٪ — اشترِ 3 ووفّر 15٪", "home.byPet": "تسوّق حسب الحيوان", "home.byPetD": "لمن نتسوّق اليوم؟", "home.stages": "تسوّق حسب المرحلة العمرية", "p.suitable": "مناسب لـ", "p.stage": "المرحلة العمرية", "p.size": "الحجم", "p.ingredients": "المكونات", "p.feeding": "دليل التغذية", "p.feedingD": "كمية يومية حسب وزن الحيوان. قسّمها إلى وجبتين وأبقِ الماء العذب متاحاً دائماً.", "p.petWeight": "وزن الحيوان", "p.dailyAmount": "الكمية اليومية", "p.care": "العناية", "p.petSafe": "خامات آمنة تُفحص قبل الشحن", "p.heavy": "طرد ثقيل؟ نوصله إلى بابك — وتدفع للمندوب عند الاستلام", "home.perks": "جيد لهم وجيد لك", "p.fitsLabel": "مصمم لـ",
 };
 
 export const DICT: Record<Lang, D> = { en: en as unknown as D, fr, ar };

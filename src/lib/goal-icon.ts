@@ -1,4 +1,4 @@
-import { Zap, ShieldCheck, Moon, Dumbbell, Leaf, Bone, Pill, Sparkles, Brain, Heart, type LucideIcon } from "lucide-react";
+import { Dog, Cat, Rabbit, PawPrint, Zap, ShieldCheck, Moon, Dumbbell, Leaf, Bone, Pill, Sparkles, Brain, Heart, type LucideIcon } from "lucide-react";
 
 /** Pick an icon for a health goal from its slug/name keywords (any language). */
 export function goalIcon(key: string): LucideIcon {
@@ -14,4 +14,14 @@ export function goalIcon(key: string): LucideIcon {
   if (has("brain", "memo", "cerveau", "mind")) return Brain;
   if (has("heart", "coeur", "cœur", "omega", "قلب")) return Heart;
   return Pill;
+}
+
+/** Icon for a pet category from its slug/name keywords (any language). */
+export function petIcon(key: string): LucideIcon {
+  const k = key.toLowerCase();
+  const has = (...w: string[]) => w.some((x) => k.includes(x));
+  if (has("dog", "chien", "كلب", "كلاب")) return Dog;
+  if (has("cat", "chat", "قط", "قطط")) return Cat;
+  if (has("small", "rabbit", "petit", "lapin", "صغير", "أرنب")) return Rabbit;
+  return PawPrint;
 }
