@@ -101,7 +101,7 @@ export function CheckoutSection({ s }: { s: Settings }) {
       <Panel title="Order form">
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Form placement" htmlFor="fp"><select id="fp" name="formPlacement" defaultValue={c.formPlacement} className="field">
-            <option value="inline">Inline on the product page</option><option value="popup">Popup</option><option value="page">Separate page</option></select></Field>
+            <option value="inline">Inline — opens when the customer taps “Order now”</option><option value="inline-open">Inline — form always visible on the product page</option><option value="popup">Popup (bottom sheet on phones)</option><option value="page">Separate checkout page</option></select></Field>
           <Field label="Duplicate-order window (minutes)" htmlFor="dw" hint="Same phone + same items within this window is treated as a duplicate. 0 = off."><input id="dw" name="duplicateWindowMin" type="number" min={0} max={1440} defaultValue={c.duplicateWindowMin} className="field num" /></Field>
           <Field label="Max orders per hour per IP" htmlFor="rip"><input id="rip" name="ratePerHourPerIp" type="number" min={1} max={1000} defaultValue={c.ratePerHourPerIp} className="field num" /></Field>
           <Field label="Max orders per day per phone" htmlFor="rph"><input id="rph" name="ratePerDayPerPhone" type="number" min={1} max={1000} defaultValue={c.ratePerDayPerPhone} className="field num" /></Field>

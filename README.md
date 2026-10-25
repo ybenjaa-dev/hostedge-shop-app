@@ -99,6 +99,9 @@ Roles: **Owner**, **Manager**, **Confirmer** (phone confirmation: confirm / no a
 ### Responsive images
 `/files/<key>?w=640` serves the best stored size (thumbnail 320 / medium 800 / full 1600). When the optional Cloudflare **Images binding** (`IMAGES` in `wrangler.jsonc`) is present, the file is resized to the requested width and converted to **AVIF/WebP** on the fly (cached at the edge, one transform per size). Product cards and galleries use `srcset`/`sizes` (`imgProps()` in `src/lib/image-sizes.ts`). No binding? Nothing breaks — remove the line from `wrangler.jsonc` and the stored sizes are served.
 
+### Order form on the product page
+Settings → Checkout → *Form placement*: **Inline — opens when the customer taps "Order now"**, **Inline — always visible** (the form sits on the page; the big button is replaced by it, and asks for a variant first if needed), **Popup** (bottom sheet) or **Separate checkout page**. On phones the sticky "Order now" bar slides away whenever the form is on screen (or the sheet is open) and comes back when it scrolls out of view.
+
 ### Admin UI kit
 One look everywhere: `DataTable` (card that scrolls sideways *inside* itself), `Tabs`, `FilterBar` (filters and the Filter button always stay inside their card), and custom `DateField` / `DateRangeField` pickers (presets, keyboard support, bottom-sheet on phones) instead of the browser's native date input.
 
