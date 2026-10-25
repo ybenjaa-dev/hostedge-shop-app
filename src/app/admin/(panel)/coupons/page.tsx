@@ -1,4 +1,5 @@
 import { asc, desc } from "drizzle-orm";
+import Link from "next/link";
 import { Plus } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { getDb, schema } from "@/db";
@@ -97,11 +98,11 @@ export default async function CouponsPage() {
           <ul className="space-y-2">{bundles.map((b) => (
             <li key={b.id} className="card"><details className="group">
               <summary className="flex min-h-14 cursor-pointer list-none flex-wrap items-center gap-x-4 gap-y-1 p-3 [&::-webkit-details-marker]:hidden">
-                <span className="font-bold">Buy {b.minQty}+, save {b.percent}%</span>
+                <span className="font-bold">{b.price != null ? `Buy ${b.minQty} for ${toMajorString(b.price, cur)}${b.label ? ` · ${b.label}` : ""}` : `Buy ${b.minQty}+, save ${b.percent}%`}</span>
                 <span className="text-sm text-muted">{b.productId ? nameOf.get(b.productId) ?? "Deleted product" : "All products"}</span>
                 <span className="ms-auto flex items-center gap-2">{b.active ? <Badge color="#16a34a">Active</Badge> : <Badge>Inactive</Badge>}<span className="btn btn-outline btn-sm">Edit</span></span>
               </summary>
-              <div className="space-y-4 border-t border-line p-4"><BundleForm b={b} products={products} />
+              <div className="space-y-4 border-t border-line p-4">{b.price != null ? <p className="text-sm text-muted">Fixed-price offer — edit it in the product\u2019s <b>Quantity offers</b> section.{b.productId && <> <Link href={`/admin/products/${b.productId}`} className="font-bold text-brand underline">Open product</Link></>}</p> : <BundleForm b={b} products={products} />}
                 <ActionButton action={deleteBundle} fields={{ id: b.id }} confirm="Delete this bundle?" className="btn btn-ghost btn-sm text-danger">Delete bundle</ActionButton></div>
             </details></li>
           ))}</ul>
