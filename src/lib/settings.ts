@@ -65,7 +65,7 @@ export const DEFAULT_SETTINGS: Settings = {
   setupDone: false,
   store: {
     name: "My Store",
-    tagline: {},
+    tagline: { en: "Tech you can check before you pay.", fr: "Du high-tech à vérifier avant de payer.", ar: "تقنية تفحصها قبل أن تدفع." },
     country: "MA",
     currency: "MAD",
     defaultLang: "fr",
@@ -83,11 +83,11 @@ export const DEFAULT_SETTINGS: Settings = {
   branding: {
     logo: "",
     favicon: "",
-    primary: "#0f766e",
-    secondary: "#1f2937",
-    accent: "#f59e0b",
+    primary: "#2563ff",
+    secondary: "#0b1220",
+    accent: "#22d3ee",
     buttonStyle: "rounded",
-    fontLatin: "Manrope",
+    fontLatin: "Inter",
     fontArabic: "Cairo",
   },
   checkout: {
@@ -118,9 +118,9 @@ export const DEFAULT_SETTINGS: Settings = {
     banner: { image: "", title: {}, sub: {}, href: "" },
   },
   trust: [
-    { icon: "cod", title: { en: "Pay on delivery", fr: "Paiement à la livraison", ar: "الدفع عند الاستلام" }, text: { en: "Inspect first, then pay the courier", fr: "Vérifiez puis payez au livreur", ar: "افحص طلبك ثم ادفع للمندوب" } },
-    { icon: "delivery", title: { en: "Fast delivery", fr: "Livraison rapide", ar: "توصيل سريع" }, text: { en: "2–4 days across the country", fr: "2 à 4 jours partout", ar: "من 2 إلى 4 أيام لكل المدن" } },
-    { icon: "returns", title: { en: "Free returns", fr: "Retours gratuits", ar: "إرجاع مجاني" }, text: { en: "Not happy? Send it back", fr: "Pas satisfait ? Retournez-le", ar: "غير راضٍ؟ أرجعه لنا" } },
+    { icon: "cod", title: { en: "Check before you pay", fr: "Vérifiez avant de payer", ar: "افحص قبل أن تدفع" }, text: { en: "Open the parcel with the courier", fr: "Ouvrez le colis devant le livreur", ar: "افتح الطرد أمام المندوب" } },
+    { icon: "secure", title: { en: "Warranty included", fr: "Garantie incluse", ar: "الضمان مشمول" }, text: { en: "Covered against factory defects", fr: "Couvert contre les défauts de fabrication", ar: "مغطّى ضد عيوب التصنيع" } },
+    { icon: "delivery", title: { en: "Ships in 24 h", fr: "Expédié sous 24 h", ar: "شحن خلال 24 ساعة" }, text: { en: "Delivered in 2–4 days", fr: "Livré en 2 à 4 jours", ar: "التوصيل خلال 2 إلى 4 أيام" } },
   ],
   footer: { text: {} },
   analytics: { metaPixel: "", tiktokPixel: "", ga: "", snapPixel: "" },

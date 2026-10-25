@@ -56,6 +56,9 @@ Schema changes: edit `src/db/schema.ts`, run `npm run db:generate` (drizzle-kit 
 
 ## What's inside
 
+### Storefront (design v8 — "Voltage", electronics)
+This branch is a storefront built for a consumer-electronics store: cool light page with dark "panel" surfaces (hero, shop header, in-the-box, footer) over a faint grid with blue/cyan glow, Space Grotesk headlines with tabular/mono numerals, a search-first two-deck header with a category icon strip, an icon tile per category, **spec-forward product cards** (two key-spec chips from the facts field), and a product page with a **key-specs grid**, "check before you pay" and warranty notes, a **zebra full-specification table** and an **"in the box" panel** — all generated from the product's facts field (`Label: value` lines; a row labelled `In the box` is rendered as the box list). Sample data is a generic gadget catalogue (phone, earbuds, smartwatch, power bank, charger, speaker, keyboard, mouse, laptop stand, USB-C hub, smart bulbs, webcam) with storage/colour variants and glowing illustrations. Colors, fonts, hero and sections remain editable in Admin → Appearance.
+
 ### Storefront
 Mobile-first and light on JS: server-rendered pages, scroll-snap swipe gallery, native `<dialog>` for sheets/drawers, GET-form filters, localized RTL-safe layout (logical CSS properties).
 Home (hero slides, announcement bar, categories, featured/best sellers, reviews, trust badges, footer with contacts + socials), catalog (search, category, price, in-stock filters, sort, pagination, skeletons), product page (gallery with swipe + zoom, variants with per-variant price/stock, quantity, reviews, related, sticky mobile buy bar, sold-out state, JSON-LD), guest cart (localStorage) with slide-over drawer + full page, free-shipping progress bar and coupons, single-page guest checkout, order confirmation, order tracking (order number + phone), static pages, sitemap, robots, OpenGraph, WhatsApp floating button.
