@@ -109,7 +109,7 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
                   const out = tracked && v.stock <= 0;
                   return (
                     <button key={v.id} type="button" disabled={out} aria-pressed={variantId === v.id} onClick={() => setVariantId(v.id)}
-                      className={`rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${variantId === v.id ? "border-brand bg-brand-soft text-brand ring-2 ring-brand/30" : "border-line bg-surface hover:border-ink/40"} ${out ? "cursor-not-allowed line-through opacity-40" : ""}`}>
+                      className={`rounded-2xl border-2 px-4 py-2.5 text-sm font-bold transition ${variantId === v.id ? "border-secondary bg-secondary text-white" : "border-line bg-surface hover:border-brand"} ${out ? "cursor-not-allowed line-through opacity-40" : ""}`}>
                       {v.name}
                       {v.price !== product.price && <span className="num ms-2 text-xs opacity-70">{fmt(v.price)}</span>}
                     </button>
@@ -126,7 +126,7 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
                     const possible = product.variants.some((v) => v.options[k] === val && groupKeys.every((g) => g === k || !sel[g] || v.options[g] === sel[g]) && (!tracked || v.stock > 0));
                     return (
                       <button key={val} type="button" disabled={!possible} aria-pressed={sel[k] === val} onClick={() => setSel((s) => ({ ...s, [k]: val }))}
-                        className={`rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${sel[k] === val ? "border-brand bg-brand-soft text-brand ring-2 ring-brand/30" : "border-line bg-surface hover:border-ink/40"} ${!possible ? "cursor-not-allowed line-through opacity-40" : ""}`}>{val}</button>
+                        className={`rounded-2xl border-2 px-4 py-2.5 text-sm font-bold transition ${sel[k] === val ? "border-secondary bg-secondary text-white" : "border-line bg-surface hover:border-brand"} ${!possible ? "cursor-not-allowed line-through opacity-40" : ""}`}>{val}</button>
                     );
                   })}
                 </div>
@@ -138,10 +138,10 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
       <div>
         <span className="label" id="qty-l">{t("p.qty")}</span>
         <div className="flex items-center gap-3">
-          <div role="group" aria-labelledby="qty-l" className="inline-flex items-center rounded-xl border border-line bg-surface">
-            <button type="button" aria-label="−" className="grid size-11 place-items-center rounded-s-xl hover:bg-sunken disabled:opacity-40" onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={qty <= 1}><Minus className="size-4" /></button>
+          <div role="group" aria-labelledby="qty-l" className="inline-flex items-center rounded-2xl border-2 border-line bg-surface">
+            <button type="button" aria-label="−" className="grid size-11 place-items-center rounded-s-2xl hover:bg-sunken disabled:opacity-40" onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={qty <= 1}><Minus className="size-4" /></button>
             <output className="num w-10 text-center font-bold" aria-live="polite">{qty}</output>
-            <button type="button" aria-label="+" className="grid size-11 place-items-center rounded-e-xl hover:bg-sunken disabled:opacity-40" onClick={() => setQty((q) => Math.min(maxQty, q + 1))} disabled={qty >= maxQty}><Plus className="size-4" /></button>
+            <button type="button" aria-label="+" className="grid size-11 place-items-center rounded-e-2xl hover:bg-sunken disabled:opacity-40" onClick={() => setQty((q) => Math.min(maxQty, q + 1))} disabled={qty >= maxQty}><Plus className="size-4" /></button>
           </div>
           {tracked && available != null && available > 0 && available <= 5 && <span className="text-sm font-semibold text-danger">{t("p.onlyLeft", { n: available })}</span>}
         </div>
@@ -149,7 +149,7 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
       {st.bundlesInForm && bundleTiers.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {bundleTiers.map(([n, p]) => (
-            <button key={n} type="button" onClick={() => setQty(Math.min(maxQty, n))} className={`rounded-full border px-3 py-1.5 text-xs font-bold transition ${qty >= n ? "border-accent bg-accent/15 text-ink" : "border-dashed border-line text-muted hover:border-ink/40"}`}>
+            <button key={n} type="button" onClick={() => setQty(Math.min(maxQty, n))} className={`rounded-full border px-3 py-1.5 text-xs font-extrabold transition ${qty >= n ? "border-transparent bg-accent text-secondary" : "border-dashed border-brand/50 text-brand hover:bg-mint"}`}>
               🎁 {t("cod.bundle", { n, pct: p })}
             </button>
           ))}
@@ -175,9 +175,9 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
   return (
     <div>
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <span dir="ltr" className="num display text-3xl font-extrabold">{fmt(unit)}</span>
+        <span dir="ltr" className="num display text-4xl font-extrabold text-brand">{fmt(unit)}</span>
         {product.compareAt && product.compareAt > unit && <span dir="ltr" className="num text-lg text-muted line-through">{fmt(product.compareAt)}</span>}
-        {product.compareAt && product.compareAt > unit && <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-extrabold text-accent-ink">{t("p.save", { pct: Math.round(((product.compareAt - unit) / product.compareAt) * 100) })}</span>}
+        {product.compareAt && product.compareAt > unit && <span className="tag">{t("p.save", { pct: Math.round(((product.compareAt - unit) / product.compareAt) * 100) })}</span>}
       </div>
       {pct > 0 && <p className="mt-1 text-sm font-semibold text-ok">🎁 {t("cod.bundle", { n: qty, pct })}</p>}
 

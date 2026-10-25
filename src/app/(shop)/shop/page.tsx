@@ -41,10 +41,13 @@ export async function Catalog({ sp, categorySlug }: { sp: Record<string, string 
   };
   const base = categorySlug ? `/category/${categorySlug}` : "/shop";
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
-      <div className="mb-6">
-        <h1 className="display text-3xl font-extrabold sm:text-4xl">{cat ? tr(cat.name, lang) : sp.q ? `“${sp.q}”` : t("shop.title")}</h1>
-        <p className="mt-1 text-sm text-muted">{t("shop.results", { n: res.total })}</p>
+    <div className="mx-auto max-w-7xl px-4 py-6 md:py-10">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-brand">{t("goal.title")}</p>
+          <h1 className="display mt-1 text-[clamp(2.2rem,6vw,4rem)]">{cat ? tr(cat.name, lang) : sp.q ? `“${sp.q}”` : t("shop.title")}</h1>
+        </div>
+        <p className="num rounded-full bg-mint px-4 py-1.5 text-sm font-bold text-brand">{t("shop.results", { n: res.total })}</p>
       </div>
       <div className="grid gap-8 lg:grid-cols-[16rem_1fr]">
         <CatalogFilters
@@ -60,7 +63,7 @@ export async function Catalog({ sp, categorySlug }: { sp: Record<string, string 
               <Link href={base} className="btn btn-outline">{t("shop.clear")}</Link>
             </div>
           ) : (
-            <ProductGrid>{res.items.map((p, i) => <ProductCard key={p.id} p={p} lang={lang} t={t} currency={s.store.currency} codMode={s.checkout.codMode} priority={i < 4} />)}</ProductGrid>
+            <ProductGrid>{res.items.map((p, i) => <ProductCard key={p.id} p={p} lang={lang} t={t} currency={s.store.currency} codMode={s.checkout.codMode} priority={i < 4} eyebrow={cats.find((c) => c.id === p.categoryId) ? tr(cats.find((c) => c.id === p.categoryId)!.name, lang) : undefined} />)}</ProductGrid>
           )}
           {pages > 1 && (
             <nav className="mt-10 flex items-center justify-between gap-3" aria-label="Pagination">

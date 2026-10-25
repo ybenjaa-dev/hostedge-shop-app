@@ -65,7 +65,7 @@ export const DEFAULT_SETTINGS: Settings = {
   setupDone: false,
   store: {
     name: "My Store",
-    tagline: {},
+    tagline: { en: "Quality food supplements — delivered, pay when it arrives.", fr: "Des compléments alimentaires de qualité — payez à la livraison.", ar: "مكملات غذائية عالية الجودة — ادفع عند الاستلام." },
     country: "MA",
     currency: "MAD",
     defaultLang: "fr",
@@ -83,11 +83,11 @@ export const DEFAULT_SETTINGS: Settings = {
   branding: {
     logo: "",
     favicon: "",
-    primary: "#0f766e",
-    secondary: "#1f2937",
-    accent: "#f59e0b",
+    primary: "#188a4e",
+    secondary: "#0c3b2a",
+    accent: "#c6f432",
     buttonStyle: "rounded",
-    fontLatin: "Manrope",
+    fontLatin: "Outfit",
     fontArabic: "Cairo",
   },
   checkout: {
@@ -118,9 +118,9 @@ export const DEFAULT_SETTINGS: Settings = {
     banner: { image: "", title: {}, sub: {}, href: "" },
   },
   trust: [
-    { icon: "cod", title: { en: "Pay on delivery", fr: "Paiement à la livraison", ar: "الدفع عند الاستلام" }, text: { en: "Inspect first, then pay the courier", fr: "Vérifiez puis payez au livreur", ar: "افحص طلبك ثم ادفع للمندوب" } },
+    { icon: "cod", title: { en: "Pay on delivery", fr: "Paiement à la livraison", ar: "الدفع عند الاستلام" }, text: { en: "Nothing charged online", fr: "Rien n'est débité en ligne", ar: "لا يتم خصم أي مبلغ عبر الإنترنت" } },
     { icon: "delivery", title: { en: "Fast delivery", fr: "Livraison rapide", ar: "توصيل سريع" }, text: { en: "2–4 days across the country", fr: "2 à 4 jours partout", ar: "من 2 إلى 4 أيام لكل المدن" } },
-    { icon: "returns", title: { en: "Free returns", fr: "Retours gratuits", ar: "إرجاع مجاني" }, text: { en: "Not happy? Send it back", fr: "Pas satisfait ? Retournez-le", ar: "غير راضٍ؟ أرجعه لنا" } },
+    { icon: "support", title: { en: "Advice on WhatsApp", fr: "Conseils sur WhatsApp", ar: "نصائح عبر واتساب" }, text: { en: "Not sure what to pick? Ask us", fr: "Un doute ? Posez-nous la question", ar: "غير متأكد؟ اسألنا" } },
   ],
   footer: { text: {} },
   analytics: { metaPixel: "", tiktokPixel: "", ga: "", snapPixel: "" },

@@ -35,10 +35,10 @@ export async function saveProductAction(_p: ActionState, form: FormData): Promis
     const now = Date.now();
     const status = fd(form, "status") === "published" ? "published" : "draft";
     const pid = id ?? newId();
-    const vals = [slug, JSON.stringify(name), JSON.stringify(fdI18n(form, "short")), JSON.stringify(fdI18n(form, "long")), fd(form, "categoryId") || null, fd(form, "sku") || null, price, cmp, Math.max(0, parseInt(fd(form, "stock") || "0", 10) || 0), form.get("trackStock") ? 1 : 0, status, form.get("featured") ? 1 : 0, form.get("bestseller") ? 1 : 0, JSON.stringify(fdI18n(form, "seoTitle")), JSON.stringify(fdI18n(form, "seoDesc"))];
+    const vals = [slug, JSON.stringify(name), JSON.stringify(fdI18n(form, "short")), JSON.stringify(fdI18n(form, "long")), fd(form, "categoryId") || null, fd(form, "sku") || null, price, cmp, Math.max(0, parseInt(fd(form, "stock") || "0", 10) || 0), form.get("trackStock") ? 1 : 0, status, form.get("featured") ? 1 : 0, form.get("bestseller") ? 1 : 0, JSON.stringify(fdI18n(form, "seoTitle")), JSON.stringify(fdI18n(form, "seoDesc")), JSON.stringify(fdI18n(form, "specs"))];
     const stmts: D1PreparedStatement[] = [];
-    if (id) stmts.push(db.prepare("UPDATE products SET slug=?, name=?, short_desc=?, long_desc=?, category_id=?, sku=?, price=?, compare_at=?, stock=?, track_stock=?, status=?, featured=?, bestseller=?, seo_title=?, seo_desc=?, updated_at=? WHERE id=?").bind(...vals, now, id));
-    else stmts.push(db.prepare("INSERT INTO products (slug, name, short_desc, long_desc, category_id, sku, price, compare_at, stock, track_stock, status, featured, bestseller, seo_title, seo_desc, id, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(...vals, pid, now, now));
+    if (id) stmts.push(db.prepare("UPDATE products SET slug=?, name=?, short_desc=?, long_desc=?, category_id=?, sku=?, price=?, compare_at=?, stock=?, track_stock=?, status=?, featured=?, bestseller=?, seo_title=?, seo_desc=?, specs=?, updated_at=? WHERE id=?").bind(...vals, now, id));
+    else stmts.push(db.prepare("INSERT INTO products (slug, name, short_desc, long_desc, category_id, sku, price, compare_at, stock, track_stock, status, featured, bestseller, seo_title, seo_desc, specs, id, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(...vals, pid, now, now));
     // images: replace set preserving order
     stmts.push(db.prepare("DELETE FROM product_images WHERE product_id = ?").bind(pid));
     images.forEach((im, i) => stmts.push(db.prepare("INSERT INTO product_images (id, product_id, key, alt, position) VALUES (?,?,?,?,?)").bind(newId(), pid, im.key, im.alt ?? null, i)));

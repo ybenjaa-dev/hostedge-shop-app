@@ -11,7 +11,7 @@ type Img = { key: string; alt: string | null };
 type Var = { id?: string; name: string; options: Record<string, string>; sku: string; price: string; stock: number };
 
 export type ProductFormData = {
-  id?: string; slug: string; name: I18n; shortDesc: I18n; longDesc: I18n; seoTitle: I18n; seoDesc: I18n;
+  id?: string; slug: string; name: I18n; shortDesc: I18n; longDesc: I18n; specs: I18n; seoTitle: I18n; seoDesc: I18n;
   categoryId: string; sku: string; price: string; compareAt: string; stock: number; trackStock: boolean; status: "draft" | "published"; featured: boolean; bestseller: boolean;
   images: Img[]; variants: Var[];
 };
@@ -68,6 +68,7 @@ export function ProductForm({ data, categories }: { data: ProductFormData; categ
             <I18nField label="Name" name="name" value={data.name} />
             <I18nField label="Short description" name="short" value={data.shortDesc} textarea rows={2} />
             <I18nField label="Long description" name="long" value={data.longDesc} textarea rows={5} />
+            <I18nField label="Facts table (supplement facts / specs)" name="specs" value={data.specs} textarea rows={6} hint={'One row per line, written as "Label: value" — e.g. "Serving size: 1 capsule". Shown as a label-style table on the product page.'} />
           </section>
 
           <section className="card p-5">

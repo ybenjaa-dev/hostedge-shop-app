@@ -191,7 +191,7 @@ export function OrderForm({ lines, bundles, cities, header, source, clearCartOnS
 
       {/* free-shipping progress */}
       {threshold > 0 && (
-        <div className="rounded-xl bg-brand-soft p-3 text-sm" role="status">
+        <div className="rounded-2xl bg-mint p-3 text-sm" role="status">
           <p className="mb-2 flex items-center gap-2 font-semibold"><Truck className="size-4 text-brand" aria-hidden />{remaining > 0 ? t("cod.freeShipHint", { amount: fmt(remaining) }) : t("cod.freeShipOk")}</p>
           <div className="h-1.5 overflow-hidden rounded-full bg-line"><div className="h-full rounded-full bg-brand transition-all" style={{ width: `${Math.min(100, Math.round(((totals.subtotal - totals.discount) / threshold) * 100))}%` }} /></div>
         </div>
@@ -210,7 +210,7 @@ export function OrderForm({ lines, bundles, cities, header, source, clearCartOnS
       {totals.couponError && <p className="err">Min. {fmt(coupon!.minSubtotal)}</p>}
 
       {/* totals */}
-      <dl className="num space-y-1.5 rounded-xl border border-line bg-surface p-4 text-sm">
+      <dl className="num space-y-1.5 rounded-2xl bg-mint p-4 text-sm">
         {lines.length > 1 && lines.map((l, i) => (
           <div key={i} className="flex justify-between gap-3 text-muted"><dt className="min-w-0 truncate">{l.qty}× {tr(l.name, st.lang)}{l.variantName ? ` · ${l.variantName}` : ""}</dt><dd dir="ltr">{fmt(l.unitPrice * l.qty)}</dd></div>
         ))}
