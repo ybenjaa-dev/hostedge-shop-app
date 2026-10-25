@@ -176,3 +176,5 @@ input[type=number]::-webkit-inner-spin-button { display: none; }
 .v7 .offer-flag { border-radius: 0; background: var(--ink); color: var(--bg); text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.6rem; }
 .v7 .offer-save { border-radius: 0; }
 [dir="rtl"] .v7 .offer-count, [dir="rtl"] .v7 .offer-flag { text-transform: none; letter-spacing: 0; }
+
+.v7 .offer-thumb { border-radius: 0; }
