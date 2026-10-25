@@ -20,7 +20,7 @@ export function SiteFooter({ s, lang, t, pages }: { s: Settings; lang: Lang; t: 
     <footer className="mt-20 rounded-t-[2.25rem] bg-secondary text-white">
       <div className="mx-auto grid max-w-7xl gap-10 px-5 pb-8 pt-14 md:grid-cols-[1.4fr_1fr_1fr]">
         <div>
-          <p className="display text-3xl font-extrabold">{logo ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={logo} alt={s.store.name} className="h-10 w-auto brightness-0 invert" /> : s.store.name}</p>
+          <p className="display text-3xl font-extrabold">{logo ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={logo} alt={s.store.name} className="brand-logo h-10 w-auto brightness-0 invert" /> : s.store.name}</p>
           {(tr(s.footer.text, lang) || tr(s.store.tagline, lang)) && <p className="mt-3 max-w-sm text-white/70">{tr(s.footer.text, lang) || tr(s.store.tagline, lang)}</p>}
           <div className="mt-5 flex flex-wrap gap-2">
             {socials.filter(([u]) => u).map(([u, Icon, label]) => (

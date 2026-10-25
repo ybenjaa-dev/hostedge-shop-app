@@ -24,7 +24,7 @@ export function SiteHeader({ s, lang, t, categories }: { s: Settings; lang: Lang
         <Link href="/" className="display flex shrink-0 items-center gap-2 text-[1.45rem] font-extrabold sm:text-2xl" aria-label={s.store.name}>
           {logo ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={logo} alt={s.store.name} className="h-9 w-auto max-w-40 object-contain sm:h-10" height={40} />
+            <img src={logo} alt={s.store.name} className="brand-logo h-9 w-auto max-w-40 object-contain sm:h-10" height={40} />
           ) : (
             <>
               <span aria-hidden className="grid size-9 place-items-center rounded-xl bg-secondary text-accent"><Pill className="size-5 -rotate-45" strokeWidth={2.4} /></span>

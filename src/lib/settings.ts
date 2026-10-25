@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { BRAND } from "@/lib/brand";
 import { getDb, schema } from "@/db";
 import { ensureSchema } from "@/db/ensure-schema";
 import type { I18n, Lang } from "@/lib/i18n-core";
@@ -67,7 +68,7 @@ export type Settings = {
 export const DEFAULT_SETTINGS: Settings = {
   setupDone: false,
   store: {
-    name: "My Store",
+    name: BRAND.name,
     tagline: { en: "Quality food supplements — delivered, pay when it arrives.", fr: "Des compléments alimentaires de qualité — payez à la livraison.", ar: "مكملات غذائية عالية الجودة — ادفع عند الاستلام." },
     country: "MA",
     currency: "MAD",
@@ -84,8 +85,8 @@ export const DEFAULT_SETTINGS: Settings = {
   },
   social: { instagram: "", facebook: "", tiktok: "", snapchat: "", youtube: "", x: "", whatsappChannel: "" },
   branding: {
-    logo: "",
-    favicon: "",
+    logo: BRAND.logo,
+    favicon: BRAND.icon,
     primary: "#188a4e",
     secondary: "#0c3b2a",
     accent: "#c6f432",
