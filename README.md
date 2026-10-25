@@ -58,6 +58,13 @@ Schema changes: edit `src/db/schema.ts`, run `npm run db:generate` (drizzle-kit 
 
 ### Storefront (design v9 — "Essence", perfume)
 This branch is a storefront built for a fragrance store: ivory paper, deep plum panels and gold hairlines, Cormorant Garamond serif headlines with italics, centred "maison" header (plum message strip, centred wordmark, centred nav), arch-framed hero, round **scent-family** tiles plus a **shop-by-note** chip row (links to search), gallery-style centred product cards ("from" price, family · concentration line), and on the product page an **olfactive pyramid** (top / heart / base notes, each note links to a search for it) and a **longevity meter** — all read from the product's facts field (`Top notes: Bergamot, Lemon`, `Heart notes: …`, `Base notes: …`, `Longevity: 6–8 h`, in EN/FR/AR labels). Sizes (30/50/100 ml) are ordinary variants. Sample data is a generic fragrance catalogue (citrus, aquatic, floral, woody, gourmand, discovery and travel sets) with glass-flacon illustrations. Colors, fonts, hero and sections remain editable in Admin → Appearance.
+### Quantity offers ("buy 1 for 129, 2 for 229, 3 for 319")
+Admin → Products → *Quantity offers*: add a fixed total price for 2, 3, … units of a product (optional badge, one "most popular"). The product page shows them as selectable cards with the per-unit price and the saving; picking a card sets the quantity, and the buy button, sticky bar, order form and the stored order all use the same total. Details:
+- The pricing engine (`src/lib/pricing.ts`) picks the **cheapest combination** of packs for any quantity (with "2 for 229" and "3 for 319", 5 units cost 229 + 319), never charges more than the plain price, and takes the better of a fixed offer and a store-wide percentage bundle.
+- For products with variants priced differently, the pack price scales with the variant's price.
+- All units in a pack share the options chosen above the cards (one variant per order line).
+- Fixed offers are stored in the existing `bundles` table (`price`, `label`, `popular`); they show up read-only under Coupons & bundles. Store-wide "buy 3, save 15%" percentage bundles still work and also appear as cards.
+- Sample data seeds offers on the featured products.
 
 ### Storefront
 Mobile-first and light on JS: server-rendered pages, scroll-snap swipe gallery, native `<dialog>` for sheets/drawers, GET-form filters, localized RTL-safe layout (logical CSS properties).
