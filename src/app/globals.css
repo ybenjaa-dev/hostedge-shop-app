@@ -202,6 +202,7 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body), 
 .dp-day.is-in { background: color-mix(in srgb, var(--brand) 13%, transparent); border-radius: 0; }
 .dp-day.is-sel { background: var(--brand); color: var(--brand-ink); font-weight: 800; border-radius: 0.6rem; }
 .dp-day:disabled { opacity: .3; cursor: not-allowed; }
+:root[data-theme="dark"] .brand-logo { filter: invert(1) hue-rotate(180deg); }
 /* Hide number input arrows */
 input[type=number]::-webkit-inner-spin-button { display: none; }
 @keyframes wiggle { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }

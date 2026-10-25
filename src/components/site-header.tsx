@@ -30,7 +30,7 @@ export function SiteHeader({ s, lang, t, categories }: { s: Settings; lang: Lang
         <Link href="/" className="display flex items-center gap-2 text-xl font-extrabold tracking-tight" aria-label={s.store.name}>
           {logo ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={logo} alt={s.store.name} className="h-9 w-auto max-w-40 object-contain" height={36} />
+            <img src={logo} alt={s.store.name} className="brand-logo h-10 w-auto max-w-56 object-contain" height={40} />
           ) : (
             s.store.name
           )}
