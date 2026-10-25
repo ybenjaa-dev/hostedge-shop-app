@@ -26,6 +26,7 @@ export function ProductForm({ data, categories }: { data: ProductFormData; categ
   const [busy, setBusy] = useState(false);
   const [upErr, setUpErr] = useState("");
   const [drag, setDrag] = useState<number | null>(null);
+  const [dropOver, setDropOver] = useState(false);
   const [gen, setGen] = useState({ n1: "Size", v1: "", n2: "Color", v2: "" });
   const [offers, setOffers] = useState<Offer[]>(data.offers ?? []);
   const [base, setBase] = useState(parseFloat(data.price) || 0);
@@ -51,7 +52,7 @@ export function ProductForm({ data, categories }: { data: ProductFormData; categ
     setBusy(true); setUpErr("");
     for (const f of Array.from(files).slice(0, 10)) {
       const r = await uploadImage(f);
-      if (r.ok) setImages((x) => [...x, { key: r.key, alt: null }]); else setUpErr(r.error);
+      if (r.ok) setImages((x) => [...x.filter((i) => !i.key.startsWith("uploads/sample-")), { key: r.key, alt: null }]); else setUpErr(r.error);
     }
     setBusy(false);
   }
@@ -86,13 +87,14 @@ export function ProductForm({ data, categories }: { data: ProductFormData; categ
 
           <section className="card p-5">
             <div className="mb-3 flex items-center justify-between"><h2 className="display text-lg font-extrabold">Images</h2><label className="btn btn-outline btn-sm cursor-pointer">{busy ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}Upload<input type="file" multiple accept="image/jpeg,image/png,image/webp,image/avif" className="sr-only" disabled={busy} onChange={(e) => { void addFiles(e.target.files); e.target.value = ""; }} /></label></div>
-            {images.length === 0 ? <p className="rounded-xl border border-dashed border-line p-8 text-center text-sm text-muted">No images yet. JPEG, PNG, WebP or AVIF, up to 5 MB — they are resized to WebP in your browser before upload.</p> : (
+            {images.length === 0 ? <label onDragOver={(e) => { e.preventDefault(); setDropOver(true); }} onDragLeave={() => setDropOver(false)} onDrop={(e) => { e.preventDefault(); setDropOver(false); void addFiles(e.dataTransfer.files); }} className={`grid cursor-pointer place-items-center gap-1 rounded-xl border-2 border-dashed p-8 text-center text-sm transition ${dropOver ? "border-brand bg-brand-soft" : "border-line text-muted hover:border-ink/40"}`}><Upload className="size-6" aria-hidden /><span className="font-bold text-ink">Drop photos here or click to choose</span><span>JPEG, PNG, WebP or AVIF, up to 5 MB — resized to WebP in your browser. Square or 4:5 photos on a plain background look best.</span><input type="file" multiple accept="image/jpeg,image/png,image/webp,image/avif" className="sr-only" disabled={busy} onChange={(e) => { void addFiles(e.target.files); e.target.value = ""; }} /></label> : (
               <ul className="grid grid-cols-3 gap-3 sm:grid-cols-4">
                 {images.map((im, i) => (
                   <li key={im.key} draggable onDragStart={() => setDrag(i)} onDragOver={(e) => e.preventDefault()} onDrop={() => { if (drag != null) move(drag, i); setDrag(null); }} className={`group relative aspect-square cursor-grab overflow-hidden rounded-xl border bg-sunken ${i === 0 ? "border-brand ring-2 ring-brand/30" : "border-line"}`}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={fileUrl(im.key)} alt="" className="size-full object-cover" />
                     {i === 0 && <span className="absolute start-1 top-1 rounded bg-brand px-1.5 text-[10px] font-extrabold text-brand-ink">MAIN</span>}
+                    {im.key.startsWith("uploads/sample-") && <span className="absolute end-1 top-1 rounded bg-black/70 px-1.5 text-[10px] font-extrabold text-white">PLACEHOLDER</span>}
                     <div className="absolute inset-x-0 bottom-0 flex justify-between bg-black/60 p-1 opacity-100 sm:opacity-0 sm:transition sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
                       <button type="button" aria-label="Move earlier" className="grid size-7 place-items-center rounded text-white hover:bg-white/20" onClick={() => move(i, i - 1)}><ArrowLeft className="size-4 rtl:rotate-180" /></button>
                       <button type="button" aria-label="Remove image" className="grid size-7 place-items-center rounded text-white hover:bg-red-500" onClick={() => setImages(images.filter((_, k) => k !== i))}><Trash2 className="size-4" /></button>
@@ -103,7 +105,7 @@ export function ProductForm({ data, categories }: { data: ProductFormData; categ
               </ul>
             )}
             {upErr && <p className="err">{upErr}</p>}
-            <p className="mt-2 text-xs text-muted">Drag to reorder (or use the arrows). The first image is the main one.</p>
+            <p className="mt-2 text-xs text-muted">Drag to reorder (or use the arrows). The first image is the main one. Uploading a real photo removes the placeholder illustration. Need many at once? Use <a href="/admin/photos" className="font-bold text-brand underline">Photos</a>.</p>
           </section>
 
           <section className="card p-5">

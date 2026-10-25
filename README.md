@@ -58,6 +58,13 @@ Schema changes: edit `src/db/schema.ts`, run `npm run db:generate` (drizzle-kit 
 
 ### Storefront (design v16 — "Paws", pet supplies)
 This branch is a storefront built for a pet shop: warm cream paper with a faint paw pattern, deep teal and orange, Outfit headlines, a blob-framed hero, dog-tag price capsules, a header with one icon pill per pet type (an end-edge drawer with round pet icons on mobile) and **shop by pet** cards with friendly animal faces plus **life-stage** chips (they link to search). Cards show small pet icons for who the product suits; the product page shows "suitable for" pills (each searches that pet), life stage and size, a composition card and an automatic **feeding guide table by pet weight** — all from the facts field (`Suitable for: Dog, Cat`, `Life stage: Adult`, `Size: …`, `Ingredients: …`, `Feeding guide: 10 kg = 160 g · 20 kg = 260 g`, EN/FR/AR labels). Weights/colours/sizes are ordinary variants. Sample data is a generic pet catalogue (dog and cat food, rope toys, harness, orthopaedic bed, litter, scratching post, fountain, rabbit food, hay, brush, carrier) with flat illustrations. Colors, fonts, hero and sections remain editable in Admin → Appearance.
+### Quantity offers ("buy 1 for 129, 2 for 229, 3 for 319")
+Admin → Products → *Quantity offers*: add a fixed total price for 2, 3, … units of a product (optional badge, one "most popular"). The product page shows them as selectable cards with the per-unit price and the saving; picking a card sets the quantity, and the buy button, sticky bar, order form and the stored order all use the same total. Details:
+- The pricing engine (`src/lib/pricing.ts`) picks the **cheapest combination** of packs for any quantity (with "2 for 229" and "3 for 319", 5 units cost 229 + 319), never charges more than the plain price, and takes the better of a fixed offer and a store-wide percentage bundle.
+- For products with variants priced differently, the pack price scales with the variant's price.
+- All units in a pack share the options chosen above the cards (one variant per order line).
+- Fixed offers are stored in the existing `bundles` table (`price`, `label`, `popular`); they show up read-only under Coupons & bundles. Store-wide "buy 3, save 15%" percentage bundles still work and also appear as cards.
+- Sample data seeds offers on the featured products.
 
 ### Storefront
 Mobile-first and light on JS: server-rendered pages, scroll-snap swipe gallery, native `<dialog>` for sheets/drawers, GET-form filters, localized RTL-safe layout (logical CSS properties).
