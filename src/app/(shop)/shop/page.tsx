@@ -41,11 +41,20 @@ export async function Catalog({ sp, categorySlug }: { sp: Record<string, string 
   };
   const base = categorySlug ? `/category/${categorySlug}` : "/shop";
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
-      <div className="mb-6">
-        <h1 className="display text-3xl font-extrabold sm:text-4xl">{cat ? tr(cat.name, lang) : sp.q ? `“${sp.q}”` : t("shop.title")}</h1>
-        <p className="mt-1 text-sm text-muted">{t("shop.results", { n: res.total })}</p>
+    <div className="mx-auto max-w-7xl px-4 py-8 md:py-12">
+      <div className="mb-6 text-center">
+        <div className="rule mx-auto max-w-md"><span className="orn" /></div>
+        <h1 className="heading mt-3 text-4xl sm:text-5xl">{cat ? tr(cat.name, lang) : sp.q ? `“${sp.q}”` : t("shop.title")}</h1>
+        <p className="num mt-1 text-sm text-muted">{t("shop.results", { n: res.total })}</p>
       </div>
+      {cats.length > 0 && (
+        <nav aria-label={t("shop.category")} className="-mx-4 mb-8 flex gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:justify-center">
+          <Link href="/shop" aria-current={!cat ? "page" : undefined} className={`heading whitespace-nowrap rounded-full border border-gold px-5 py-1.5 text-lg ${!cat ? "bg-navy text-[#f6efd9]" : "bg-surface hover:bg-sunken"}`}>{t("shop.all")}</Link>
+          {cats.map((c) => (
+            <Link key={c.id} href={`/category/${c.slug}`} aria-current={cat?.id === c.id ? "page" : undefined} className={`heading whitespace-nowrap rounded-full border border-gold px-5 py-1.5 text-lg ${cat?.id === c.id ? "bg-navy text-[#f6efd9]" : "bg-surface hover:bg-sunken"}`}>{tr(c.name, lang)}</Link>
+          ))}
+        </nav>
+      )}
       <div className="grid gap-8 lg:grid-cols-[16rem_1fr]">
         <CatalogFilters
           action={base}

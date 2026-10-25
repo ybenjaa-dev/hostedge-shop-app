@@ -37,7 +37,10 @@ export async function seedPages(env: Env) {
   );
 }
 
-function svg(c1: string, c2: string, label: string, shape: number) {
+const xml = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+export function svg(c1: string, c2: string, rawLabel: string, shape: number) {
+  const label = xml(rawLabel);
   const shapes = [
     `<circle cx="300" cy="300" r="150" fill="rgba(255,255,255,.22)"/><circle cx="300" cy="300" r="90" fill="rgba(255,255,255,.35)"/>`,
     `<rect x="170" y="170" width="260" height="260" rx="40" fill="rgba(255,255,255,.25)" transform="rotate(12 300 300)"/>`,

@@ -56,7 +56,9 @@ Schema changes: edit `src/db/schema.ts`, run `npm run db:generate` (drizzle-kit 
 
 ## What's inside
 
-### Storefront
+### Storefront (design v3 — "Zellige & Arch", Arabic/Moroccan identity)
+This branch re-skins the customer-facing storefront with an Arabic-first visual language: 8-point-star (khatam) zellige patterns, mihrab-arch photo windows, double gold frames, octagon seals and medallions, ornament dividers, calligraphic Reem Kufi headings (Cormorant Garamond for Latin), an indigo + gold + cream palette, a centered-logo header with an ornamented nav row, a slide-in drawer menu from the reading-start side and a scalloped navy footer. Default language is Arabic. Colors, fonts, hero and sections remain editable in Admin → Appearance; the admin and all logic are unchanged.
+
 Mobile-first and light on JS: server-rendered pages, scroll-snap swipe gallery, native `<dialog>` for sheets/drawers, GET-form filters, localized RTL-safe layout (logical CSS properties).
 Home (hero slides, announcement bar, categories, featured/best sellers, reviews, trust badges, footer with contacts + socials), catalog (search, category, price, in-stock filters, sort, pagination, skeletons), product page (gallery with swipe + zoom, variants with per-variant price/stock, quantity, reviews, related, sticky mobile buy bar, sold-out state, JSON-LD), guest cart (localStorage) with slide-over drawer + full page, free-shipping progress bar and coupons, single-page guest checkout, order confirmation, order tracking (order number + phone), static pages, sitemap, robots, OpenGraph, WhatsApp floating button.
 
