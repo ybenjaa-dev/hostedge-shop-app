@@ -150,7 +150,7 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
           )}
         </div>
       )}
-      {hasOffers && <OfferCards offers={offers} qty={qty} setQty={setQty} maxQty={maxQty} fmt={fmt} customQty={customQty} setCustomQty={setCustomQty} />}
+      {hasOffers && <OfferCards offers={offers} qty={qty} setQty={setQty} maxQty={maxQty} fmt={fmt} customQty={customQty} setCustomQty={setCustomQty} template={bundles.find((b) => b.template)?.template} fallbackImage={product.image} />}
       {(!hasOffers || customQty || !offers.some((o) => o.qty === qty)) && <div>
         <span className="label" id="qty-l">{t("p.qty")}</span>
         <div className="flex items-center gap-3">
