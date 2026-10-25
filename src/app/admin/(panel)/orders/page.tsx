@@ -1,3 +1,4 @@
+import { DateRangeField } from "@/features/admin/components/date-picker";
 import Link from "next/link";
 import { listOrders, statusCounts } from "@/features/orders/queries";
 import { getSettings } from "@/lib/settings";
@@ -5,7 +6,7 @@ import { ORDER_STATUSES } from "@/lib/order-status";
 import { statusInfo } from "@/lib/status-labels";
 import { getEnv } from "@/lib/env";
 import { OrdersTable } from "@/features/orders/components/orders-table";
-import { PageHeader, Empty, Pager } from "@/features/admin/components/ui";
+import { PageHeader, Empty, Pager, FilterBar, FbItem } from "@/features/admin/components/ui";
 import { bulkSendAction } from "@/features/orders/carrier-bridge";
 
 export const metadata = { title: "Orders" };
@@ -31,18 +32,16 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   return (
     <>
       <PageHeader title="Orders" sub={`${total} order${total === 1 ? "" : "s"}`} />
-      <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
+      <div className="no-scrollbar mb-4 flex gap-2 overflow-x-auto pb-1">
         {tab("", "All", Object.values(counts).reduce((a, b) => a + b, 0))}
         {ORDER_STATUSES.filter((x) => counts[x]).map((x) => tab(x, labels[x]!, counts[x]))}
       </div>
-      <form method="get" className="card mb-4 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-6">
-        {sp.status && <input type="hidden" name="status" value={sp.status} />}
-        <input name="q" defaultValue={sp.q} placeholder="Search phone, name, order #, tracking…" aria-label="Search" className="field lg:col-span-2" />
-        <select name="city" defaultValue={sp.city ?? ""} aria-label="City" className="field"><option value="">All cities</option>{cities.results.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
-        <select name="carrier" defaultValue={sp.carrier ?? ""} aria-label="Carrier" className="field"><option value="">All carriers</option><option value="none">No carrier</option>{carriers.results.map((c) => <option key={c.id} value={c.id}>{c.id}</option>)}</select>
-        <input type="date" name="from" defaultValue={sp.from} aria-label="From date" className="field" />
-        <div className="flex gap-2"><input type="date" name="to" defaultValue={sp.to} aria-label="To date" className="field" /><button className="btn btn-primary">Filter</button></div>
-      </form>
+      <FilterBar hidden={{ status: sp.status }}>
+        <FbItem grow><input name="q" defaultValue={sp.q} placeholder="Search phone, name, order #, tracking…" aria-label="Search" className="field" /></FbItem>
+        <FbItem><select name="city" defaultValue={sp.city ?? ""} aria-label="City" className="field"><option value="">All cities</option>{cities.results.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></FbItem>
+        <FbItem><select name="carrier" defaultValue={sp.carrier ?? ""} aria-label="Carrier" className="field"><option value="">All carriers</option><option value="none">No carrier</option>{carriers.results.map((c) => <option key={c.id} value={c.id}>{c.id}</option>)}</select></FbItem>
+        <FbItem wide><DateRangeField from={sp.from} to={sp.to} /></FbItem>
+      </FilterBar>
       {rows.length === 0 ? (
         <Empty title="No orders found" hint="Orders placed on the storefront show up here instantly." action={<Link href="/admin/orders" className="btn btn-outline btn-sm">Clear filters</Link>} />
       ) : (

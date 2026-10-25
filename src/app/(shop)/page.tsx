@@ -47,7 +47,7 @@ export default async function Home() {
                   <Link href={`/category/${c.slug}`} className="flex items-center justify-between gap-4 py-5 md:py-7">
                     <span className="label-s num w-10 text-muted">{String(i + 1).padStart(2, "0")}</span>
                     <span className="display flex-1 text-[2.6rem] transition group-hover:translate-x-2 rtl:group-hover:-translate-x-2 sm:text-7xl">{tr(c.name, lang)}</span>
-                    <span className="hidden size-20 shrink-0 overflow-hidden bg-sunken opacity-0 transition group-hover:opacity-100 md:block">{c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image)} alt="" loading="lazy" className="size-full object-cover" />}</span>
+                    <span className="hidden size-20 shrink-0 overflow-hidden bg-sunken opacity-0 transition group-hover:opacity-100 md:block">{c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image, "md")} alt="" loading="lazy" className="size-full object-cover" />}</span>
                     <span className="label-s num text-muted">{c.count}</span><Arrow className="size-5 transition group-hover:translate-x-1" />
                   </Link>
                 </li>

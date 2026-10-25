@@ -22,7 +22,7 @@ export function ProductCard({ p, lang, t, currency, codMode, priority, rank }: {
       <Link href={`/p/${p.slug}`} className="relative block aspect-[3/4] overflow-hidden bg-sunken" aria-label={name}>
         {p.image ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={fileUrl(p.image)} alt={name} width={480} height={640} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={`size-full object-cover transition duration-[900ms] ease-out group-hover:scale-[1.04] ${p.inStock ? "" : "opacity-45 grayscale"}`} />
+          <img src={fileUrl(p.image, "md")} alt={name} width={480} height={640} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={`size-full object-cover transition duration-[900ms] ease-out group-hover:scale-[1.04] ${p.inStock ? "" : "opacity-45 grayscale"}`} />
         ) : <div className="grid size-full place-items-center text-muted">—</div>}
         {discount > 0 && p.inStock && <span className="label-s num absolute start-2 top-2 bg-ink px-2 py-1 text-bg">−{discount}%</span>}
         {rank != null && <span className="display num absolute end-2 top-2 text-3xl text-ink/80">{String(rank).padStart(2, "0")}</span>}

@@ -18,7 +18,7 @@ export function SiteFooter({ s, lang, t, pages }: { s: Settings; lang: Lang; t: 
   return (
     <footer className="mt-24 bg-[#0d0d0d] text-white">
       <div className="mx-auto max-w-[88rem] px-5 pt-14">
-        <p className="display select-none break-words text-[clamp(3rem,15vw,12rem)] leading-[0.82] tracking-tight">{logo ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={logo} alt={s.store.name} className="h-20 w-auto brightness-0 invert sm:h-32" /> : s.store.name}</p>
+        <p className="display select-none break-words text-[clamp(3rem,15vw,12rem)] leading-[0.82] tracking-tight">{logo ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={logo} alt={s.store.name} className="brand-logo h-20 w-auto brightness-0 invert sm:h-32" /> : s.store.name}</p>
         <div className="mt-12 grid gap-10 border-t border-white/15 pt-10 sm:grid-cols-2 lg:grid-cols-4">
           <div><h2 className="label-s mb-4 text-white/50">{t("footer.pages")}</h2><ul className="space-y-2.5 text-sm">{pages.map((p) => <li key={p.slug}><Link href={`/page/${p.slug}`} className={a}>{tr(p.title, lang)}</Link></li>)}<li><Link href="/track" className={a}>{t("nav.track")}</Link></li></ul></div>
           <div><h2 className="label-s mb-4 text-white/50">{t("footer.contact")}</h2>

@@ -9,5 +9,5 @@ export const metadata = { title: "New page" };
 export default async function NewPage() {
   await requireUser();
   const m = await getDb().select({ m: sql<number>`coalesce(max(${schema.pages.position}), -1)` }).from(schema.pages).get();
-  return <div className="max-w-3xl"><PageHeader title="New page" /><PageForm nextPosition={(m?.m ?? -1) + 1} /></div>;
+  return <div><PageHeader title="New page" /><PageForm nextPosition={(m?.m ?? -1) + 1} /></div>;
 }
