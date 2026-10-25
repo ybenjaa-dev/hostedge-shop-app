@@ -54,6 +54,10 @@ describe("offer cards", () => {
     const o = offersFor("p9", 5000, [{ productId: null, minQty: 2, percent: 10 }, { productId: null, minQty: 3, percent: 15 }]);
     expect(o.map((x) => [x.qty, x.total])).toEqual([[1, 5000], [2, 9000], [3, 12750]]);
   });
+  it("carries the offer photo (own offer first, else a store-wide bundle of the same size)", () => {
+    const o = offersFor("p1", 10000, [fixed(2, 18000, { image: "uploads/two-pack.webp" }), fixed(3, 24000), { productId: null, minQty: 3, percent: 15, image: "uploads/three-generic.webp" }]);
+    expect(o.map((x) => x.image)).toEqual([null, "uploads/two-pack.webp", "uploads/three-generic.webp"]);
+  });
   it("returns only the single unit when there are no offers", () => {
     expect(offersFor("p1", 10000, [])).toHaveLength(1);
   });

@@ -4,6 +4,7 @@ import { ensureSchema } from "@/db/ensure-schema";
 import type { I18n, Lang } from "@/lib/i18n-core";
 import { sql } from "drizzle-orm";
 import type { OrderStatus, StatusDef } from "@/lib/order-status";
+import type { OfferTemplate } from "@/lib/offer-templates";
 
 export type HeroSlide = { image: string; title: I18n; sub: I18n; cta: I18n; href: string; cta2?: I18n; href2?: string };
 export type HomeSection = { id: "hero" | "categories" | "featured" | "bestsellers" | "banner" | "reviews" | "trust"; visible: boolean };
@@ -51,6 +52,8 @@ export type Settings = {
     bundlesInForm: boolean;
     reviewsAutoApprove: boolean;
   };
+  /** Default layout of the quantity-offer cards; a product can override it. */
+  offers: { template: OfferTemplate };
   announcement: { enabled: boolean; text: I18n; href: string };
   hero: { slides: HeroSlide[] };
   home: { sections: HomeSection[]; banner: { image: string; title: I18n; sub: I18n; href: string } };
@@ -104,6 +107,7 @@ export const DEFAULT_SETTINGS: Settings = {
     reviewsAutoApprove: false,
   },
   announcement: { enabled: true, text: { en: "Free delivery · Pay when you receive", fr: "Livraison rapide · Paiement à la livraison", ar: "الدفع عند الاستلام · توصيل سريع" }, href: "" },
+  offers: { template: "list" },
   hero: { slides: [] },
   home: {
     sections: [
