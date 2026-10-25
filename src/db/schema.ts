@@ -71,6 +71,7 @@ export const products = sqliteTable(
     shortDesc: text("short_desc").notNull().default("{}"),
     longDesc: text("long_desc").notNull().default("{}"),
     specs: text("specs").notNull().default("{}"), // JSON i18n; one "Label: value" per line (supplement facts, specs…)
+    offerTemplate: text("offer_template"), // quantity-offer card layout for this product; null → store default
     categoryId: text("category_id"),
     sku: text("sku"),
     price: integer("price").notNull(), // minor units

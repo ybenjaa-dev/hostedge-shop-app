@@ -13,6 +13,8 @@ export type BundleRule = {
   popular?: boolean;
   /** Picture for the offer card (R2 key). */
   image?: string | null;
+  /** Offer-card layout to render for this product (product choice, else store default). Set by listBundles(productId). */
+  template?: string | null;
 };
 export type CouponRule = {
   code: string;

@@ -120,6 +120,38 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body), 
   .offer-flag { display: inline-flex; align-items: center; gap: 0.25rem; border-radius: 9999px; background: var(--brand); color: var(--brand-ink); padding: 0.1rem 0.55rem; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.02em; }
   .offer-flag.is-plain { background: var(--sunken); color: var(--ink); }
   .offer-save { display: inline-block; margin-top: 0.15rem; border-radius: 9999px; background: color-mix(in srgb, var(--ok, #16a34a) 16%, transparent); color: var(--ok, #16a34a); padding: 0.05rem 0.5rem; font-size: 0.7rem; font-weight: 800; }
+
+  /* offer-card layouts (list is the base style above) */
+  .offers-grid.t-list, .offers-grid.t-highlight { display: grid; gap: 0.65rem; }
+  .offers-grid.t-tiles { display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: 0.55rem; padding-top: 0.7rem; }
+  .offers-grid.t-photo { display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: 0.6rem; }
+  .offers-grid.t-pills { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .offer-card.t-tiles, .offer-card.t-photo, .offer-card.t-pills { flex-direction: column; align-items: center; text-align: center; }
+  .offer-card.t-tiles { position: relative; gap: 0.1rem; padding: 1.15rem 0.4rem 0.85rem; }
+  .offer-card.t-tiles .offer-radio, .offer-card.t-photo .offer-radio { position: absolute; top: 0.45rem; inset-inline-end: 0.45rem; width: 1.15rem; height: 1.15rem; }
+  .offer-card.t-tiles .offer-flag { position: absolute; top: -0.65rem; inset-inline-start: 50%; transform: translateX(-50%); white-space: nowrap; }
+  [dir="rtl"] .offer-card.t-tiles .offer-flag { transform: translateX(50%); }
+  .offer-qty { font-size: 2.1rem; font-weight: 800; line-height: 1; }
+  .offer-unit { font-size: 0.75rem; font-weight: 700; color: var(--muted); margin-bottom: 0.35rem; }
+  .offer-card.t-photo { gap: 0.15rem; padding: 0.5rem 0.5rem 0.8rem; }
+  .offer-card.t-photo .offer-flag { margin-top: 0.45rem; max-width: 100%; }
+  .offer-card.t-photo .offer-count { margin-top: 0.15rem; }
+  .offer-visual { position: relative; display: block; width: 100%; aspect-ratio: 1; overflow: hidden; border-radius: 0.8rem; background: var(--sunken); }
+  .offer-stack-img { position: absolute; aspect-ratio: 1; object-fit: cover; border-radius: 0.6rem; border: 2px solid var(--surface); box-shadow: 0 4px 10px -4px rgb(0 0 0 / .35); }
+  .offer-times { position: absolute; bottom: 0.35rem; inset-inline-end: 0.35rem; z-index: 5; border-radius: 9999px; background: var(--ink); color: var(--bg); padding: 0 0.5rem; font-size: 0.78rem; font-weight: 800; }
+  .offer-card.t-pills { flex: 1 1 5.5rem; position: relative; gap: 0.1rem; padding: 0.65rem 0.4rem; }
+  .offer-card.t-pills .offer-radio { display: none; }
+  .offer-card.t-pills .offer-count { font-size: 1.15rem; }
+  .offer-card.t-pills .offer-price { font-size: 0.95rem; }
+  .offer-dot { position: absolute; top: -0.5rem; inset-inline-end: 0.5rem; display: grid; place-items: center; width: 1.2rem; height: 1.2rem; border-radius: 9999px; background: var(--brand); color: var(--brand-ink); }
+  .offer-card.t-highlight { padding: 0.6rem 1rem; }
+  .offer-card.t-highlight.is-hl { padding: 1.15rem 1.1rem; border-color: transparent; background: linear-gradient(135deg, var(--brand), color-mix(in srgb, var(--brand) 68%, #000)); color: var(--brand-ink); box-shadow: 0 14px 28px -16px var(--brand); }
+  .offer-card.t-highlight.is-hl .offer-radio { border-color: color-mix(in srgb, var(--brand-ink) 60%, transparent); background: transparent; color: var(--brand); }
+  .offer-card.t-highlight.is-hl.is-on { outline: 3px solid color-mix(in srgb, var(--brand) 40%, transparent); outline-offset: 2px; }
+  .offer-card.t-highlight.is-hl.is-on .offer-radio { background: var(--brand-ink); border-color: var(--brand-ink); }
+  .offer-card.t-highlight.is-hl .offer-flag { background: var(--brand-ink); color: var(--brand); }
+  .offer-card.t-highlight.is-hl .offer-price { font-size: 1.45rem; }
+  .offer-card.t-highlight.is-hl .offer-save { background: color-mix(in srgb, var(--brand-ink) 18%, transparent); color: var(--brand-ink); }
 }
 /* Hide number input arrows */
 input[type=number]::-webkit-inner-spin-button { display: none; }
