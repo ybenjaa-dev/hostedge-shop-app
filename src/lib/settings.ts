@@ -45,7 +45,8 @@ export type Settings = {
     codFee: number;
     freeShippingThreshold: number;
     defaultShippingFee: number;
-    formPlacement: "inline" | "popup" | "page";
+    /** inline = opens under the product when the customer taps Order · inline-open = the form is always visible on the page · popup · page */
+    formPlacement: "inline" | "inline-open" | "popup" | "page";
     confirmationStep: boolean;
     duplicateWindowMin: number;
     ratePerHourPerIp: number;

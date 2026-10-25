@@ -91,7 +91,7 @@ export async function saveCheckout(_p: ActionState, form: FormData): Promise<Act
         return n;
       };
       const placement = fd(form, "formPlacement");
-      if (!["inline", "popup", "page"].includes(placement)) return fail("Choose a form placement");
+      if (!["inline", "inline-open", "popup", "page"].includes(placement)) return fail("Choose a form placement");
       const checkout: Settings["checkout"] = {
         codMode: form.get("codMode") === "1",
         codFee: money("codFee", "COD fee"),

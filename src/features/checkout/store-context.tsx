@@ -8,7 +8,7 @@ export type ClientStore = {
   lang: Lang;
   currency: string;
   codMode: boolean;
-  placement: "inline" | "popup" | "page";
+  placement: "inline" | "inline-open" | "popup" | "page";
   codFee: number;
   defaultShippingFee: number;
   freeThreshold: number;
