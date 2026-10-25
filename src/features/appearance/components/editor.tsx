@@ -1,6 +1,6 @@
 "use client";
-import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
-import { ArrowDown, ArrowUp, Eye, EyeOff, Plus, Trash2, X, AlertTriangle, CheckCircle2, RotateCcw } from "lucide-react";
+import { createContext, useContext, useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { ArrowDown, ArrowUp, Eye, EyeOff, Monitor, MousePointerClick, Plus, Smartphone, Tablet, Trash2, X, AlertTriangle, CheckCircle2, RotateCcw } from "lucide-react";
 import { AdminForm } from "@/features/admin/components/admin-form";
 import { MediaImageInput } from "@/features/media/image-input";
 import { Panel } from "@/features/admin/components/ui";
@@ -10,24 +10,27 @@ import type { I18n, Lang } from "@/lib/i18n-core";
 import type { HeroSlide, HomeSection, Settings, TrustBadge } from "@/lib/settings";
 import { saveAppearance } from "../actions";
 import { FONT_PAIRS, PALETTES } from "../presets";
-import { StorePreview, PreviewControls, type AppearanceState } from "./preview";
+import { StorePreview, type AppearanceState } from "./preview";
+import { SubmitButton } from "@/components/ui/submit";
+import { ADMIN_LANGS, LangTabs } from "@/features/admin/components/lang-tabs";
 
 const TABS = [["branding", "Branding"], ["hero", "Hero"], ["home", "Homepage"], ["announcement", "Announcement"], ["footer", "Footer"], ["trust", "Trust badges"]] as const;
 type TabId = (typeof TABS)[number][0];
 const SECTION_NAME: Record<HomeSection["id"], string> = { hero: "Hero slider", trust: "Trust badges", categories: "Categories", featured: "Featured products", banner: "Promo banner", bestsellers: "Best sellers", reviews: "Customer reviews" };
 const ICON_OPTIONS: TrustBadge["icon"][] = ["cod", "returns", "delivery", "secure", "support", "quality"];
 
+const LangCtx = createContext<{ lang: Lang; setLang: (l: Lang) => void }>({ lang: "fr", setLang: () => {} });
+
+/** One translated text field: a language tab bar (shared with the live preview) and the field for the chosen language. */
 function LangInputs({ label, value, onChange, textarea, rows = 2, max }: { label: string; value: I18n; onChange: (v: I18n) => void; textarea?: boolean; rows?: number; max?: number }) {
+  const { lang, setLang } = useContext(LangCtx);
+  const id = useId();
+  const filled = Object.fromEntries(ADMIN_LANGS.map((l) => [l.id, !!value[l.id]?.trim()])) as Record<Lang, boolean>;
+  const props = { value: value[lang] ?? "", maxLength: max, dir: lang === "ar" ? "rtl" : "ltr", lang, className: "field", "aria-label": `${label} (${lang})`, onChange: (e: { target: { value: string } }) => onChange({ ...value, [lang]: e.target.value }) };
   return (
     <fieldset>
-      <legend className="label">{label}</legend>
-      <div className="space-y-2">{(["fr", "ar", "en"] as const).map((l) => {
-        const props = { value: value[l] ?? "", maxLength: max, dir: l === "ar" ? "rtl" : "ltr", className: "field", "aria-label": `${label} (${l})`, onChange: (e: { target: { value: string } }) => onChange({ ...value, [l]: e.target.value }) } as const;
-        return (
-          <div key={l} className="flex items-start gap-2"><span className="mt-2.5 w-7 shrink-0 text-center text-[11px] font-extrabold uppercase text-muted">{l}</span>
-            {textarea ? <textarea rows={rows} {...props} /> : <input {...props} />}</div>
-        );
-      })}</div>
+      <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2"><legend className="label !mb-0">{label}</legend><LangTabs active={lang} onChange={setLang} filled={filled} idPrefix={id} /></div>
+      {textarea ? <textarea rows={rows} {...props} /> : <input {...props} />}
     </fieldset>
   );
 }
@@ -73,7 +76,8 @@ export function AppearanceEditor({ initial, original, storeName, tagline, curren
   const [lang, setLang] = useState<Lang>(defaultLang);
   const [slide, setSlide] = useState(0);
   const [full, setFull] = useState(false);
-  const [device, setDevice] = useState<"mobile" | "desktop">("mobile");
+  const [device, setDevice] = useState<"mobile" | "tablet" | "desktop">("mobile");
+  const [region, setRegion] = useState("");
   const dirty = JSON.stringify(v) !== JSON.stringify(initial);
   const initialRef = useRef(initial);
   // After a successful save the server re-sends `initial`; keep our edits and just track the new baseline.
@@ -92,32 +96,40 @@ export function AppearanceEditor({ initial, original, storeName, tagline, curren
     return () => { window.removeEventListener("keydown", h); document.body.style.overflow = ""; };
   }, [full]);
 
-  const onTabKey = (e: KeyboardEvent<HTMLDivElement>) => {
-    const i = TABS.findIndex((t) => t[0] === tab);
-    const n = e.key === "ArrowRight" ? i + 1 : e.key === "ArrowLeft" ? i - 1 : e.key === "Home" ? 0 : e.key === "End" ? TABS.length - 1 : -1;
-    if (n < 0) return;
-    e.preventDefault();
-    const next = TABS[(n + TABS.length) % TABS.length]![0];
-    setTab(next);
-    requestAnimationFrame(() => document.getElementById(`tab-${next}`)?.focus());
-  };
-
+  const REGION_TAB: Record<string, TabId> = { branding: "branding", hero: "hero", trust: "trust", footer: "footer", announcement: "announcement", banner: "home", categories: "home", featured: "home", bestsellers: "home", reviews: "home" };
+  const pick = (id: string) => { setRegion(id); const t = REGION_TAB[id]; if (t) setTab(t); if (id === "banner") requestAnimationFrame(() => document.getElementById("banner-panel")?.scrollIntoView({ block: "start", behavior: "smooth" })); };
   const preview = <StorePreview v={v} storeName={storeName} tagline={tagline} currency={currency} lang={lang} slide={slide} />;
+  const canvas = <StorePreview v={v} storeName={storeName} tagline={tagline} currency={currency} lang={lang} slide={slide} edit={{ selected: region, select: pick, change: setV }} />;
   const panel = (id: TabId, children: ReactNode) => <div role="tabpanel" id={`panel-${id}`} aria-labelledby={`tab-${id}`} hidden={tab !== id} className="space-y-5">{children}</div>;
+  const frame = device === "mobile" ? "max-w-[390px]" : device === "tablet" ? "max-w-[768px]" : "max-w-[1100px]";
 
   return (
-    <AdminForm action={saveAppearance} submitLabel="Save appearance" className="space-y-5"
-      extra={<>
-        <button type="button" className="btn btn-outline" onClick={() => setFull(true)}><Eye className="size-4" aria-hidden />Preview in store</button>
-        {dirty && <><span className="text-sm font-semibold text-danger" role="status">Unsaved changes</span><button type="button" className="btn btn-ghost btn-sm" onClick={() => { setV(initialRef.current); setSlide(0); }}><RotateCcw className="size-4" aria-hidden />Discard</button></>}
-      </>}>
+    <LangCtx.Provider value={{ lang, setLang }}>
+    <AdminForm action={saveAppearance} hideSubmit className="space-y-4">
       <input type="hidden" name="payload" value={JSON.stringify(v)} />
-      <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
-        <div className="min-w-0">
-          <div role="tablist" aria-label="Appearance sections" onKeyDown={onTabKey} className="no-scrollbar -mx-4 mb-5 flex gap-1 overflow-x-auto border-b border-line px-4 sm:mx-0 sm:px-0">
+      {/* studio bar */}
+      <div className="card sticky top-16 z-20 flex flex-wrap items-center gap-x-4 gap-y-2 p-3">
+        <div className="flex items-center gap-2">
+          <LangTabs active={lang} onChange={setLang} filled={{ fr: true, ar: true, en: true }} idPrefix="studio" />
+        </div>
+        <div className="inline-flex gap-0.5 rounded-xl border border-line bg-sunken p-0.5" role="group" aria-label="Preview device">
+          {([["mobile", Smartphone, "Phone"], ["tablet", Tablet, "Tablet"], ["desktop", Monitor, "Desktop"]] as const).map(([d, I, l]) => (
+            <button key={d} type="button" aria-pressed={device === d} onClick={() => setDevice(d)} title={l} aria-label={l} className={`grid size-8 place-items-center rounded-[0.65rem] transition ${device === d ? "bg-surface text-ink shadow-sm" : "text-muted hover:text-ink"}`}><I className="size-4" aria-hidden /></button>
+          ))}
+        </div>
+        {slides.length > 1 && <div className="flex items-center gap-1 text-xs"><span className="font-bold text-muted">Slide</span>{slides.map((_, i) => <button key={i} type="button" onClick={() => { setSlide(i); pick("hero"); }} aria-pressed={slide === i} aria-label={`Slide ${i + 1}`} className={`size-7 rounded-full border text-xs font-bold ${slide === i ? "border-brand bg-brand text-brand-ink" : "border-line"}`}>{i + 1}</button>)}</div>}
+        <div className="ms-auto flex flex-wrap items-center gap-2">
+          {dirty && <><span className="text-sm font-semibold text-danger" role="status">Unsaved changes</span><button type="button" className="btn btn-ghost btn-sm" onClick={() => { setV(initialRef.current); setSlide(0); }}><RotateCcw className="size-4" aria-hidden />Discard</button></>}
+          <button type="button" className="btn btn-outline btn-sm" onClick={() => setFull(true)}><Eye className="size-4" aria-hidden />Full preview</button>
+          <SubmitButton pendingText="Saving…">Save appearance</SubmitButton>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,25rem)_minmax(0,1fr)]">
+        <div className="min-w-0 lg:sticky lg:top-36 lg:max-h-[calc(100dvh-10rem)] lg:overflow-y-auto lg:pe-1">
+          <div role="tablist" aria-label="Appearance sections" className="tabnav w-full flex-wrap !overflow-visible">
             {TABS.map(([id, label]) => (
-              <button key={id} type="button" role="tab" id={`tab-${id}`} aria-selected={tab === id} aria-controls={`panel-${id}`} tabIndex={tab === id ? 0 : -1} onClick={() => setTab(id)}
-                className={`-mb-px whitespace-nowrap border-b-2 px-3 py-2.5 text-sm font-bold ${tab === id ? "border-brand text-brand" : "border-transparent text-muted hover:text-ink"}`}>{label}</button>
+              <button key={id} type="button" role="tab" id={`tab-${id}`} aria-selected={tab === id} aria-controls={`panel-${id}`} tabIndex={tab === id ? 0 : -1} onClick={() => { setTab(id); setRegion(id === "home" ? "" : id); }}>{label}</button>
             ))}
           </div>
 
@@ -198,7 +210,7 @@ export function AppearanceEditor({ initial, original, storeName, tagline, curren
                 </li>
               ))}</ol>
             </Panel>
-            <Panel title="Promo banner">
+            <Panel title="Promo banner" id="banner-panel">
               <div className="space-y-4">
                 <ImageInput label="Banner image" value={v.home.banner.image} onChange={(k) => set("home", { ...v.home, banner: { ...v.home.banner, image: k } })} hint="Wide image (16:6). The banner section must be visible and have an image to appear." />
                 <LangInputs label="Title" value={v.home.banner.title} onChange={(t) => set("home", { ...v.home, banner: { ...v.home.banner, title: t } })} max={160} />
@@ -234,28 +246,28 @@ export function AppearanceEditor({ initial, original, storeName, tagline, curren
           </>)}
         </div>
 
-        <aside className="xl:sticky xl:top-20" aria-label="Live preview">
-          <details className="group xl:open:block" open>
-            <summary className="mb-2 flex min-h-10 cursor-pointer list-none items-center justify-between text-sm font-extrabold uppercase tracking-wider text-muted xl:pointer-events-none [&::-webkit-details-marker]:hidden">Live preview <span className="text-xs font-semibold normal-case xl:hidden">tap to toggle</span></summary>
-            <div className="space-y-2"><PreviewControls lang={lang} setLang={setLang} slides={slides.length} slide={slide} setSlide={setSlide} />
-              <div className="mx-auto max-w-sm xl:max-w-none">{preview}</div></div>
-          </details>
-        </aside>
+        <section aria-label="Live preview" className="min-w-0 lg:sticky lg:top-36">
+          <div className="overflow-hidden rounded-2xl border border-line bg-sunken">
+            <p className="flex items-center gap-2 border-b border-line bg-surface px-3 py-2 text-xs text-muted"><MousePointerClick className="size-4 shrink-0" aria-hidden /><span>Click any part of the preview to edit it — and type straight onto texts. Nothing is public until you save.</span></p>
+            <div className="max-h-[calc(100dvh-14rem)] overflow-y-auto p-3 sm:p-5" onClick={() => setRegion("")}><div className={`mx-auto transition-[max-width] duration-300 ${frame}`}>{canvas}</div></div>
+          </div>
+        </section>
       </div>
 
       {full && (
         <div className="fixed inset-0 z-[80] flex flex-col bg-bg" role="dialog" aria-modal="true" aria-label="Store preview">
           <div className="flex flex-wrap items-center gap-3 border-b border-line bg-surface px-4 py-2">
             <b className="display">Preview — not saved</b>
-            <PreviewControls lang={lang} setLang={setLang} slides={slides.length} slide={slide} setSlide={setSlide} />
+            <LangTabs active={lang} onChange={setLang} filled={{ fr: true, ar: true, en: true }} idPrefix="full" />
             <div className="ms-auto flex items-center gap-2">
-              {(["mobile", "desktop"] as const).map((d) => <button key={d} type="button" aria-pressed={device === d} onClick={() => setDevice(d)} className={`btn btn-sm ${device === d ? "btn-primary" : "btn-outline"}`}>{d === "mobile" ? "Mobile" : "Desktop"}</button>)}
+              {(["mobile", "tablet", "desktop"] as const).map((d) => <button key={d} type="button" aria-pressed={device === d} onClick={() => setDevice(d)} className={`btn btn-sm ${device === d ? "btn-primary" : "btn-outline"}`}>{d === "mobile" ? "Phone" : d === "tablet" ? "Tablet" : "Desktop"}</button>)}
               <button type="button" autoFocus className="btn btn-outline btn-sm" onClick={() => setFull(false)}><X className="size-4" aria-hidden />Close</button>
             </div>
           </div>
-          <div className="flex-1 overflow-auto bg-sunken p-4"><div className={`mx-auto ${device === "mobile" ? "max-w-[390px]" : "max-w-5xl"}`}>{preview}</div></div>
+          <div className="flex-1 overflow-auto bg-sunken p-4"><div className={`mx-auto ${frame}`}>{preview}</div></div>
         </div>
       )}
     </AdminForm>
+    </LangCtx.Provider>
   );
 }

@@ -1,3 +1,4 @@
+import { RichText } from "@/components/rich-text";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -114,7 +115,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
         )}
         <div className="space-y-5">
           {tr(p.longDesc, lang) && (
-            <section className="card p-6"><h2 className="display mb-2 text-2xl">{t("p.howto")}</h2><div className="prose-lite text-muted"><p>{tr(p.longDesc, lang)}</p></div></section>
+            <section className="card p-6"><h2 className="display mb-2 text-2xl">{t("p.howto")}</h2><div className="prose-lite text-muted"><RichText html={tr(p.longDesc, lang)} /></div></section>
           )}
           <aside className="flex gap-3 rounded-[1.5rem] border border-[#f1d98a] bg-[#fff8de] p-5 text-sm leading-relaxed text-[#5b4a10] dark:border-[#6b5a1d] dark:bg-[#2a2410] dark:text-[#e8d89a]" aria-label="Notice"><Info className="mt-0.5 size-5 shrink-0" aria-hidden /><p>{t("p.disclaimer")}</p></aside>
           <section className="card p-6"><h2 className="display mb-2 text-2xl">{t("p.delivery")}</h2><p className="text-muted">{t("p.deliveryText")}</p>{wa && <a href={wa} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm mt-3">{t("p.shareWa")}</a>}</section>

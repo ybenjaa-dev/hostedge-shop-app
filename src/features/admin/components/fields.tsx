@@ -2,6 +2,8 @@
 import { useId, useState, type ReactNode } from "react";
 import { contrastRatio, onColor, isHex } from "@/lib/color";
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
+import type { Lang } from "@/lib/i18n-core";
+import { ADMIN_LANGS, LangTabs } from "./lang-tabs";
 import { uploadMedia } from "@/lib/media-client";
 import { MediaImageInput } from "@/features/media/image-input";
 
@@ -15,24 +17,24 @@ export function Field({ label, hint, children, htmlFor }: { label: string; hint?
   );
 }
 
-/** One input per language (AR / FR / EN), submitted as name.ar / name.fr / name.en */
+/** One input per language (FR / AR / EN) behind a language tab bar, submitted as name.ar / name.fr / name.en. All three stay in the form, only one is shown. */
 export function I18nField({ label, name, value = {}, textarea, rows = 3, hint }: { label: string; name: string; value?: Partial<Record<"ar" | "fr" | "en", string>>; textarea?: boolean; rows?: number; hint?: string }) {
   const id = useId();
+  const [active, setActive] = useState<Lang>(() => ADMIN_LANGS.find((l) => value[l.id]?.trim())?.id ?? "fr");
+  const [vals, setVals] = useState<Partial<Record<Lang, string>>>(value);
+  const filled = Object.fromEntries(ADMIN_LANGS.map((l) => [l.id, !!vals[l.id]?.trim()])) as Record<Lang, boolean>;
   return (
     <fieldset>
-      <legend className="label">{label}</legend>
-      <div className="space-y-2">
-        {(["fr", "ar", "en"] as const).map((l) => (
-          <div key={l} className="flex items-start gap-2">
-            <span className="mt-2.5 w-7 shrink-0 text-center text-[11px] font-extrabold uppercase text-muted">{l}</span>
-            {textarea ? (
-              <textarea id={`${id}-${l}`} name={`${name}.${l}`} defaultValue={value[l] ?? ""} rows={rows} dir={l === "ar" ? "rtl" : "ltr"} className="field" aria-label={`${label} (${l})`} />
-            ) : (
-              <input id={`${id}-${l}`} name={`${name}.${l}`} defaultValue={value[l] ?? ""} dir={l === "ar" ? "rtl" : "ltr"} className="field" aria-label={`${label} (${l})`} />
-            )}
-          </div>
-        ))}
-      </div>
+      <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2"><legend className="label !mb-0">{label}</legend><LangTabs active={active} onChange={setActive} filled={filled} idPrefix={id} /></div>
+      {ADMIN_LANGS.map((l) => (
+        <div key={l.id} role="tabpanel" id={`${id}-panel-${l.id}`} aria-labelledby={`${id}-tab-${l.id}`} hidden={active !== l.id}>
+          {textarea ? (
+            <textarea id={`${id}-${l.id}`} name={`${name}.${l.id}`} defaultValue={value[l.id] ?? ""} rows={rows} dir={l.id === "ar" ? "rtl" : "ltr"} className="field" aria-label={`${label} (${l.label})`} onChange={(e) => setVals((v) => ({ ...v, [l.id]: e.target.value }))} />
+          ) : (
+            <input id={`${id}-${l.id}`} name={`${name}.${l.id}`} defaultValue={value[l.id] ?? ""} dir={l.id === "ar" ? "rtl" : "ltr"} className="field" aria-label={`${label} (${l.label})`} onChange={(e) => setVals((v) => ({ ...v, [l.id]: e.target.value }))} />
+          )}
+        </div>
+      ))}
       {hint && <p className="mt-1 text-xs text-muted">{hint}</p>}
     </fieldset>
   );

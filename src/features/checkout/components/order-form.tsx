@@ -146,9 +146,9 @@ export function OrderForm({ lines, bundles, cities, header, source, clearCartOnS
   return (
     <form onSubmit={submit} noValidate className="space-y-4" aria-busy={sending}>
       {header}
-      {/* honeypot — hidden from humans & assistive tech */}
-      <div aria-hidden className="absolute -start-[9999px] h-0 w-0 overflow-hidden">
-        <label>Website<input tabIndex={-1} autoComplete="off" value={hp} onChange={(e) => setHp(e.target.value)} name="website" /></label>
+      {/* honeypot — hidden from humans & assistive tech. No label and a neutral name: a "Website" field gets auto-filled by browsers and password managers, which silently turned real orders into fake ones. */}
+      <div aria-hidden="true" className="pointer-events-none absolute -start-[9999px] h-0 w-0 overflow-hidden opacity-0">
+        <input type="text" tabIndex={-1} autoComplete="off" data-lpignore="true" data-1p-ignore="true" data-form-type="other" inputMode="none" value={hp} onChange={(e) => setHp(e.target.value)} name="zq_ref_41" aria-label="Leave this field empty" />
       </div>
 
       <div>

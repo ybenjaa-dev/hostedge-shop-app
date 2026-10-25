@@ -1,9 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, Images, Loader2, Plus, Sparkles, Star, Tag, Trash2, Upload, Wand2 } from "lucide-react";
+import { RichTextField } from "@/features/admin/components/rich-text-field";
 import { AdminForm } from "@/features/admin/components/admin-form";
 import { Field, I18nField, Toggle, uploadImage } from "@/features/admin/components/fields";
 import { saveProductAction } from "./actions";
+import { OfferPreview } from "./components/offer-preview";
 import { OfferTemplatePicker } from "./components/offer-template-picker";
 import { OFFER_TEMPLATES } from "@/lib/offer-templates";
 import { fileUrl } from "@/lib/storage";
@@ -29,7 +31,7 @@ function OfferImage({ value, onChange }: { value: string; onChange: (k: string) 
   return <MediaImageInput label="Photo" value={value} onChange={onChange} fit="cover" size="size-11" compactLabel="Offer photo" />;
 }
 
-export function ProductForm({ data, categories, storeTemplate = "list" }: { data: ProductFormData; categories: { id: string; label: string }[]; storeTemplate?: string }) {
+export function ProductForm({ data, categories, storeTemplate = "list", currency = "MAD" }: { data: ProductFormData; categories: { id: string; label: string }[]; storeTemplate?: string; currency?: string }) {
   const [images, setImages] = useState<Img[]>(data.images);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [variants, setVariants] = useState<Var[]>(data.variants);
@@ -39,6 +41,7 @@ export function ProductForm({ data, categories, storeTemplate = "list" }: { data
   const [dropOver, setDropOver] = useState(false);
   const [gen, setGen] = useState({ n1: "Size", v1: "", n2: "Color", v2: "" });
   const [offers, setOffers] = useState<Offer[]>(data.offers ?? []);
+  const [tpl, setTpl] = useState(data.offerTemplate ?? "");
   const [base, setBase] = useState(parseFloat(data.price) || 0);
   useEffect(() => {
     const el = document.getElementById("pr") as HTMLInputElement | null;
@@ -91,7 +94,7 @@ export function ProductForm({ data, categories, storeTemplate = "list" }: { data
           <section className="card space-y-4 p-5">
             <I18nField label="Name" name="name" value={data.name} />
             <I18nField label="Short description" name="short" value={data.shortDesc} textarea rows={2} />
-            <I18nField label="Long description" name="long" value={data.longDesc} textarea rows={5} />
+            <RichTextField label="Long description" name="long" value={data.longDesc} />
             <I18nField label="Facts table (supplement facts / specs)" name="specs" value={data.specs} textarea rows={6} hint={'One row per line, written as "Label: value" — e.g. "Serving size: 1 capsule". Shown as a label-style table on the product page.'} />
           </section>
 
@@ -168,9 +171,10 @@ export function ProductForm({ data, categories, storeTemplate = "list" }: { data
                 );
               })}
             </div>
+            <div className="mt-5"><OfferPreview offers={offers} base={base} currency={currency} template={tpl || storeTemplate} image={images[0]?.key} /></div>
             <div className="mt-5 border-t border-line pt-4">
               <p className="label mb-2">Offer card layout</p>
-              <OfferTemplatePicker name="offerTemplate" value={data.offerTemplate ?? ""} allowDefault defaultLabel={OFFER_TEMPLATES.find((t) => t.id === storeTemplate)?.name} />
+              <OfferTemplatePicker name="offerTemplate" value={data.offerTemplate ?? ""} onChange={setTpl} allowDefault defaultLabel={OFFER_TEMPLATES.find((t) => t.id === storeTemplate)?.name} />
             </div>
             {offers.length < 6 && <button type="button" className="btn btn-outline btn-sm mt-3" onClick={() => { const q = (offers.at(-1)?.qty ?? 1) + 1; setOffers([...offers, { qty: q, price: base ? String(Math.round(base * q * 0.9)) : "", label: "", popular: false, image: "" }]); }}><Plus className="size-4" />Add offer</button>}
           </section>

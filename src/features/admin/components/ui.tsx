@@ -9,9 +9,9 @@ export function PageHeader({ title, sub, actions }: { title: string; sub?: strin
     </div>
   );
 }
-export function Panel({ title, children, className = "", actions }: { title?: string; children: ReactNode; className?: string; actions?: ReactNode }) {
+export function Panel({ title, children, className = "", actions, id }: { title?: string; children: ReactNode; className?: string; actions?: ReactNode; id?: string }) {
   return (
-    <section className={`card p-5 ${className}`}>
+    <section id={id} className={`card scroll-mt-40 p-5 ${className}`}>
       {(title || actions) && <div className="mb-4 flex items-center justify-between gap-2">{title && <h2 className="display text-lg font-extrabold">{title}</h2>}{actions}</div>}
       {children}
     </section>

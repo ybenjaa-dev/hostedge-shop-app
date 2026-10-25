@@ -1,25 +1,43 @@
-import { Globe } from "lucide-react";
+"use client";
+import { useEffect, useRef, useState, useTransition } from "react";
+import { Check, ChevronDown } from "lucide-react";
 import { setLang } from "@/features/settings/actions/lang";
 import { LANG_LABEL, type Lang } from "@/lib/i18n-core";
+import { Flag } from "./flags";
 
-/** JS-free language switcher: each option is a tiny form posting a server action. */
+/** Language menu: soft-rounded flags, closes on outside click / Escape / choosing a language. */
 export function LangSwitcher({ current, langs, label }: { current: Lang; langs: Lang[]; label: string }) {
+  const [open, setOpen] = useState(false);
+  const [pending, start] = useTransition();
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const down = (e: Event) => { if (!root.current?.contains(e.target as Node)) setOpen(false); };
+    const key = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("pointerdown", down); document.addEventListener("keydown", key); window.addEventListener("scroll", () => setOpen(false), { passive: true, once: true });
+    return () => { document.removeEventListener("pointerdown", down); document.removeEventListener("keydown", key); };
+  }, [open]);
   if (langs.length < 2) return null;
   return (
-    <details className="group relative">
-      <summary aria-label={label} className="btn btn-ghost btn-sm cursor-pointer list-none gap-1.5 [&::-webkit-details-marker]:hidden">
-        <Globe className="size-4" aria-hidden />
+    <div ref={root} className="relative">
+      <button type="button" aria-label={label} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)} className="btn btn-ghost btn-sm gap-1.5">
+        <Flag lang={current} />
         <span className="text-xs font-bold uppercase">{current}</span>
-      </summary>
-      <div className="absolute end-0 top-full z-50 mt-1 min-w-36 overflow-hidden rounded-xl border border-line bg-surface p-1 shadow-xl">
-        {langs.map((l) => (
-          <form key={l} action={setLang.bind(null, l)}>
-            <button className={`flex w-full items-center rounded-lg px-3 py-2 text-start text-sm hover:bg-sunken ${l === current ? "font-bold text-brand" : ""}`} lang={l}>
-              {LANG_LABEL[l]}
+        <ChevronDown className={`size-3.5 opacity-60 transition ${open ? "rotate-180" : ""}`} aria-hidden />
+      </button>
+      {open && (
+        <div role="menu" aria-label={label} className="absolute end-0 top-full z-50 mt-1 min-w-44 overflow-hidden rounded-xl border border-line bg-surface p-1 shadow-xl">
+          {langs.map((l) => (
+            <button key={l} type="button" role="menuitemradio" aria-checked={l === current} lang={l} disabled={pending}
+              onClick={() => { setOpen(false); if (l !== current) start(() => { void setLang(l); }); }}
+              className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-start text-sm hover:bg-sunken ${l === current ? "font-bold text-brand" : ""}`}>
+              <Flag lang={l} />
+              <span className="flex-1">{LANG_LABEL[l]}</span>
+              {l === current && <Check className="size-4" aria-hidden />}
             </button>
-          </form>
-        ))}
-      </div>
-    </details>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

@@ -1,4 +1,5 @@
 "use server";
+import { sanitizeHtml } from "@/lib/rich-text";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -22,6 +23,8 @@ const offerSchema = z.array(z.object({
 })).max(6);
 const imageSchema = z.array(z.object({ key: z.string().min(1).max(200), alt: z.string().max(200).optional().nullable() })).max(20);
 
+const richI18n = (o: Record<string, string>) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, sanitizeHtml(v)]).filter(([, v]) => v));
+
 export async function saveProductAction(_p: ActionState, form: FormData): Promise<ActionState> {
   let createdId: string | null = null;
   const res = await run("staff", async (user) => {
@@ -42,7 +45,7 @@ export async function saveProductAction(_p: ActionState, form: FormData): Promis
     const now = Date.now();
     const status = fd(form, "status") === "published" ? "published" : "draft";
     const pid = id ?? newId();
-    const vals = [slug, JSON.stringify(name), JSON.stringify(fdI18n(form, "short")), JSON.stringify(fdI18n(form, "long")), fd(form, "categoryId") || null, fd(form, "sku") || null, price, cmp, Math.max(0, parseInt(fd(form, "stock") || "0", 10) || 0), form.get("trackStock") ? 1 : 0, status, form.get("featured") ? 1 : 0, form.get("bestseller") ? 1 : 0, JSON.stringify(fdI18n(form, "seoTitle")), JSON.stringify(fdI18n(form, "seoDesc")), JSON.stringify(fdI18n(form, "specs")), isOfferTemplate(fd(form, "offerTemplate")) ? fd(form, "offerTemplate") : null];
+    const vals = [slug, JSON.stringify(name), JSON.stringify(fdI18n(form, "short")), JSON.stringify(richI18n(fdI18n(form, "long"))), fd(form, "categoryId") || null, fd(form, "sku") || null, price, cmp, Math.max(0, parseInt(fd(form, "stock") || "0", 10) || 0), form.get("trackStock") ? 1 : 0, status, form.get("featured") ? 1 : 0, form.get("bestseller") ? 1 : 0, JSON.stringify(fdI18n(form, "seoTitle")), JSON.stringify(fdI18n(form, "seoDesc")), JSON.stringify(fdI18n(form, "specs")), isOfferTemplate(fd(form, "offerTemplate")) ? fd(form, "offerTemplate") : null];
     const stmts: D1PreparedStatement[] = [];
     if (id) stmts.push(db.prepare("UPDATE products SET slug=?, name=?, short_desc=?, long_desc=?, category_id=?, sku=?, price=?, compare_at=?, stock=?, track_stock=?, status=?, featured=?, bestseller=?, seo_title=?, seo_desc=?, specs=?, offer_template=?, updated_at=? WHERE id=?").bind(...vals, now, id));
     else stmts.push(db.prepare("INSERT INTO products (slug, name, short_desc, long_desc, category_id, sku, price, compare_at, stock, track_stock, status, featured, bestseller, seo_title, seo_desc, specs, offer_template, id, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(...vals, pid, now, now));

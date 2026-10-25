@@ -1,4 +1,5 @@
 "use server";
+import { sanitizeHtml } from "@/lib/rich-text";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
@@ -11,7 +12,7 @@ const slugRe = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 export async function savePage(_p: ActionState, form: FormData): Promise<ActionState> {
   return run("staff", async (user) => {
-    const title = fdI18n(form, "title"), body = fdI18n(form, "body");
+    const title = fdI18n(form, "title"), body = Object.fromEntries(Object.entries(fdI18n(form, "body")).map(([k, v]) => [k, sanitizeHtml(v)]).filter(([, v]) => v)) as Record<string, string>;
     if (!Object.keys(title).length) return fail("Add a title in at least one language");
     const p = parse(
       z.object({
