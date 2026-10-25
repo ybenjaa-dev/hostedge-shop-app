@@ -23,7 +23,15 @@ const en = {
   "common.loading": "Loading…", "common.error": "Something went wrong", "common.retry": "Try again", "common.back": "Back", "common.search": "Search", "common.save": "Save", "common.cancel": "Cancel", "common.whatsapp": "WhatsApp us", "common.call": "Call", "common.skip": "Skip to content", "common.notFound": "Page not found", "common.goHome": "Back to home",
   "how.title": "How it works", "how.s1": "Pick it", "how.s1d": "Choose your product and tap Order now.", "how.s2": "We call you", "how.s2d": "A 20-second confirmation on WhatsApp or phone.", "how.s3": "Pay on delivery", "how.s3d": "Check your parcel, then pay the courier in cash.",
   "p.delivery": "Delivery & payment", "p.deliveryText": "Pay the courier in cash when you receive your order. Delivery in 2–4 days. Not happy? Free returns.", "p.shareWa": "Ask on WhatsApp", "home.hero.cta": "Shop the drop", "shop.all": "All", "home.rank": "Top picks",
+  "goal.title": "Shop by goal", "p.facts": "Supplement facts", "p.howto": "How to use", "p.keyFacts": "At a glance", "faq.title": "Good to know",
+  "faq.q1": "How does payment on delivery work?", "faq.a1": "You pay the courier in cash when your parcel arrives. Nothing is charged online.",
+  "faq.q2": "How long does delivery take?", "faq.a2": "Usually 2 to 4 days depending on your city. We confirm your order by phone or WhatsApp first.",
+  "faq.q3": "Can I return a product?", "faq.a3": "Yes. Contact us within 7 days of delivery for unopened products and we will arrange the return.",
+  "faq.q4": "Can I ask a question before ordering?", "faq.a4": "Of course — message us on WhatsApp and we will help you choose.",
+  "p.disclaimer": "Food supplements are not a substitute for a varied and balanced diet. Do not exceed the recommended daily dose. Keep out of reach of children. If you are pregnant, breastfeeding, taking medication or have a medical condition, ask a health professional before use.",
+  "home.clear": "Clear labels, no guesswork", "home.clearD": "Every product page shows the serving size, the dose of each ingredient and how to take it.",
   "p.shade": "Shade", "p.shades": "{n} shades", "p.pickShade": "Choose your shade", "p.ritual": "The ritual", "p.pickedFor": "Our pick", "home.concern": "Shop by concern",
+  "offer.title": "Choose your pack", "offer.one": "1 item", "offer.many": "{n} items", "offer.popular": "Most popular", "offer.best": "Best value", "offer.save": "Save {pct}%", "offer.each": "{price} each", "offer.normal": "Regular price", "offer.youSave": "You save {amount}", "offer.same": "Every item has the options you chose above.", "offer.other": "Need another quantity?",
 } as const;
 
 export type DictKey = keyof typeof en;
@@ -51,7 +59,15 @@ const fr: D = {
   "footer.contact": "Contact", "footer.pages": "Informations", "footer.follow": "Suivez-nous", "footer.rights": "Tous droits réservés.", "footer.hours": "Horaires",
   "common.loading": "Chargement…", "common.error": "Une erreur est survenue", "common.retry": "Réessayer", "common.back": "Retour", "common.search": "Rechercher", "common.save": "Enregistrer", "common.cancel": "Annuler", "common.whatsapp": "Écrivez-nous sur WhatsApp", "common.call": "Appeler", "common.skip": "Aller au contenu", "common.notFound": "Page introuvable", "common.goHome": "Retour à l'accueil",
   "how.title": "Comment ça marche", "how.s1": "Choisissez", "how.s1d": "Choisissez votre produit et touchez Commander.", "how.s2": "On vous appelle", "how.s2d": "Confirmation en 20 secondes par WhatsApp ou téléphone.", "how.s3": "Payez à la livraison", "how.s3d": "Vérifiez votre colis puis payez le livreur en espèces.", "p.delivery": "Livraison & paiement", "p.deliveryText": "Payez le livreur en espèces à la réception. Livraison en 2 à 4 jours. Pas satisfait ? Retours gratuits.", "p.shareWa": "Poser une question sur WhatsApp", "home.hero.cta": "Voir la sélection", "shop.all": "Tout", "home.rank": "Les plus demandés",
+  "goal.title": "Acheter par objectif", "p.facts": "Valeurs nutritionnelles", "p.howto": "Conseils d'utilisation", "p.keyFacts": "En un coup d'œil", "faq.title": "Bon à savoir",
+  "faq.q1": "Comment fonctionne le paiement à la livraison ?", "faq.a1": "Vous payez le livreur en espèces à la réception de votre colis. Rien n'est débité en ligne.",
+  "faq.q2": "Quel est le délai de livraison ?", "faq.a2": "En général 2 à 4 jours selon votre ville. Nous confirmons d'abord votre commande par téléphone ou WhatsApp.",
+  "faq.q3": "Puis-je retourner un produit ?", "faq.a3": "Oui. Contactez-nous dans les 7 jours suivant la livraison pour les produits non ouverts, nous organisons le retour.",
+  "faq.q4": "Puis-je poser une question avant de commander ?", "faq.a4": "Bien sûr — écrivez-nous sur WhatsApp, nous vous aidons à choisir.",
+  "p.disclaimer": "Les compléments alimentaires ne se substituent pas à une alimentation variée et équilibrée. Ne pas dépasser la dose journalière recommandée. Tenir hors de portée des enfants. En cas de grossesse, d'allaitement, de traitement médical ou de pathologie, demandez l'avis d'un professionnel de santé avant utilisation.",
+  "home.clear": "Des étiquettes claires, sans devinettes", "home.clearD": "Chaque fiche produit indique la portion, la dose de chaque ingrédient et le mode d'emploi.",
   "p.shade": "Teinte", "p.shades": "{n} teintes", "p.pickShade": "Choisissez votre teinte", "p.ritual": "Le rituel", "p.pickedFor": "Notre coup de cœur", "home.concern": "Acheter par besoin",
+  "offer.title": "Choisissez votre pack", "offer.one": "1 article", "offer.many": "{n} articles", "offer.popular": "Le plus populaire", "offer.best": "Meilleur prix", "offer.save": "Économisez {pct} %", "offer.each": "{price} l'unité", "offer.normal": "Prix normal", "offer.youSave": "Vous économisez {amount}", "offer.same": "Chaque article aura les options choisies ci-dessus.", "offer.other": "Besoin d'une autre quantité ?",
 };
 
 const ar: D = {
@@ -76,7 +92,15 @@ const ar: D = {
   "footer.contact": "تواصل معنا", "footer.pages": "معلومات", "footer.follow": "تابعنا", "footer.rights": "جميع الحقوق محفوظة.", "footer.hours": "ساعات العمل",
   "common.loading": "جارٍ التحميل…", "common.error": "حدث خطأ", "common.retry": "إعادة المحاولة", "common.back": "رجوع", "common.search": "بحث", "common.save": "حفظ", "common.cancel": "إلغاء", "common.whatsapp": "راسلنا على واتساب", "common.call": "اتصل", "common.skip": "انتقل إلى المحتوى", "common.notFound": "الصفحة غير موجودة", "common.goHome": "العودة للرئيسية",
   "how.title": "كيف نعمل", "how.s1": "اختر", "how.s1d": "اختر منتجك واضغط اطلب الآن.", "how.s2": "نتصل بك", "how.s2d": "تأكيد في 20 ثانية عبر واتساب أو الهاتف.", "how.s3": "ادفع عند الاستلام", "how.s3d": "افحص طردك ثم ادفع للمندوب نقداً.", "p.delivery": "التوصيل والدفع", "p.deliveryText": "ادفع نقداً للمندوب عند استلام طلبك. التوصيل خلال 2 إلى 4 أيام. غير راضٍ؟ إرجاع مجاني.", "p.shareWa": "اسأل عبر واتساب", "home.hero.cta": "تسوّق الآن", "shop.all": "الكل", "home.rank": "الأكثر طلباً",
+  "goal.title": "تسوّق حسب هدفك", "p.facts": "القيم الغذائية", "p.howto": "طريقة الاستعمال", "p.keyFacts": "نظرة سريعة", "faq.title": "معلومات مفيدة",
+  "faq.q1": "كيف يعمل الدفع عند الاستلام؟", "faq.a1": "تدفع للمندوب نقداً عند استلام طردك. لا يتم خصم أي مبلغ عبر الإنترنت.",
+  "faq.q2": "كم تستغرق مدة التوصيل؟", "faq.a2": "عادةً من 2 إلى 4 أيام حسب مدينتك. نؤكد طلبك أولاً عبر الهاتف أو واتساب.",
+  "faq.q3": "هل يمكنني إرجاع منتج؟", "faq.a3": "نعم. تواصل معنا خلال 7 أيام من الاستلام للمنتجات غير المفتوحة وسنرتب الإرجاع.",
+  "faq.q4": "هل يمكنني السؤال قبل الطلب؟", "faq.a4": "طبعاً — راسلنا على واتساب وسنساعدك في الاختيار.",
+  "p.disclaimer": "المكملات الغذائية ليست بديلاً عن نظام غذائي متنوع ومتوازن. لا تتجاوز الجرعة اليومية الموصى بها. يحفظ بعيداً عن متناول الأطفال. في حالة الحمل أو الرضاعة أو تناول أدوية أو وجود مرض، استشر مختصاً في الصحة قبل الاستعمال.",
+  "home.clear": "ملصقات واضحة دون تخمين", "home.clearD": "تعرض كل صفحة منتج الحصة والجرعة لكل مكوّن وطريقة الاستعمال.",
   "p.shade": "اللون", "p.shades": "{n} ألوان", "p.pickShade": "اختاري لونك", "p.ritual": "الروتين", "p.pickedFor": "اختيارنا لكِ", "home.concern": "تسوّقي حسب احتياجك",
+  "offer.title": "اختر باقتك", "offer.one": "قطعة واحدة", "offer.many": "{n} قطع", "offer.popular": "الأكثر طلباً", "offer.best": "أفضل قيمة", "offer.save": "وفّر {pct}٪", "offer.each": "{price} للقطعة", "offer.normal": "السعر العادي", "offer.youSave": "توفّر {amount}", "offer.same": "كل القطع بنفس الخيارات المختارة أعلاه.", "offer.other": "تحتاج كمية أخرى؟",
 };
 
 export const DICT: Record<Lang, D> = { en: en as unknown as D, fr, ar };
