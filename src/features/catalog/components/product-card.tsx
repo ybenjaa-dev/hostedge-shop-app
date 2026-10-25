@@ -1,3 +1,4 @@
+import { imgProps } from "@/lib/image-sizes";
 import Link from "next/link";
 import { Star, Zap } from "lucide-react";
 import type { ProductCard as P } from "../queries";
@@ -16,7 +17,7 @@ export function ProductCard({ p, lang, t, currency, codMode, priority, rank, eye
       <Link href={`/p/${p.slug}`} className="relative block aspect-square overflow-hidden bg-mint" aria-label={name}>
         {p.image ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={fileUrl(p.image, "md")} alt={name} width={480} height={480} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={`size-full object-cover transition duration-700 group-hover:scale-105 ${p.inStock ? "" : "opacity-50 grayscale"}`} />
+          <img {...imgProps(p.image, "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw")} alt={name} width={480} height={480} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={`size-full object-cover transition duration-700 group-hover:scale-105 ${p.inStock ? "" : "opacity-50 grayscale"}`} />
         ) : <div className="grid size-full place-items-center text-4xl text-muted">◍</div>}
         {discount > 0 && p.inStock && <span className="num tag absolute start-3 top-3">−{discount}%</span>}
         {rank != null && <span className="display num absolute end-3 top-3 grid size-8 place-items-center rounded-full bg-secondary text-sm text-accent">{rank}</span>}

@@ -10,6 +10,9 @@ import { tr } from "@/lib/i18n-core";
 import { useStore, useT, type CityOpt } from "../store-context";
 import { OrderForm } from "./order-form";
 import { OfferCards } from "./offer-cards";
+import { TogetherCard } from "./together-card";
+import { getTogether } from "@/features/catalog/together";
+import type { Companion } from "@/features/catalog/links";
 import { cart, setDrawer } from "../cart-store";
 import { useToast } from "@/components/toast";
 import { track } from "@/lib/track";
@@ -67,6 +70,12 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
   const lineTotal = bundleLineTotal(product.id, unit, qty, bundles);
   const [customQty, setCustomQty] = useState(false);
 
+  // "Frequently bought together": companions the owner linked in the admin; ticked ones join the order.
+  const [together, setTogether] = useState<Companion[]>([]);
+  const [skipped, setSkipped] = useState<string[]>([]);
+  useEffect(() => { let live = true; getTogether(product.id).then((c) => { if (live) setTogether(c); }).catch(() => {}); return () => { live = false; }; }, [product.id]);
+  const extras = together.filter((c) => !skipped.includes(c.id));
+
   function requireChoice(): boolean {
     if (!needsChoice) return true;
     toast("error", t("cod.err.variant"));
@@ -98,8 +107,8 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
     setDrawer(true);
   }
 
-  const lines = [{ productId: product.id, variantId: variant?.id ?? null, name: product.name, variantName: variant?.name ?? null, unitPrice: unit, qty, image: product.image }];
-  const pageHref = `/checkout?p=${product.id}${variant ? `&v=${variant.id}` : ""}&q=${qty}`;
+  const lines = [{ productId: product.id, variantId: variant?.id ?? null, name: product.name, variantName: variant?.name ?? null, unitPrice: unit, qty, image: product.image }, ...extras.map((c) => ({ productId: c.id, variantId: c.variantId, name: tr(c.name, st.lang) || c.slug, variantName: c.variantName, unitPrice: c.price, qty: 1, image: c.image }))];
+  const pageHref = `/checkout?p=${product.id}${variant ? `&v=${variant.id}` : ""}&q=${qty}${extras.length ? `&x=${extras.map((c) => `${c.id}${c.variantId ? `.${c.variantId}` : ""}`).join(",")}` : ""}`;
   const productLabel = tr(product.name, st.lang);
 
   const picker = (
@@ -188,6 +197,8 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
       {pct > 0 && !hasOffers && <p className="mt-1 text-sm font-semibold text-ok">🎁 {t("cod.bundle", { n: qty, pct })}</p>}
 
       <div className="mt-6">{picker}</div>
+
+      {together.length > 0 && <TogetherCard items={together} skipped={skipped} onToggle={(id) => setSkipped((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]))} mainName={tr(product.name, st.lang)} mainImage={product.image} mainTotal={lineTotal} fmt={fmt} />}
 
       <div className="mt-6">{cta("btn-lg w-full text-base")}</div>
       {st.codMode && <p className="mt-2 text-center text-xs text-muted">{t("cod.payOnDelivery")}</p>}

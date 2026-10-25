@@ -36,7 +36,7 @@ const payload = z.object({
 });
 
 export async function saveAppearance(_p: ActionState, form: FormData): Promise<ActionState> {
-  return run("staff", async (user) => {
+  return run("appearance.edit", async (user) => {
     const p = parse(payload, jsonField(form, "payload"));
     if (!p.ok) return p.state;
     const d = p.data;

@@ -1,9 +1,9 @@
-import { getSessionUser } from "@/lib/auth";
+import { userCan } from "@/lib/auth";
 import { getEnv } from "@/lib/env";
 
 /** Polled by the admin header: orders created after `since` (ms) and how many still wait for confirmation. */
 export async function GET(req: Request) {
-  const user = await getSessionUser();
+  const user = await userCan("orders.view");
   if (!user) return Response.json({ ok: false }, { status: 401 });
   const since = Number(new URL(req.url).searchParams.get("since"));
   const db = getEnv().DB;

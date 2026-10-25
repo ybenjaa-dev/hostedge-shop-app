@@ -4,18 +4,19 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import * as Icons from "lucide-react";
 import { NAV, type NavItem } from "../nav";
+import { can, ROLE_INFO, type Role } from "@/lib/permissions";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { OrderNotifier } from "./order-notifier";
 
 type Ic = React.ComponentType<{ className?: string }>;
 const icon = (n: string) => ((Icons as unknown as Record<string, Ic>)[n] ?? Icons.Circle);
 
-export function AdminChrome({ role, userName, storeName, logout, children }: { role: "owner" | "staff"; userName: string; storeName: string; logout: () => Promise<void>; children: React.ReactNode }) {
+export function AdminChrome({ role, userName, storeName, logout, children }: { role: Role; userName: string; storeName: string; logout: () => Promise<void>; children: React.ReactNode }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
   const [cmd, setCmd] = useState(false);
   const [pending, setPending] = useState(0);
-  const items = NAV.filter((n) => !n.owner || role === "owner");
+  const items = NAV.filter((n) => (n.owner ? role === "owner" : can(role, n.perm)));
   const groups = [...new Set(items.map((i) => i.group))];
   useEffect(() => setOpen(false), [path]);
   useEffect(() => {
@@ -65,7 +66,7 @@ export function AdminChrome({ role, userName, storeName, logout, children }: { r
           <button onClick={() => setCmd(true)} className="btn btn-outline btn-sm min-w-0 flex-1 justify-start gap-2 font-normal text-muted sm:max-w-xs sm:flex-none"><Icons.Search className="size-4" /><span className="truncate">Search…</span><kbd className="ms-auto hidden rounded border border-line px-1.5 text-[11px] sm:block">Ctrl K</kbd></button>
           <div className="ms-auto flex items-center gap-1">
             <Link href="/" target="_blank" className="btn btn-ghost btn-sm hidden sm:inline-flex"><Icons.ExternalLink className="size-4" />View store</Link>
-            <OrderNotifier onPending={setPending} />
+            {can(role, "orders.view") && <OrderNotifier onPending={setPending} />}
             <ThemeToggle />
             <ProfileMenu userName={userName} role={role} logout={logout} />
           </div>
@@ -77,7 +78,7 @@ export function AdminChrome({ role, userName, storeName, logout, children }: { r
   );
 }
 
-function ProfileMenu({ userName, role, logout }: { userName: string; role: string; logout: () => Promise<void> }) {
+function ProfileMenu({ userName, role, logout }: { userName: string; role: Role; logout: () => Promise<void> }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -94,7 +95,7 @@ function ProfileMenu({ userName, role, logout }: { userName: string; role: strin
       </button>
       {open && (
         <div role="menu" className="absolute end-0 top-full z-50 mt-1 w-48 rounded-xl border border-line bg-surface p-1 shadow-xl">
-          <p className="px-3 py-2 text-xs capitalize text-muted">{role}</p>
+          <p className="px-3 py-2 text-xs text-muted">{ROLE_INFO[role]?.label ?? role}</p>
           <Link role="menuitem" href="/admin/team/account" onClick={() => setOpen(false)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-sunken"><Icons.UserCog className="size-4" />My account</Link>
           <form action={logout}><button role="menuitem" className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-sunken"><Icons.LogOut className="size-4" />Sign out</button></form>
         </div>

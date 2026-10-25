@@ -1,11 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, Images, Loader2, Plus, Sparkles, Star, Tag, Trash2, Upload, Wand2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Images, Loader2, Plus, Sparkles, Star, Tag, ShoppingBasket, Trash2, Upload, Wand2 } from "lucide-react";
 import { RichTextField } from "@/features/admin/components/rich-text-field";
 import { AdminForm } from "@/features/admin/components/admin-form";
 import { Field, I18nField, Toggle, uploadImage } from "@/features/admin/components/fields";
 import { saveProductAction } from "./actions";
 import { OfferPreview } from "./components/offer-preview";
+import { ProductPicker, type PickItem } from "./components/product-picker";
 import { OfferTemplatePicker } from "./components/offer-template-picker";
 import { OFFER_TEMPLATES } from "@/lib/offer-templates";
 import { fileUrl } from "@/lib/storage";
@@ -20,7 +21,7 @@ type Var = { id?: string; name: string; options: Record<string, string>; sku: st
 export type ProductFormData = {
   id?: string; slug: string; name: I18n; shortDesc: I18n; longDesc: I18n; specs: I18n; seoTitle: I18n; seoDesc: I18n;
   categoryId: string; sku: string; price: string; compareAt: string; stock: number; trackStock: boolean; status: "draft" | "published"; featured: boolean; bestseller: boolean;
-  images: Img[]; variants: Var[]; offers: Offer[]; offerTemplate: string;
+  images: Img[]; variants: Var[]; offers: Offer[]; offerTemplate: string; together: string[]; addon: string[];
 };
 
 const parseOptions = (s: string) => Object.fromEntries(s.split(/[;,]/).map((p) => p.split("=").map((x) => x.trim())).filter((p) => p[0] && p[1]) as [string, string][]);
@@ -31,7 +32,7 @@ function OfferImage({ value, onChange }: { value: string; onChange: (k: string) 
   return <MediaImageInput label="Photo" value={value} onChange={onChange} fit="cover" size="size-11" compactLabel="Offer photo" />;
 }
 
-export function ProductForm({ data, categories, storeTemplate = "list", currency = "MAD" }: { data: ProductFormData; categories: { id: string; label: string }[]; storeTemplate?: string; currency?: string }) {
+export function ProductForm({ data, categories, storeTemplate = "list", currency = "MAD", otherProducts = [] }: { data: ProductFormData; categories: { id: string; label: string }[]; storeTemplate?: string; currency?: string; otherProducts?: PickItem[] }) {
   const [images, setImages] = useState<Img[]>(data.images);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [variants, setVariants] = useState<Var[]>(data.variants);
@@ -177,6 +178,13 @@ export function ProductForm({ data, categories, storeTemplate = "list", currency
               <OfferTemplatePicker name="offerTemplate" value={data.offerTemplate ?? ""} onChange={setTpl} allowDefault defaultLabel={OFFER_TEMPLATES.find((t) => t.id === storeTemplate)?.name} />
             </div>
             {offers.length < 6 && <button type="button" className="btn btn-outline btn-sm mt-3" onClick={() => { const q = (offers.at(-1)?.qty ?? 1) + 1; setOffers([...offers, { qty: q, price: base ? String(Math.round(base * q * 0.9)) : "", label: "", popular: false, image: "" }]); }}><Plus className="size-4" />Add offer</button>}
+          </section>
+
+          <section className="card space-y-5 p-5">
+            <div><h2 className="display flex items-center gap-2 text-lg font-extrabold"><ShoppingBasket className="size-5" aria-hidden />Cross-sell</h2>
+              <p className="mt-1 text-sm text-muted">Raise the order value without a cart: companions shown on this product page, and a one-tap offer right after the order is placed. Discount and timing are in <a href="/admin/settings?tab=offers" className="font-bold text-brand underline">Settings → Offers</a>.</p></div>
+            <ProductPicker name="together" all={otherProducts.filter((p) => p.id !== data.id)} value={data.together ?? []} max={3} label="Frequently bought together" hint="Shown under the price with a tick box; ticked items join the same order." />
+            <ProductPicker name="addon" all={otherProducts.filter((p) => p.id !== data.id)} value={data.addon ?? []} max={2} label="One-tap add-on after checkout" hint="Offered at a special price on the screen right after the customer places this product’s order." />
           </section>
 
           <section className="card space-y-4 p-5">

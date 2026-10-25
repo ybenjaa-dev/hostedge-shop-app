@@ -1,4 +1,5 @@
 "use server";
+import { saveCapiSecrets } from "@/features/tracking/capi";
 import { z } from "zod";
 import { run, audit, fd, fdI18n, type ActionState } from "@/features/admin/run";
 import { getSettings, saveSettings, type Settings } from "@/lib/settings";
@@ -125,10 +126,20 @@ export async function saveAnalytics(_p: ActionState, form: FormData): Promise<Ac
       if (v && !idRe.test(v)) return fail(`${k}: only letters, numbers, - and _ (3–40 characters)`);
       out[k] = v;
     }
+    const when = fd(form, "purchaseWhen");
+    out.capi = {
+      purchaseWhen: when === "confirmed" || when === "delivered" ? when : "placed",
+      statusEvents: form.get("statusEvents") === "1",
+      metaTestCode: fd(form, "metaTestCode").slice(0, 40), tiktokTestCode: fd(form, "tiktokTestCode").slice(0, 40),
+    };
+    const tok = (k: string) => { const v = fd(form, k); return v ? (/^[\w.\-|]{10,400}$/.test(v) ? v : "bad") : ""; };
+    const meta = tok("metaToken"), tt = tok("tiktokToken");
+    if (meta === "bad" || tt === "bad") return fail("Access token: letters, numbers and . - _ | only (10–400 characters).");
     await saveSettings("analytics", out);
+    await saveCapiSecrets({ meta: form.get("clearMeta") === "1" ? null : meta || undefined, tiktok: form.get("clearTiktok") === "1" ? null : tt || undefined });
     await audit(user, "settings.analytics", "settings", "analytics");
     refresh();
-    return { message: "Analytics IDs saved" };
+    return { message: "Tracking settings saved" };
   });
 }
 

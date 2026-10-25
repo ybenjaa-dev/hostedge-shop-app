@@ -27,7 +27,7 @@ const richI18n = (o: Record<string, string>) => Object.fromEntries(Object.entrie
 
 export async function saveProductAction(_p: ActionState, form: FormData): Promise<ActionState> {
   let createdId: string | null = null;
-  const res = await run("staff", async (user) => {
+  const res = await run("products.edit", async (user) => {
     const s = await getSettings();
     const cur = s.store.currency;
     const db = getEnv().DB;
@@ -63,6 +63,14 @@ export async function saveProductAction(_p: ActionState, form: FormData): Promis
     // quantity offers: replace this product's fixed-price bundles
     stmts.push(db.prepare("DELETE FROM bundles WHERE product_id = ? AND price IS NOT NULL").bind(pid));
     offers.forEach((o) => stmts.push(db.prepare("INSERT INTO bundles (id, product_id, min_qty, percent, price, label, popular, image, active) VALUES (?,?,?,?,?,?,?,?,1)").bind(newId(), pid, o.qty, 0, money(o.price, cur), o.label || null, o.popular ? 1 : 0, o.image || null)));
+    // cross-sell links: replace this product's set (only existing, different products)
+    stmts.push(db.prepare("DELETE FROM product_links WHERE product_id = ?").bind(pid));
+    for (const [kind, max] of [["together", 3], ["addon", 2]] as const) {
+      let ids: string[] = [];
+      try { ids = z.array(z.string().min(1).max(40)).max(max).parse(JSON.parse(fd(form, kind) || "[]")); } catch { ids = []; }
+      const real = ids.length ? (await db.prepare(`SELECT id FROM products WHERE id IN (${ids.map(() => "?").join(",")})`).bind(...ids).all<{ id: string }>()).results.map((r) => r.id) : [];
+      [...new Set(ids)].filter((x) => x !== pid && real.includes(x)).forEach((lid, i) => stmts.push(db.prepare("INSERT INTO product_links (id, product_id, linked_id, kind, position) VALUES (?,?,?,?,?)").bind(newId(), pid, lid, kind, i)));
+    }
     await db.batch(stmts);
     await audit(user, id ? "product.update" : "product.create", "product", pid);
     revalidatePath("/", "layout");
@@ -80,7 +88,7 @@ const bulkSchema = z.object({
 });
 
 export async function bulkProductsAction(raw: unknown): Promise<ActionState> {
-  return run("staff", async (user) => {
+  return run("products.edit", async (user) => {
     const { ids, op, value = "" } = bulkSchema.parse(raw);
     const db = getEnv().DB;
     const s = await getSettings();
@@ -109,7 +117,7 @@ export async function bulkProductsAction(raw: unknown): Promise<ActionState> {
 
 /** Upsert products by slug from a CSV (see /admin/products/import for the template). */
 export async function importProductsAction(_p: ActionState, form: FormData): Promise<ActionState> {
-  return run("staff", async (user) => {
+  return run("products.edit", async (user) => {
     const file = form.get("file");
     const text = file instanceof File && file.size ? await file.text() : fd(form, "csv");
     if (!text) return { ok: false, error: "Choose a CSV file or paste CSV text." };
