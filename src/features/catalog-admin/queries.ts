@@ -33,9 +33,9 @@ export async function getAdminProduct(id: string) {
   const [imgs, vars, offs] = await db.batch([
     db.prepare("SELECT id, key, alt FROM product_images WHERE product_id = ? ORDER BY position").bind(id),
     db.prepare("SELECT id, name, options, sku, price, stock FROM product_variants WHERE product_id = ? ORDER BY position").bind(id),
-    db.prepare("SELECT min_qty AS qty, price, label, popular FROM bundles WHERE product_id = ? AND price IS NOT NULL ORDER BY min_qty").bind(id),
+    db.prepare("SELECT min_qty AS qty, price, label, popular, image FROM bundles WHERE product_id = ? AND price IS NOT NULL ORDER BY min_qty").bind(id),
   ]);
-  return { p, images: imgs!.results as { id: string; key: string; alt: string | null }[], variants: vars!.results as { id: string; name: string; options: string; sku: string | null; price: number | null; stock: number }[], offers: offs!.results as { qty: number; price: number; label: string | null; popular: number }[] };
+  return { p, images: imgs!.results as { id: string; key: string; alt: string | null }[], variants: vars!.results as { id: string; name: string; options: string; sku: string | null; price: number | null; stock: number }[], offers: offs!.results as { qty: number; price: number; label: string | null; popular: number; image: string | null }[] };
 }
 
 export async function listCategoryOptions() {
