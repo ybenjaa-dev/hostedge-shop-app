@@ -65,6 +65,15 @@ Admin → Products → *Quantity offers*: add a fixed total price for 2, 3, … 
 - Each offer can have its own **photo** (e.g. a picture of the 3-pack): upload it on the offer row in the product form, or on a store-wide percentage bundle under Coupons & bundles. It shows as a thumbnail on the offer card.
 - Sample data seeds offers on the featured products.
 
+#### Offer card templates
+Offers can be shown in five layouts: **List** (default), **Tiles**, **Photo cards**, **Compact pills** and **Highlight** (the most popular / best-value offer shown big). Pick one for the whole store or override it per product:
+- **Store-wide:** Admin → Coupons & bundles → *Offer card layout* (saved in `settings.offers.template`).
+- **Per product:** Admin → Products → *Quantity offers* → *Offer card layout*; "Store default" follows the store-wide choice (stored in `products.offer_template`, migration `0004`).
+- Resolution order is product → store → `list` (`src/lib/offer-templates.ts`). The template travels with the bundle rules from `listBundles(productId)`, so themed product pages need no changes.
+- Each storefront theme skins the cards through its scope class (`.v2`…`.v16`) in `globals.css`. Tiles, photo cards and pills drop the theme's clip-paths and the highlight card is declared outside the CSS layer, so theme skins can't hide them.
+- Photo cards use the offer's own photo, or the product image stacked ×N when none is set.
+- Sample data gives the featured products different templates so you can compare them.
+
 ### Storefront
 Mobile-first and light on JS: server-rendered pages, scroll-snap swipe gallery, native `<dialog>` for sheets/drawers, GET-form filters, localized RTL-safe layout (logical CSS properties).
 Home (hero slides, announcement bar, categories, featured/best sellers, reviews, trust badges, footer with contacts + socials), catalog (search, category, price, in-stock filters, sort, pagination, skeletons), product page (gallery with swipe + zoom, variants with per-variant price/stock, quantity, reviews, related, sticky mobile buy bar, sold-out state, JSON-LD), guest cart (localStorage) with slide-over drawer + full page, free-shipping progress bar and coupons, single-page guest checkout, order confirmation, order tracking (order number + phone), static pages, sitemap, robots, OpenGraph, WhatsApp floating button.
