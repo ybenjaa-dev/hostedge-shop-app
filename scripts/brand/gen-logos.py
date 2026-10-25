@@ -82,7 +82,7 @@ def M_tiny(c): return (f'<circle cx="20" cy="26" r="11" fill="{c["accent"]}"/><c
     f'<circle cx="17" cy="24" r="1.6" fill="{c["ink"]}"/><circle cx="23" cy="24" r="1.6" fill="{c["ink"]}"/><circle cx="41" cy="24" r="1.6" fill="{c["ink"]}"/><circle cx="47" cy="24" r="1.6" fill="{c["ink"]}"/><circle cx="29" cy="40" r="1.6" fill="{c["ink"]}"/><circle cx="35" cy="40" r="1.6" fill="{c["ink"]}"/>'
     f'<path d="M17 29q3 3 6 0M41 29q3 3 6 0M29 45q3 3 6 0" stroke="{c["ink"]}" stroke-width="1.6" fill="none" stroke-linecap="round"/>')
 def M_aurum(c): return f'<path d="M18 10h28l10 14-24 32L8 24z" fill="none" stroke="{c["accent"]}" stroke-width="3" stroke-linejoin="round"/><path d="M8 24h48M24 10l8 14 8-14M32 24 32 56" stroke="{c["accent"]}" stroke-width="2.2" fill="none" stroke-linejoin="round" opacity=".9"/>'
-def M_stride(c): return f'<path d="M20 12h22l-12 40H8z" fill="{c["accent"]}"/><path d="M40 12h14L42 52H30z" fill="#fff"/>'
+def M_stride(c): return f'<path d="M20 12h22l-12 40H8z" fill="#0d0d0d"/><path d="M40 12h14L42 52H30z" fill="#0d0d0d" opacity=".55"/>'
 def M_torque(c): return (f'<circle cx="32" cy="32" r="19" fill="none" stroke="#fff" stroke-width="5"/><circle cx="32" cy="32" r="6" fill="{c["accent"]}"/>'
     + "".join(f'<rect x="29.5" y="6" width="5" height="9" rx="1.5" fill="#fff" transform="rotate({a} 32 32)"/>' for a in range(0, 360, 45)) + f'<path d="M32 32 44 22" stroke="{c["accent"]}" stroke-width="3" stroke-linecap="round"/>')
 def M_paw(c): return f'<ellipse cx="32" cy="43" rx="13" ry="11" fill="{c["accent"]}"/><ellipse cx="14" cy="30" rx="5.5" ry="7.5" fill="#fff" transform="rotate(-20 14 30)"/><ellipse cx="25" cy="18" rx="5.5" ry="8" fill="#fff" transform="rotate(-8 25 18)"/><ellipse cx="39" cy="18" rx="5.5" ry="8" fill="#fff" transform="rotate(8 39 18)"/><ellipse cx="50" cy="30" rx="5.5" ry="7.5" fill="#fff" transform="rotate(20 50 30)"/>'
@@ -101,8 +101,8 @@ BRANDS = [
   dict(slug="pantry-lane", branch="food",       name="Pantry Lane",  mark=M_pantry,   bg="#2f6b3a", c=dict(accent="#7fc48a", accent2="#f2b632"), ink="#1f2a1c", font="serif-b", size=40, track=0.0),
   dict(slug="tiny-tribe", branch="kids",        name="Tiny Tribe",   mark=M_tiny,     bg="#ff6b57", c=dict(accent="#ffc933", accent2="#7ad0ff", ink="#1e2a4a"), ink="#1e2a4a", font="dj-sans-b", size=34, track=0.0),
   dict(slug="aurum",     branch="jewelry",      name="Aurum",        mark=M_aurum,    bg="#111111", c=dict(accent="#b89b5e"), ink="#111111", font="serif", size=34, track=0.28, upper=True),
-  dict(slug="stride",    branch="shoes",        name="Stride",       mark=M_stride,   bg="#0d0d0d", c=dict(accent="#c6ff3d"), ink="#0d0d0d", font="inter-x", size=40, track=0.0, skew=0.2, upper=True),
-  dict(slug="torque",    branch="auto",         name="Torque",       mark=M_torque,   bg="#e11d2e", c=dict(accent="#12161c"), ink="#12161c", font="inter-x", size=38, track=0.02, skew=0.14, upper=True),
+  dict(slug="stride",    branch="shoes",        name="Stride",       mark=M_stride,   bg="#c6ff3d", c=dict(accent="#0d0d0d"), ink="#ffffff", dark=True, font="inter-x", size=40, track=0.0, skew=0.2, upper=True),
+  dict(slug="torque",    branch="auto",         name="Torque",       mark=M_torque,   bg="#e11d2e", c=dict(accent="#12161c"), ink="#ffffff", dark=True, font="inter-x", size=38, track=0.02, skew=0.14, upper=True),
   dict(slug="pawfect",   branch="pets",         name="Pawfect",      mark=M_paw,      bg="#0f766e", c=dict(accent="#ff8a1f"), ink="#2b2118", font="dj-sans-b", size=36, track=0.0),
 ]
 
