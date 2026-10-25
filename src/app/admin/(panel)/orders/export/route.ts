@@ -2,6 +2,7 @@ import { getSessionUser } from "@/lib/auth";
 import { getEnv } from "@/lib/env";
 import { buildWhere } from "@/features/orders/queries";
 import { toMajorString } from "@/lib/money";
+import { tr } from "@/lib/i18n-core";
 
 // Neutralise spreadsheet formula injection (=,+,-,@) and quote fields containing separators.
 const esc = (v: unknown) => {
@@ -9,6 +10,9 @@ const esc = (v: unknown) => {
   const safe = /^[=+\-@]/.test(s) ? `'${s}` : s;
   return /[",\n\r]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
 };
+
+// order_items.name stores an i18n JSON snapshot; flatten "2x {json}" segments to plain text.
+const plainItems = (s: string) => (s ?? "").replace(/\{[^{}]*\}/g, (m) => tr(m, "en", "fr"));
 
 export async function GET(req: Request) {
   if (!(await getSessionUser())) return new Response("Unauthorized", { status: 401 });
@@ -34,7 +38,7 @@ export async function GET(req: Request) {
   for (const o of rows) {
     const cur = o.currency as string;
     lines.push(
-      [o.number, new Date(o.created_at as number).toISOString(), o.status, o.name, `+${o.phone}`, o.country, o.city, o.address, o.items, toMajorString(o.subtotal as number, cur), toMajorString(o.shipping as number, cur), toMajorString(o.discount as number, cur), toMajorString(o.cod_fee as number, cur), toMajorString(o.total as number, cur), cur, o.carrier_id, o.tracking_number, o.notes].map(esc).join(","),
+      [o.number, new Date(o.created_at as number).toISOString(), o.status, o.name, `+${o.phone}`, o.country, o.city, o.address, plainItems(o.items as string), toMajorString(o.subtotal as number, cur), toMajorString(o.shipping as number, cur), toMajorString(o.discount as number, cur), toMajorString(o.cod_fee as number, cur), toMajorString(o.total as number, cur), cur, o.carrier_id, o.tracking_number, o.notes].map(esc).join(","),
     );
   }
   return new Response("﻿" + lines.join("\r\n"), {

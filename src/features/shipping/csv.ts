@@ -24,6 +24,9 @@ export function amount(minor: number, decimals: number): string {
   return `${neg ? "-" : ""}${Math.floor(abs / p)}.${String(abs % p).padStart(decimals, "0")}`;
 }
 
-export const itemsText = (o: ShipOrder) => o.items.map((i) => `${i.qty}x ${i.name}${i.variantName ? ` (${i.variantName})` : ""}`).join(" + ");
+import { tr } from "@/lib/i18n-core";
+/** order_items.name keeps the i18n JSON snapshot; carriers need plain text. */
+const plainName = (n: string) => tr(n, "en", "fr");
+export const itemsText = (o: ShipOrder) => o.items.map((i) => `${i.qty}x ${plainName(i.name)}${i.variantName ? ` (${i.variantName})` : ""}`).join(" + ");
 export const itemsQty = (o: ShipOrder) => o.items.reduce((n, i) => n + i.qty, 0);
 export const csvFilename = (carrierId: string, now = new Date()) => `${carrierId}-orders-${now.toISOString().slice(0, 10)}.csv`;
