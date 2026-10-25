@@ -61,7 +61,7 @@ export async function Catalog({ sp, categorySlug }: { sp: Record<string, string 
           <div className="panel mb-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-3 py-2">
             <h1 className="text-lg font-extrabold">{cat ? tr(cat.name, lang) : sp.q ? `“${sp.q}”` : t("shop.title")} <span className="num text-sm font-normal text-muted">— {t("shop.results", { n: res.total })}</span></h1>
             <div className="flex flex-wrap items-center gap-3 text-sm">
-              <span className="flex items-center gap-1"><span className="text-muted">{t("shop.sort")}:</span>
+              <span className="flex flex-wrap items-center gap-1"><span className="text-muted">{t("shop.sort")}:</span>
                 {sorts.map(([k, l]) => <Link key={k} href={`${base}${qs({ sort: k === "new" ? "" : k, page: "" })}`} aria-current={(params.sort ?? "new") === k ? "true" : undefined} className={`border px-2 py-1 ${(params.sort ?? "new") === k ? "border-brand bg-brand-soft font-bold text-brand" : "border-line hover:border-ink"}`}>{l}</Link>)}
               </span>
               <span className="flex border border-line">
