@@ -21,3 +21,21 @@ export function looksLikeShades(names: string[]): boolean {
   const sizeLike = /^\s*\d+([.,]\d+)?\s*(ml|g|l|oz|cl|kg|mg|pcs?|pack)?\s*$/i;
   return names.every((n) => !sizeLike.test(n));
 }
+
+const METALS: Record<string, string> = {
+  gold: "linear-gradient(135deg,#f8e7b0,#d4af37 48%,#8d6b1d)",
+  "rose gold": "linear-gradient(135deg,#f6d7cc,#d3a193 48%,#8e5a4c)",
+  silver: "linear-gradient(135deg,#ffffff,#c3c6cc 48%,#7d838c)",
+  steel: "linear-gradient(135deg,#f2f4f6,#aab1ba 48%,#6a717b)",
+  black: "linear-gradient(135deg,#4a4a4a,#111 55%,#000)",
+};
+const METAL_ALIASES: Record<string, string> = { or: "gold", "or rose": "rose gold", argent: "silver", acier: "steel", noir: "black", ذهبي: "gold", "ذهبي وردي": "rose gold", فضي: "silver", ستانلس: "steel", أسود: "black" };
+
+/** Metallic gradient for a metal name (gold / rose gold / silver / steel / black, any of EN/FR/AR), or null when the name is not a metal. */
+export function metalGradient(name: string): string | null {
+  const n = name.toLowerCase().trim();
+  const key = METAL_ALIASES[n] ?? n;
+  if (METALS[key]) return METALS[key]!;
+  const hit = Object.keys(METALS).sort((a, b) => b.length - a.length).find((k) => n.includes(k));
+  return hit ? METALS[hit]! : null;
+}

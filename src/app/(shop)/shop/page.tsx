@@ -42,9 +42,10 @@ export async function Catalog({ sp, categorySlug }: { sp: Record<string, string 
   const base = categorySlug ? `/category/${categorySlug}` : "/shop";
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
-      <div className="mb-6">
-        <h1 className="display text-3xl font-extrabold sm:text-4xl">{cat ? tr(cat.name, lang) : sp.q ? `“${sp.q}”` : t("shop.title")}</h1>
-        <p className="mt-1 text-sm text-muted">{t("shop.results", { n: res.total })}</p>
+      <div className="mb-10 text-center">
+        <p className="caps gold mb-3">{t("shop.results", { n: res.total })}</p>
+        <h1 className="heading text-[clamp(2.4rem,6vw,4rem)]">{cat ? tr(cat.name, lang) : sp.q ? `“${sp.q}”` : t("shop.title")}</h1>
+        <hr className="hair mx-auto mt-5 w-24" />
       </div>
       <div className="grid gap-8 lg:grid-cols-[16rem_1fr]">
         <CatalogFilters

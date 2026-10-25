@@ -108,3 +108,45 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body), 
 /* Hide number input arrows */
 input[type=number]::-webkit-inner-spin-button { display: none; }
 @keyframes wiggle { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+/* ───────────────────── Storefront v13 — "Lumière" (jewellery & watches) ─────────────────────
+   White gallery, black ink, champagne hairlines, Bodoni Moda headlines, square black buttons, dark spotlight hero and metallic swatches.
+   Scoped under .v13 so the admin keeps its own look. */
+.v13 {
+  --bg: #ffffff; --surface: #ffffff; --sunken: #f6f3ee; --ink: #111111; --muted: #77726a; --line: #e9e5de; --champagne: #b89b5e;
+  --brand-soft: #f6f3ee;
+  background: var(--bg); color: var(--ink); min-height: 100dvh;
+}
+:root[data-theme="dark"] .v13 { --bg: #0c0c0c; --surface: #151515; --sunken: #1c1b19; --ink: #f1ece2; --muted: #a39d92; --line: #2a2825; --brand: #f1ece2; --brand-ink: #111111; --brand-soft: #1c1b19; }
+.v13 .display, .v13 .heading { font-family: var(--font-heading), var(--font-display), serif; font-weight: 500; letter-spacing: 0.005em; line-height: 1.08; }
+[dir="rtl"] .v13 .display, [dir="rtl"] .v13 .heading { line-height: 1.3; font-weight: 700; }
+.v13 .caps { font-size: 0.7rem; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; }
+[dir="rtl"] .v13 .caps { letter-spacing: 0; text-transform: none; font-size: 0.85rem; }
+.v13 .gold { color: var(--champagne); }
+.v13 :focus-visible { outline: 2px solid var(--champagne); outline-offset: 3px; }
+.v13 .spot { background: radial-gradient(40rem 26rem at 70% 20%, rgb(184 155 94 / .35), transparent 62%), radial-gradient(30rem 20rem at 10% 100%, rgb(255 255 255 / .06), transparent 60%), #0b0b0b; color: #f4efe6; position: relative; overflow: hidden; }
+.v13 .hair { height: 1px; background: linear-gradient(90deg, transparent, var(--champagne), transparent); border: 0; }
+@layer components {
+  .v13 .btn { border-radius: 0; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; font-size: 0.74rem; }
+  [dir="rtl"] .v13 .btn { letter-spacing: 0; text-transform: none; font-size: 0.95rem; }
+  .v13 .btn-primary { background: var(--ink); color: var(--bg); }
+  .v13 .btn-primary:hover:not(:disabled) { background: var(--champagne); color: #111; }
+  .v13 .btn-accent { background: var(--champagne); color: #111; }
+  .v13 .btn-outline { border-color: var(--ink); background: transparent; }
+  .v13 .btn-outline:hover:not(:disabled) { background: var(--ink); color: var(--bg); }
+  .v13 .field { background: var(--surface); border-color: var(--line); border-radius: 0; }
+  .v13 .field:focus { border-color: var(--champagne); box-shadow: none; }
+  .v13 .card { background: var(--surface); border-color: var(--line); border-radius: 0; box-shadow: none; }
+  .v13 .label { font-weight: 500; font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+  [dir="rtl"] .v13 .label { letter-spacing: 0; text-transform: none; font-size: 0.85rem; }
+}
+.v13 .rail { display: flex; gap: 1.25rem; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; padding-bottom: 0.5rem; margin-inline: -1rem; padding-inline: 1rem; }
+.v13 .rail::-webkit-scrollbar { display: none; }
+.v13 .rail > * { scroll-snap-align: start; flex: 0 0 min(62vw, 15rem); }
+@media (min-width: 768px) { .v13 .rail { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; overflow: visible; margin: 0; padding: 0; } .v13 .rail > * { flex: initial; } .v13 .rail > :nth-child(n+5) { display: none; } }
+.v13 .spec-row { display: grid; grid-template-columns: 11rem 1fr; gap: 1rem; padding: 0.85rem 0; border-top: 1px solid var(--line); font-size: 0.92rem; }
+.v13 .spec-row:last-child { border-bottom: 1px solid var(--line); }
+@media (max-width: 480px) { .v13 .spec-row { grid-template-columns: 7.5rem 1fr; } }
+.v13 .size-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; text-align: center; }
+.v13 .size-table th, .v13 .size-table td { padding: 0.65rem 0.5rem; border-bottom: 1px solid var(--line); }
+.v13 .size-table th { font-weight: 500; color: var(--muted); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; }
