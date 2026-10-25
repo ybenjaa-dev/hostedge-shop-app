@@ -1,6 +1,6 @@
 import { asc, desc } from "drizzle-orm";
 import { Plus } from "lucide-react";
-import { requireUser } from "@/lib/auth";
+import { requirePerm } from "@/lib/auth";
 import { getDb, schema } from "@/db";
 import { getSettings } from "@/lib/settings";
 import { formatMoney, toMajorString } from "@/lib/money";
@@ -32,7 +32,7 @@ function CouponForm({ c, cur }: { c?: Coupon; cur: string }) {
 }
 
 export default async function CouponsPage() {
-  await requireUser();
+  await requirePerm("coupons.manage");
   const db = getDb();
   const s = await getSettings();
   const cur = s.store.currency;

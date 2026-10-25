@@ -1,3 +1,4 @@
+import { requirePerm } from "@/lib/auth";
 import { DateRangeField } from "@/features/admin/components/date-picker";
 import { DataTable } from "@/features/settings/components/table";
 import Link from "next/link";
@@ -11,6 +12,7 @@ import { RemitButton } from "@/features/orders/components/remit-button";
 export const metadata = { title: "COD cash" };
 
 export default async function CashPage({ searchParams }: { searchParams: Promise<{ from?: string; to?: string }> }) {
+  await requirePerm("cash.manage");
   const sp = await searchParams;
   const s = await getSettings();
   const c = await cashSummary(sp);

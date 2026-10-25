@@ -5,6 +5,7 @@ import { getDb, schema } from "@/db";
 import { run, audit, fd, type ActionState } from "@/features/admin/run";
 import { hashPassword, randomToken, sha256Hex, verifyPassword } from "@/lib/crypto";
 import { revalidatePath } from "next/cache";
+import { ROLES, ROLE_INFO, isRole } from "@/lib/permissions";
 import { parse, fail } from "@/features/settings/lib";
 
 const INVITE_TTL = 72 * 3600_000;
@@ -19,7 +20,7 @@ async function activeOwners(excludeId?: string) {
 /** Creates an invite and returns the one-time link path. Only a hash of the token is stored. */
 export async function inviteUser(_p: ActionState, form: FormData): Promise<ActionState> {
   return run("owner", async (user) => {
-    const p = parse(z.object({ email: z.email("Enter a valid email").max(120), role: z.enum(["owner", "staff"]) }), { email: fd(form, "email").toLowerCase(), role: fd(form, "role") });
+    const p = parse(z.object({ email: z.email("Enter a valid email").max(120), role: z.enum(ROLES) }), { email: fd(form, "email").toLowerCase(), role: fd(form, "role") });
     if (!p.ok) return p.state;
     const db = getDb();
     const exists = await db.select({ id: schema.users.id }).from(schema.users).where(eq(schema.users.email, p.data.email)).get();
@@ -65,16 +66,16 @@ export async function setUserActive(_p: ActionState, form: FormData): Promise<Ac
 export async function setUserRole(_p: ActionState, form: FormData): Promise<ActionState> {
   return run("owner", async (user) => {
     const id = fd(form, "id"), role = fd(form, "role");
-    if (role !== "owner" && role !== "staff") return fail("Invalid role");
+    if (!isRole(role)) return fail("Invalid role");
     const db = getDb();
     const target = await db.select().from(schema.users).where(eq(schema.users.id, id)).get();
     if (!target) return fail("User not found");
     if (target.role === role) return { message: "No change" };
-    if (role === "staff" && target.role === "owner" && target.active && (await activeOwners(target.id)) < 1) return fail("You cannot demote the last owner.");
+    if (role !== "owner" && target.role === "owner" && target.active && (await activeOwners(target.id)) < 1) return fail("You cannot demote the last owner.");
     await db.update(schema.users).set({ role }).where(eq(schema.users.id, id));
     await audit(user, "team.role", "user", id, { role });
     done();
-    return { message: `Role changed to ${role}` };
+    return { message: `Role changed to ${ROLE_INFO[role].label}` };
   });
 }
 

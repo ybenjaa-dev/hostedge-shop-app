@@ -7,7 +7,7 @@ import { newId, slugify } from "@/lib/id";
 import { parse, refresh, fail } from "@/features/settings/lib";
 
 export async function saveCategory(_p: ActionState, form: FormData): Promise<ActionState> {
-  return run("staff", async (user) => {
+  return run("categories.manage", async (user) => {
     const name = fdI18n(form, "name");
     if (!Object.keys(name).length) return fail("Add a name in at least one language");
     for (const n of Object.values(name)) if (n.length > 80) return fail("Name is too long (80 max)");
@@ -40,7 +40,7 @@ export async function saveCategory(_p: ActionState, form: FormData): Promise<Act
 
 /** Delete a category. If it has products they must be reassigned (to another category or to none). */
 export async function deleteCategory(_p: ActionState, form: FormData): Promise<ActionState> {
-  return run("staff", async (user) => {
+  return run("categories.manage", async (user) => {
     const id = fd(form, "id");
     const reassign = fd(form, "reassign"); // "" = none, otherwise category id
     if (!id) return fail("Missing category");

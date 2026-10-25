@@ -1,6 +1,7 @@
 import "server-only";
 import { getEnv } from "@/lib/env";
 import { ensureSchema } from "@/db/ensure-schema";
+import { browserEvent } from "@/features/tracking/capi-core";
 import { getSettings } from "@/lib/settings";
 import { normalizePhone } from "@/lib/phone";
 import { newId } from "@/lib/id";
@@ -10,7 +11,7 @@ import { orderInputSchema } from "./schema";
 import { canTransition, isStatus, stockAction, type OrderStatus } from "@/lib/order-status";
 
 export type CreateOrderResult =
-  | { ok: true; number: string; token: string; total: number; currency: string; duplicate?: boolean; items: { productId: string; name: string; qty: number; price: number }[]; status: string }
+  | { ok: true; number: string; token: string; total: number; currency: string; duplicate?: boolean; pixelEvent?: "Purchase" | "Lead"; items: { productId: string; name: string; qty: number; price: number }[]; status: string }
   | { ok: false; code: "validation" | "phone" | "blocked" | "rate_limit" | "stock" | "unavailable" | "cod_unavailable" | "city" | "error"; message?: string; fields?: Record<string, string> };
 
 async function nextOrderNumber(): Promise<string> {
@@ -25,7 +26,7 @@ async function nextOrderNumber(): Promise<string> {
 }
 
 /** Public tracking token = HMAC-less short code stored with the order id; lets confirmation page load the order. */
-export async function createOrder(raw: unknown, ctx: { ip: string }): Promise<CreateOrderResult> {
+export async function createOrder(raw: unknown, ctx: { ip: string; ua?: string | null }): Promise<CreateOrderResult> {
   await ensureSchema();
   const parsed = orderInputSchema.safeParse(raw);
   if (!parsed.success) {
@@ -110,6 +111,7 @@ export async function createOrder(raw: unknown, ctx: { ip: string }): Promise<Cr
     db.prepare("UPDATE abandoned_orders SET recovered = 1, updated_at = ? WHERE phone = ? AND recovered = 0").bind(now, ph.e164),
   ];
   if (quote.coupon) stmts.push(db.prepare("UPDATE coupons SET used = used + 1 WHERE code = ?").bind(quote.coupon.code));
+  stmts.push(db.prepare("UPDATE orders SET tracking = ? WHERE id = ?").bind(JSON.stringify({ ...(input.tracking ?? {}), ua: (ctx.ua ?? "").slice(0, 300) }), id));
 
   try {
     await db.batch(stmts);
@@ -121,9 +123,12 @@ export async function createOrder(raw: unknown, ctx: { ip: string }): Promise<Cr
     return { ok: false, code: "error" };
   }
 
+  // server-side ad events (Meta / TikTok Conversions API) — in the background, never blocks or breaks the order
+  void import("@/features/tracking/capi").then((m) => m.dispatchInBackground(id, "placed")).catch(() => {});
   return {
     ok: true,
     number,
+    pixelEvent: browserEvent(s.analytics.capi.purchaseWhen),
     token: await orderToken(number, ph.e164),
     total: t.total,
     currency: s.store.currency,
@@ -251,5 +256,7 @@ export async function changeOrderStatus(
     if (to === "returned") stmts.push(db.prepare("UPDATE customers SET returned_count = returned_count + 1 WHERE id = ?").bind(o.customer_id));
   }
   await db.batch(stmts);
+  const kind = to === "confirmed" ? "confirmed" : to === "delivered" ? "delivered" : to === "returned" ? "returned" : null;
+  if (kind) void import("@/features/tracking/capi").then((m) => m.dispatchInBackground(orderId, kind)).catch(() => {});
   return { ok: true, status: to };
 }

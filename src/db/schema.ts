@@ -17,7 +17,7 @@ export const users = sqliteTable(
     email: text("email").notNull(),
     name: text("name").notNull(),
     passwordHash: text("password_hash").notNull(),
-    role: text("role", { enum: ["owner", "staff"] }).notNull().default("staff"),
+    role: text("role", { enum: ["owner", "staff", "confirmer", "packer", "accountant"] }).notNull().default("staff"),
     active: integer("active", { mode: "boolean" }).notNull().default(true),
     createdAt: ts("created_at"),
   },
@@ -38,7 +38,7 @@ export const sessions = sqliteTable(
 export const invites = sqliteTable("invites", {
   id: text("id").primaryKey(), // sha-256 of the token
   email: text("email").notNull(),
-  role: text("role", { enum: ["owner", "staff"] }).notNull().default("staff"),
+  role: text("role", { enum: ["owner", "staff", "confirmer", "packer", "accountant"] }).notNull().default("staff"),
   expiresAt: integer("expires_at").notNull(),
   createdAt: ts("created_at"),
 });
@@ -267,6 +267,8 @@ export const orders = sqliteTable(
     remitted: integer("remitted", { mode: "boolean" }).notNull().default(false),
     ip: text("ip"),
     source: text("source"),
+    /** Ad-click context captured at checkout (JSON: fbp, fbc, ttp, ttclid, ua, url) — used for server-side (Conversions API) events later. */
+    tracking: text("tracking"),
     lang: text("lang"),
     createdAt: ts("created_at"),
     updatedAt: ts("updated_at"),
@@ -296,6 +298,8 @@ export const orderItems = sqliteTable(
     price: integer("price").notNull(),
     qty: integer("qty").notNull(),
     image: text("image"),
+    /** Added after checkout through the one-click add-on offer. */
+    addon: integer("addon", { mode: "boolean" }).notNull().default(false),
   },
   (t) => [index("order_items_order_idx").on(t.orderId), index("order_items_product_idx").on(t.productId)],
 );
@@ -390,4 +394,36 @@ export const media = sqliteTable(
     createdAt: integer("created_at").notNull(),
   },
   (t) => [uniqueIndex("media_key_idx").on(t.key), index("media_hash_idx").on(t.hash), index("media_source_hash_idx").on(t.sourceHash), index("media_created_idx").on(t.createdAt)],
+);
+
+/** Server-side ad events (Meta / TikTok Conversions API): one row per attempt target, with the platform's answer. */
+export const trackingEvents = sqliteTable(
+  "tracking_events",
+  {
+    id: text("id").primaryKey(),
+    orderId: text("order_id"),
+    platform: text("platform", { enum: ["meta", "tiktok"] }).notNull(),
+    event: text("event").notNull(),
+    eventId: text("event_id").notNull(),
+    status: text("status", { enum: ["ok", "error", "test"] }).notNull(),
+    httpStatus: integer("http_status"),
+    response: text("response"),
+    attempts: integer("attempts").notNull().default(1),
+    createdAt: ts("created_at"),
+    updatedAt: integer("updated_at").notNull().$defaultFn(now),
+  },
+  (t) => [index("tracking_events_order_idx").on(t.orderId), index("tracking_events_created_idx").on(t.createdAt), uniqueIndex("tracking_events_uniq_idx").on(t.platform, t.eventId, t.event)],
+);
+
+/** "Frequently bought together" (kind=together, shown on the product page) and the one-click post-checkout offer (kind=addon). */
+export const productLinks = sqliteTable(
+  "product_links",
+  {
+    id: text("id").primaryKey(),
+    productId: text("product_id").notNull(),
+    linkedId: text("linked_id").notNull(),
+    kind: text("kind", { enum: ["together", "addon"] }).notNull(),
+    position: integer("position").notNull().default(0),
+  },
+  (t) => [uniqueIndex("product_links_uniq_idx").on(t.productId, t.linkedId, t.kind), index("product_links_product_idx").on(t.productId, t.kind)],
 );

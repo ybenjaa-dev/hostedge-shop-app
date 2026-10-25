@@ -93,5 +93,19 @@ export const MIGRATIONS: { name: string; statements: string[] }[] = [
       "CREATE INDEX `media_source_hash_idx` ON `media` (`source_hash`);",
       "CREATE INDEX `media_created_idx` ON `media` (`created_at`);"
     ]
+  },
+  {
+    "name": "0006_tracking_upsell",
+    "statements": [
+      "CREATE TABLE `product_links` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`product_id` text NOT NULL,\n\t`linked_id` text NOT NULL,\n\t`kind` text NOT NULL,\n\t`position` integer DEFAULT 0 NOT NULL\n);",
+      "CREATE UNIQUE INDEX `product_links_uniq_idx` ON `product_links` (`product_id`,`linked_id`,`kind`);",
+      "CREATE INDEX `product_links_product_idx` ON `product_links` (`product_id`,`kind`);",
+      "CREATE TABLE `tracking_events` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`order_id` text,\n\t`platform` text NOT NULL,\n\t`event` text NOT NULL,\n\t`event_id` text NOT NULL,\n\t`status` text NOT NULL,\n\t`http_status` integer,\n\t`response` text,\n\t`attempts` integer DEFAULT 1 NOT NULL,\n\t`created_at` integer NOT NULL,\n\t`updated_at` integer NOT NULL\n);",
+      "CREATE INDEX `tracking_events_order_idx` ON `tracking_events` (`order_id`);",
+      "CREATE INDEX `tracking_events_created_idx` ON `tracking_events` (`created_at`);",
+      "CREATE UNIQUE INDEX `tracking_events_uniq_idx` ON `tracking_events` (`platform`,`event_id`,`event`);",
+      "ALTER TABLE `order_items` ADD `addon` integer DEFAULT false NOT NULL;",
+      "ALTER TABLE `orders` ADD `tracking` text;"
+    ]
   }
 ];

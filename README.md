@@ -82,6 +82,23 @@ Every upload goes through one library, WordPress-style: a searchable grid with a
 - **No duplicates:** the file's SHA-256 is checked before upload (and again on the server); re-uploading the same picture reuses the existing entry. Table: `media` (migration `0005`). Files uploaded before the library existed (and seeded placeholders) are registered automatically.
 - *Match photos to products* tab keeps the bulk "name the file after the product" importer.
 
+### Server-side ad tracking (Meta & TikTok Conversions API)
+Settings → *Analytics & ads*. Paste the pixel IDs and the **access tokens** (stored encrypted, never shown again) and every order is also sent from the server — hashed phone/name/city, IP, user agent and the ad-click ids (`_fbp`, `_fbc`, `ttclid`…) captured at checkout — with the same `event_id` as the browser pixel, so platforms de-duplicate instead of double counting.
+- **Count a sale when…** *placed* (default), *confirmed* or *delivered*. For the last two the browser fires a **Lead** at checkout and the server sends the **Purchase** later, when the order really is confirmed/delivered (also from carrier tracking updates).
+- Optional custom events `OrderConfirmed / OrderDelivered / OrderReturned` for audiences and delivery-rate reporting.
+- Every send is logged (*Server events* panel) with the platform's answer; failures are retried by the 15-minute cron or the *Retry* button; a *Test* button uses your test event code. Code: `src/features/tracking/`.
+
+### Upsells & cross-sells
+- **Frequently bought together** (up to 3 per product): companions under the price with tick boxes; ticked ones join the same COD order.
+- **One-tap add-on after checkout** (up to 2): the screen right after the order is placed offers a companion at a special price; one tap appends it to the same order (totals recomputed, free delivery unlocked if the new total passes the threshold, history note added). Closes when the order is confirmed or the window (default 30 min) ends.
+- Set per product under *Cross-sell*; discount, window and on/off in Settings → Offers. Table `product_links`, `order_items.addon`.
+
+### Team roles & performance
+Roles: **Owner**, **Manager**, **Confirmer** (phone confirmation: confirm / no answer / postpone / cancel), **Packer** (ready to ship → delivered/returned, carriers, tracking), **Accountant** (read-only orders, COD cash, dashboard, performance). The menu, every page, every server action and every export/API checks the same permission table (`src/lib/permissions.ts`); a role can only move orders to the statuses it owns. *Team performance* (owner, manager, accountant) shows per teammate: orders handled, confirmed / cancelled / no answer / postponed, **confirmation rate**, first-response time, **delivered rate of the orders they confirmed** and cash delivered — built from the order history.
+
+### Responsive images
+`/files/<key>?w=640` serves the best stored size (thumbnail 320 / medium 800 / full 1600). When the optional Cloudflare **Images binding** (`IMAGES` in `wrangler.jsonc`) is present, the file is resized to the requested width and converted to **AVIF/WebP** on the fly (cached at the edge, one transform per size). Product cards and galleries use `srcset`/`sizes` (`imgProps()` in `src/lib/image-sizes.ts`). No binding? Nothing breaks — remove the line from `wrangler.jsonc` and the stored sizes are served.
+
 ### Admin UI kit
 One look everywhere: `DataTable` (card that scrolls sideways *inside* itself), `Tabs`, `FilterBar` (filters and the Filter button always stay inside their card), and custom `DateField` / `DateRangeField` pickers (presets, keyboard support, bottom-sheet on phones) instead of the browser's native date input.
 

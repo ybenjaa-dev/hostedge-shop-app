@@ -1,10 +1,11 @@
 import "server-only";
+import type { Perm } from "@/lib/permissions";
 import { assertUser, AuthError, logActivity, type SessionUser } from "@/lib/auth";
 
 export type ActionState = { ok?: boolean; error?: string; message?: string; fields?: Record<string, string>; id?: string; ts?: number } | undefined;
 
 /** Wraps an admin server action: permission check (every call), error normalisation, never leaks internals. */
-export async function run(role: "owner" | "staff", fn: (user: SessionUser) => Promise<ActionState | void>): Promise<ActionState> {
+export async function run(role: "owner" | "staff" | Perm, fn: (user: SessionUser) => Promise<ActionState | void>): Promise<ActionState> {
   try {
     const user = await assertUser(role);
     const r = await fn(user);

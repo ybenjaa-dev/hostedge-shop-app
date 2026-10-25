@@ -1,6 +1,6 @@
 import { asc, sql } from "drizzle-orm";
 import { Plus } from "lucide-react";
-import { requireUser } from "@/lib/auth";
+import { requirePerm } from "@/lib/auth";
 import { getDb, schema } from "@/db";
 import { tr, parseI18n } from "@/lib/i18n-core";
 import { fileUrl } from "@/lib/storage";
@@ -32,7 +32,7 @@ function CategoryForm({ c, nextPos }: { c?: Cat; nextPos?: number }) {
 }
 
 export default async function CategoriesPage() {
-  await requireUser();
+  await requirePerm("categories.manage");
   const db = getDb();
   const [cats, counts] = await Promise.all([
     db.select().from(schema.categories).orderBy(asc(schema.categories.position), asc(schema.categories.slug)),

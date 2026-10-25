@@ -10,7 +10,7 @@ import { one } from "@/features/settings/lib";
 export const metadata = { title: "Settings" };
 const TABS = [
   { id: "store", label: "Store" }, { id: "checkout", label: "Checkout" }, { id: "offers", label: "Offers" }, { id: "cities", label: "Cities" }, { id: "social", label: "Social links" },
-  { id: "analytics", label: "Analytics" }, { id: "statuses", label: "Order statuses" }, { id: "templates", label: "Messages" },
+  { id: "analytics", label: "Analytics & ads" }, { id: "statuses", label: "Order statuses" }, { id: "templates", label: "Messages" },
 ];
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {

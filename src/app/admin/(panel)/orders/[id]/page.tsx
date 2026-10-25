@@ -1,3 +1,5 @@
+import { requirePerm } from "@/lib/auth";
+import { can, canSetStatus } from "@/lib/permissions";
 import Link from "next/link";
 import { OrderTimeline } from "@/features/orders/components/order-timeline";
 import { notFound } from "next/navigation";
@@ -20,6 +22,8 @@ export const metadata = { title: "Order" };
 const fill = (tpl: string, v: Record<string, string>) => Object.entries(v).reduce((s, [k, x]) => s.replaceAll(`{${k}}`, x), tpl);
 
 export default async function OrderDetail({ params }: { params: Promise<{ id: string }> }) {
+  const me = await requirePerm("orders.view");
+  const mayStatus = (TRANSITIONS_FILTER: string[]) => TRANSITIONS_FILTER.filter((x) => canSetStatus(me.role, x));
   const { id } = await params;
   const data = await getOrderFull(id);
   if (!data) notFound();
@@ -80,7 +84,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
           </Panel>
 
           <Panel title="Status">
-            <StatusPanel id={o.id as string} allowed={TRANSITIONS[status] ?? []} labels={labels} current={status} />
+            {mayStatus(TRANSITIONS[status] ?? []).length > 0 ? <StatusPanel id={o.id as string} allowed={mayStatus(TRANSITIONS[status] ?? [])} labels={labels} current={status} /> : <p className="text-sm text-muted">Your role can’t change the status of this order.</p>}
             {status === "postponed" && o.postpone_until && <p className="mt-3 text-sm text-muted">Postponed until {new Date(o.postpone_until as number).toLocaleString("en-GB")}</p>}
             {(o.attempts as number) > 0 && <p className="mt-3 text-sm font-semibold">No-answer attempts: <span className="num">{o.attempts as number}</span></p>}
           </Panel>
@@ -88,7 +92,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
           <Panel title="Timeline"><OrderTimeline history={history} current={status} s={s} /></Panel>
 
           <Panel title="Internal notes">
-            <NoteForm id={o.id as string} />
+            {can(me.role, "orders.note") && <NoteForm id={o.id as string} />}
             <ul className="mt-4 space-y-3">{notes.map((n) => <li key={n.id} className="rounded-lg bg-sunken p-3 text-sm"><p>{n.body}</p><p className="mt-1 text-xs text-muted">{n.user_name} · {new Date(n.created_at).toLocaleString("en-GB")}</p></li>)}</ul>
           </Panel>
         </div>
@@ -106,14 +110,14 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
               <a className="btn btn-sm bg-[#25D366] text-white hover:opacity-90" target="_blank" rel="noopener noreferrer" href={whatsappLink(o.phone as string, confirmMsg)}><MessageCircle className="size-4" />WhatsApp: confirm order</a>
               {status === "shipped" || status === "out_for_delivery" ? <a className="btn btn-outline btn-sm" target="_blank" rel="noopener noreferrer" href={whatsappLink(o.phone as string, shippedMsg)}><MessageCircle className="size-4" />WhatsApp: shipped</a> : null}
               {status === "delivered" ? <a className="btn btn-outline btn-sm" target="_blank" rel="noopener noreferrer" href={whatsappLink(o.phone as string, deliveredMsg)}><MessageCircle className="size-4" />WhatsApp: thank you</a> : null}
-              <BlockPhone phone={o.phone as string} blocked={blocked} />
+              {can(me.role, "customers.block") && <BlockPhone phone={o.phone as string} blocked={blocked} />}
             </div>
-            <details className="mt-4"><summary className="cursor-pointer text-sm font-semibold text-brand">Edit address</summary><div className="mt-3"><EditOrderForm o={{ id: o.id as string, name: o.name as string, address: o.address as string, city: o.city as string, notes: (o.notes as string) ?? "" }} /></div></details>
+            {can(me.role, "orders.confirm") && <details className="mt-4"><summary className="cursor-pointer text-sm font-semibold text-brand">Edit address</summary><div className="mt-3"><EditOrderForm o={{ id: o.id as string, name: o.name as string, address: o.address as string, city: o.city as string, notes: (o.notes as string) ?? "" }} /></div></details>}
           </Panel>
-          <Panel title="Shipping">
+          {(can(me.role, "orders.fulfil") || !!o.tracking_number) && <Panel title="Shipping">
             {o.tracking_number && <p className="mb-3 text-sm">Carrier <b className="capitalize">{o.carrier_id as string}</b> · <span dir="ltr" className="num font-bold">{o.tracking_number as string}</span>{o.label_key ? <> · <a className="font-semibold text-brand underline" href={`/api/carriers/labels/${o.number}`}>Label PDF</a></> : null}</p>}
-            <CarrierPanel orderId={o.id as string} status={status} carrierId={o.carrier_id as string | null} tracking={o.tracking_number as string | null} error={o.shipment_error as string | null} carriers={carriers.map((c) => ({ id: c.id, name: c.name, hasApi: c.hasApi }))} defaultCarrier={cityRow?.default_carrier ?? null} feeMajor={toMajorString(o.carrier_fee as number, cur)} />
-          </Panel>
+            {can(me.role, "orders.fulfil") && <CarrierPanel orderId={o.id as string} status={status} carrierId={o.carrier_id as string | null} tracking={o.tracking_number as string | null} error={o.shipment_error as string | null} carriers={carriers.map((c) => ({ id: c.id, name: c.name, hasApi: c.hasApi }))} defaultCarrier={cityRow?.default_carrier ?? null} feeMajor={toMajorString(o.carrier_fee as number, cur)} />}
+          </Panel>}
         </div>
       </div>
     </>
