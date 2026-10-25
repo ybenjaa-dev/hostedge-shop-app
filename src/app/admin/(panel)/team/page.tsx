@@ -21,7 +21,7 @@ export default async function TeamPage() {
   ]);
   const now = nowMs();
   return (
-    <div className="max-w-5xl space-y-6">
+    <div className="space-y-6">
       <PageHeader title="Team" sub="Invite staff and owners, manage access." actions={<Link href="/admin/team/account" className="btn btn-outline btn-sm"><KeyRound className="size-4" aria-hidden />My password</Link>} />
       <Panel title="Invite a teammate"><InviteForm /></Panel>
       <DataTable head={["User", "Role", "Status", ""]}>

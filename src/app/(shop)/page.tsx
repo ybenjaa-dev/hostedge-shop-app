@@ -49,7 +49,7 @@ export default async function Home() {
             <div className="grid grid-cols-2 gap-4 pe-1.5 md:grid-cols-4">
               {cats.map((c, i) => (
                 <Link key={c.id} href={`/category/${c.slug}`} className="sticker group relative block aspect-[4/5] overflow-hidden transition hover:-translate-y-0.5">
-                  {c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image)} alt="" loading="lazy" className="size-full object-cover transition duration-500 group-hover:scale-105" />}
+                  {c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image, "md")} alt="" loading="lazy" className="size-full object-cover transition duration-500 group-hover:scale-105" />}
                   <span className={`heading absolute inset-x-0 bottom-0 flex items-center justify-between border-t-2 border-ink px-3 py-2.5 text-lg ${i % 2 ? "bg-[var(--mustard)] text-[#1f2a1c]" : "bg-surface"}`}>{tr(c.name, lang)}<span aria-hidden className="rtl:rotate-180">→</span></span>
                 </Link>
               ))}

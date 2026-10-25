@@ -36,7 +36,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
           header={
             <div className="card flex items-center gap-3 p-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              {p.images[0] && <img src={fileUrl(p.images[0].key)} alt="" className="size-16 rounded-lg object-cover" />}
+              {p.images[0] && <img src={fileUrl(p.images[0].key, "thumb")} alt="" className="size-16 rounded-lg object-cover" />}
               <div className="min-w-0"><p className="truncate font-bold">{tr(p.name, lang)}</p><p className="text-sm text-muted">{v?.name} · {qty} × <bdi dir="ltr">{formatMoney(unit, s.store.currency, lang)}</bdi></p></div>
             </div>
           }

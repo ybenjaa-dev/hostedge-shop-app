@@ -55,7 +55,7 @@ export function CartView({ bundles }: { bundles: BundleRule[] }) {
         {lines.map((l) => (
           <li key={l.key} className="flex gap-4 py-5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            {l.image ? <img src={fileUrl(l.image)} alt="" className="size-24 shrink-0 rounded-xl object-cover" /> : <div className="size-24 shrink-0 rounded-xl bg-sunken" />}
+            {l.image ? <img src={fileUrl(l.image, "thumb")} alt="" className="size-24 shrink-0 rounded-xl object-cover" /> : <div className="size-24 shrink-0 rounded-xl bg-sunken" />}
             <div className="min-w-0 flex-1">
               <Link href={`/p/${l.slug}`} className="font-semibold hover:text-brand">{tr(l.name, st.lang)}</Link>
               {l.variantName && <p className="text-sm text-muted">{l.variantName}</p>}
