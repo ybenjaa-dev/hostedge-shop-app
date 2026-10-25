@@ -56,7 +56,9 @@ Schema changes: edit `src/db/schema.ts`, run `npm run db:generate` (drizzle-kit 
 
 ## What's inside
 
-### Storefront
+### Storefront (design v4 — "Classic marketplace")
+This branch re-skins the customer-facing storefront as a rigid, dense, classic marketplace: three-tier header (utility bar · logo + wide category search · department nav with an "All categories" dropdown), department menu beside the hero banner, bordered service strip, titled shelf bars, a left filter sidebar with category counts, sort tabs and a grid/list toggle, breadcrumbs everywhere, a three-zone product page (gallery · details · delivery box) with anchor tabs, a spec table, variant stock table and rating distribution, and a dense multi-column footer. Square corners, thin visible borders, flat signal-orange on slate. Colors, fonts, hero and sections remain editable in Admin → Appearance; the admin and all logic are unchanged.
+
 Mobile-first and light on JS: server-rendered pages, scroll-snap swipe gallery, native `<dialog>` for sheets/drawers, GET-form filters, localized RTL-safe layout (logical CSS properties).
 Home (hero slides, announcement bar, categories, featured/best sellers, reviews, trust badges, footer with contacts + socials), catalog (search, category, price, in-stock filters, sort, pagination, skeletons), product page (gallery with swipe + zoom, variants with per-variant price/stock, quantity, reviews, related, sticky mobile buy bar, sold-out state, JSON-LD), guest cart (localStorage) with slide-over drawer + full page, free-shipping progress bar and coupons, single-page guest checkout, order confirmation, order tracking (order number + phone), static pages, sitemap, robots, OpenGraph, WhatsApp floating button.
 
