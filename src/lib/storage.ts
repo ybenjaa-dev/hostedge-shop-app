@@ -28,11 +28,18 @@ export async function saveImage(file: File): Promise<UploadResult> {
   return { ok: true, key, url: fileUrl(key), type, size: buf.length };
 }
 
-/** Public URL for a stored file key; external URLs pass through. */
-export function fileUrl(key: string | null | undefined): string {
+export type ImageSize = "thumb" | "md" | "full";
+/** Media-library uploads (`uploads/<20 chars>.webp`) have `-md` (800px) and `-thumb` (320px) siblings; other keys only have one size. */
+const LIBRARY_KEY = /^uploads\/[a-z0-9]{20}\.webp$/;
+export function variantKey(key: string, size: ImageSize = "full"): string {
+  return size !== "full" && LIBRARY_KEY.test(key) ? key.replace(/\.webp$/, `-${size}.webp`) : key;
+}
+
+/** Public URL for a stored file key; external URLs pass through. `size` picks the compressed variant for small spots. */
+export function fileUrl(key: string | null | undefined, size: ImageSize = "full"): string {
   if (!key) return "";
   if (/^(https?:)?\/\//.test(key) || key.startsWith("/")) return key;
-  return `/files/${key}`;
+  return `/files/${variantKey(key, size)}`;
 }
 
 export async function deleteFile(key: string) {

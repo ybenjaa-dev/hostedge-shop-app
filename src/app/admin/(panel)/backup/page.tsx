@@ -13,7 +13,7 @@ export default async function BackupPage() {
   const counts = await Promise.all(["orders", "customers", "products"].map(async (t) => [t, (await getEnv().DB.prepare(`SELECT count(*) AS n FROM "${t}"`).first<{ n: number }>())?.n ?? 0] as const));
   const n = Object.fromEntries(counts);
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="space-y-6">
       <PageHeader title="Backup & export" sub="Download your data. Exports never include passwords, sessions or carrier credentials." />
       <Panel title="Full backup (JSON)">
         <p className="mb-4 text-sm text-muted">Every table — {BACKUP_TABLES.length} in total — streamed as a single JSON file. Keep it somewhere safe.</p>

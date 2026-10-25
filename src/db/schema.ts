@@ -370,3 +370,24 @@ export const activityLog = sqliteTable(
   },
   (t) => [index("activity_created_idx").on(t.createdAt)],
 );
+
+/** Media library: every uploaded image, with its compressed variants. `key` is the full-size WebP; `-md` / `-thumb` siblings exist when `variants` is true. */
+export const media = sqliteTable(
+  "media",
+  {
+    id: text("id").primaryKey(),
+    key: text("key").notNull(),
+    name: text("name").notNull(), // original file name, editable
+    alt: text("alt"),
+    mime: text("mime").notNull(),
+    width: integer("width"),
+    height: integer("height"),
+    size: integer("size").notNull().default(0), // bytes of the full-size file
+    hash: text("hash"), // sha-256 of the stored full-size bytes (dedupe)
+    sourceHash: text("source_hash"), // sha-256 of the original file the browser started from (dedupe)
+    variants: integer("variants", { mode: "boolean" }).notNull().default(false),
+    createdBy: text("created_by"),
+    createdAt: integer("created_at").notNull(),
+  },
+  (t) => [uniqueIndex("media_key_idx").on(t.key), index("media_hash_idx").on(t.hash), index("media_source_hash_idx").on(t.sourceHash), index("media_created_idx").on(t.createdAt)],
+);

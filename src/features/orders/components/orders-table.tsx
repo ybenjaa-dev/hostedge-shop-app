@@ -1,4 +1,5 @@
 "use client";
+import { DataTable } from "@/features/settings/components/table";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { MessageCircle, Phone, Printer, Download, CheckCircle2 } from "lucide-react";
@@ -58,35 +59,25 @@ export function OrdersTable({ rows, labels, colors, carriers, exportQs, bulkCarr
           <button className="btn btn-ghost btn-sm ms-auto" onClick={() => setSel(new Set())}>Clear</button>
         </div>
       )}
-      <div className="card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[56rem] text-sm">
-            <thead className="border-b border-line bg-sunken/60 text-xs uppercase tracking-wider text-muted">
-              <tr>
-                <th className="w-10 p-3"><input type="checkbox" aria-label="Select all" checked={all} onChange={() => setSel(all ? new Set() : new Set(rows.map((r) => r.id)))} className="size-4 accent-[var(--brand)]" /></th>
-                <th className="p-3 text-start">Order</th><th className="p-3 text-start">Customer</th><th className="p-3 text-start">City</th><th className="p-3 text-start">Status</th><th className="p-3 text-start">Carrier</th><th className="p-3 text-end">Total</th><th className="p-3 text-end">Contact</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-line">
-              {rows.map((r) => (
-                <tr key={r.id} className={`transition hover:bg-sunken/50 ${sel.has(r.id) ? "bg-brand-soft" : ""}`}>
-                  <td className="p-3"><input type="checkbox" aria-label={`Select order ${r.number}`} checked={sel.has(r.id)} onChange={() => toggle(r.id)} className="size-4 accent-[var(--brand)]" /></td>
-                  <td className="p-3"><Link href={`/admin/orders/${r.id}`} className="num font-extrabold text-brand hover:underline">#{r.number}</Link><p className="text-xs text-muted">{ago(r.createdAt)} ago · {r.itemsCount} item{r.itemsCount === 1 ? "" : "s"}</p></td>
-                  <td className="p-3"><p className="font-semibold">{r.name}</p><p dir="ltr" className="num text-start text-xs text-muted">+{r.phone}</p></td>
-                  <td className="p-3">{r.city}</td>
-                  <td className="p-3"><Badge color={colors[r.status]}>{labels[r.status] ?? r.status}</Badge>{r.status === "no_answer" && <span className="ms-1.5 text-xs font-bold text-muted">×{r.attempts}</span>}{r.shipmentError && <p className="mt-1 max-w-48 truncate text-xs text-danger" title={r.shipmentError}>⚠ {r.shipmentError}</p>}</td>
-                  <td className="p-3 text-xs">{r.carrierId ? <><span className="font-semibold capitalize">{r.carrierId}</span>{r.trackingNumber && <p dir="ltr" className="num text-muted">{r.trackingNumber}</p>}</> : <span className="text-muted">—</span>}</td>
-                  <td dir="ltr" className="num p-3 text-end font-bold">{formatMoney(r.total, r.currency, "en")}</td>
-                  <td className="p-3"><div className="flex justify-end gap-1">
-                    <a href={`tel:+${r.phone}`} aria-label={`Call ${r.name}`} className="btn btn-ghost btn-sm !px-2"><Phone className="size-4" /></a>
-                    <a href={whatsappLink(r.phone)} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp ${r.name}`} className="btn btn-ghost btn-sm !px-2 text-[#128c7e]"><MessageCircle className="size-4" /></a>
-                  </div></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <DataTable minWidth="56rem" head={[
+        { label: <input type="checkbox" aria-label="Select all" checked={all} onChange={() => setSel(all ? new Set() : new Set(rows.map((r) => r.id)))} className="size-4 accent-[var(--brand)]" />, narrow: true },
+        "Order", "Customer", "City", "Status", "Carrier", { label: "Total", end: true }, { label: "Contact", end: true }]}>
+        {rows.map((r) => (
+          <tr key={r.id} data-selected={sel.has(r.id)}>
+            <td><input type="checkbox" aria-label={`Select order ${r.number}`} checked={sel.has(r.id)} onChange={() => toggle(r.id)} className="size-4 accent-[var(--brand)]" /></td>
+            <td><Link href={`/admin/orders/${r.id}`} className="num font-extrabold text-brand hover:underline">#{r.number}</Link><p className="text-xs text-muted">{ago(r.createdAt)} ago · {r.itemsCount} item{r.itemsCount === 1 ? "" : "s"}</p></td>
+            <td><p className="font-semibold">{r.name}</p><p dir="ltr" className="num text-start text-xs text-muted">+{r.phone}</p></td>
+            <td>{r.city}</td>
+            <td><Badge color={colors[r.status]}>{labels[r.status] ?? r.status}</Badge>{r.status === "no_answer" && <span className="ms-1.5 text-xs font-bold text-muted">×{r.attempts}</span>}{r.shipmentError && <p className="mt-1 max-w-48 truncate text-xs text-danger" title={r.shipmentError}>⚠ {r.shipmentError}</p>}</td>
+            <td className="text-xs">{r.carrierId ? <><span className="font-semibold capitalize">{r.carrierId}</span>{r.trackingNumber && <p dir="ltr" className="num text-muted">{r.trackingNumber}</p>}</> : <span className="text-muted">—</span>}</td>
+            <td dir="ltr" className="num is-end font-bold">{formatMoney(r.total, r.currency, "en")}</td>
+            <td><div className="flex justify-end gap-1">
+              <a href={`tel:+${r.phone}`} aria-label={`Call ${r.name}`} className="btn btn-ghost btn-sm !px-2"><Phone className="size-4" /></a>
+              <a href={whatsappLink(r.phone)} target="_blank" rel="noopener noreferrer" aria-label={`WhatsApp ${r.name}`} className="btn btn-ghost btn-sm !px-2 text-[#128c7e]"><MessageCircle className="size-4" /></a>
+            </div></td>
+          </tr>
+        ))}
+      </DataTable>
       <a href={`/admin/orders/export?${exportQs}`} className="btn btn-outline btn-sm mt-3"><Download className="size-4" />Export filtered CSV</a>
     </div>
   );

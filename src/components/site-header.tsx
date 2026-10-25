@@ -23,7 +23,7 @@ export function SiteHeader({ s, lang, t, categories }: { s: Settings; lang: Lang
         <Link href="/" className="heading flex shrink-0 items-center gap-2 text-lg sm:text-xl" aria-label={s.store.name}>
           {logo ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={logo} alt={s.store.name} className="h-8 w-auto max-w-40 object-contain" height={32} />
+            <img src={logo} alt={s.store.name} className="brand-logo h-8 w-auto max-w-40 object-contain" height={32} />
           ) : (
             <>
               <span className="grid size-8 place-items-center rounded-lg bg-brand text-brand-ink shadow-[0_0_18px_-2px_var(--brand)]"><Zap className="size-4.5" strokeWidth={2.5} /></span>
