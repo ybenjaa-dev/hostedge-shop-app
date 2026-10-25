@@ -46,7 +46,7 @@ export async function runSetup(_prev: SetupState, form: FormData): Promise<Setup
   if (d.sample) {
     await seedSampleData(env, d.currency);
     await saveSettings("hero", {
-      slides: [{ image: "uploads/sample-hero.svg", title: { en: "Quality you can touch before you pay", fr: "La qualité que vous touchez avant de payer", ar: "جودة تلمسها قبل أن تدفع" }, sub: { en: "Order in 20 seconds. Pay the courier when it arrives.", fr: "Commandez en 20 secondes. Payez au livreur.", ar: "اطلب في 20 ثانية وادفع للمندوب عند الاستلام." }, cta: { en: "Shop now", fr: "Acheter", ar: "تسوّق الآن" }, href: "/shop" }],
+      slides: [{ image: "uploads/sample-hero.svg", title: { en: "Good food, honestly made", fr: "De bons produits, faits honnêtement", ar: "طعام جيد، يُصنع بصدق" }, sub: { en: "Olive oil, honey, coffee, snacks and pantry staples from small producers. Open the parcel, then pay.", fr: "Huile d'olive, miel, café, snacks et épicerie de petits producteurs. Ouvrez le colis, puis payez.", ar: "زيت زيتون وعسل وقهوة ووجبات خفيفة ومواد غذائية من منتجين صغار. افتح الطرد ثم ادفع." }, cta: { en: "Shop the pantry", fr: "Voir l'épicerie", ar: "تسوّق المؤونة" }, href: "/shop" }],
     });
   }
   await createSession(userId);

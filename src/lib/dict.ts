@@ -31,6 +31,7 @@ const en = {
   "p.disclaimer": "Food supplements are not a substitute for a varied and balanced diet. Do not exceed the recommended daily dose. Keep out of reach of children. If you are pregnant, breastfeeding, taking medication or have a medical condition, ask a health professional before use.",
   "home.clear": "Clear labels, no guesswork", "home.clearD": "Every product page shows the serving size, the dose of each ingredient and how to take it.",
   "p.shade": "Shade", "p.shades": "{n} shades", "p.pickShade": "Choose your shade", "p.ritual": "The ritual", "p.pickedFor": "Our pick", "home.concern": "Shop by concern",
+  "p.from": "From", "home.diets": "Shop by diet", "home.sticker": "Small producers, honest labels", "p.origin": "Origin", "p.weight": "Net weight", "p.shelf": "Shelf life", "p.ingredients": "Ingredients", "p.allergens": "Allergens", "p.nutrition": "Nutrition facts", "p.per100": "per 100 g", "p.storage": "Storage", "p.fresh": "Checked and packed the day it ships — open it with the courier before you pay", "p.dietLabel": "Suitable for", "home.fromProducers": "From the producers",
 } as const;
 
 export type DictKey = keyof typeof en;
@@ -66,6 +67,7 @@ const fr: D = {
   "p.disclaimer": "Les compléments alimentaires ne se substituent pas à une alimentation variée et équilibrée. Ne pas dépasser la dose journalière recommandée. Tenir hors de portée des enfants. En cas de grossesse, d'allaitement, de traitement médical ou de pathologie, demandez l'avis d'un professionnel de santé avant utilisation.",
   "home.clear": "Des étiquettes claires, sans devinettes", "home.clearD": "Chaque fiche produit indique la portion, la dose de chaque ingrédient et le mode d'emploi.",
   "p.shade": "Teinte", "p.shades": "{n} teintes", "p.pickShade": "Choisissez votre teinte", "p.ritual": "Le rituel", "p.pickedFor": "Notre coup de cœur", "home.concern": "Acheter par besoin",
+  "p.from": "Dès", "home.diets": "Acheter par régime", "home.sticker": "Petits producteurs, étiquettes honnêtes", "p.origin": "Origine", "p.weight": "Poids net", "p.shelf": "Conservation", "p.ingredients": "Ingrédients", "p.allergens": "Allergènes", "p.nutrition": "Valeurs nutritionnelles", "p.per100": "pour 100 g", "p.storage": "Stockage", "p.fresh": "Contrôlé et emballé le jour de l'expédition — ouvrez devant le livreur avant de payer", "p.dietLabel": "Convient aux régimes", "home.fromProducers": "Chez les producteurs",
 };
 
 const ar: D = {
@@ -98,6 +100,7 @@ const ar: D = {
   "p.disclaimer": "المكملات الغذائية ليست بديلاً عن نظام غذائي متنوع ومتوازن. لا تتجاوز الجرعة اليومية الموصى بها. يحفظ بعيداً عن متناول الأطفال. في حالة الحمل أو الرضاعة أو تناول أدوية أو وجود مرض، استشر مختصاً في الصحة قبل الاستعمال.",
   "home.clear": "ملصقات واضحة دون تخمين", "home.clearD": "تعرض كل صفحة منتج الحصة والجرعة لكل مكوّن وطريقة الاستعمال.",
   "p.shade": "اللون", "p.shades": "{n} ألوان", "p.pickShade": "اختاري لونك", "p.ritual": "الروتين", "p.pickedFor": "اختيارنا لكِ", "home.concern": "تسوّقي حسب احتياجك",
+  "p.from": "ابتداءً من", "home.diets": "تسوّق حسب النظام الغذائي", "home.sticker": "منتجون صغار وملصقات صادقة", "p.origin": "المنشأ", "p.weight": "الوزن الصافي", "p.shelf": "مدة الصلاحية", "p.ingredients": "المكونات", "p.allergens": "مسببات الحساسية", "p.nutrition": "القيم الغذائية", "p.per100": "لكل 100 غ", "p.storage": "التخزين", "p.fresh": "يُفحص ويُعبّأ يوم الشحن — افتحه أمام المندوب قبل أن تدفع", "p.dietLabel": "مناسب لـ", "home.fromProducers": "من المنتجين",
 };
 
 export const DICT: Record<Lang, D> = { en: en as unknown as D, fr, ar };

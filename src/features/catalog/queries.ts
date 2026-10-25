@@ -17,10 +17,11 @@ export type ProductCard = {
   featured: boolean;
   variantNames: string[];
   variantCount: number;
+  specs: string;
 };
 
 const CARD_SELECT = `
-  p.id, p.slug, p.name, p.price, p.compare_at AS compareAt, p.category_id AS categoryId, p.featured,
+  p.id, p.slug, p.name, p.price, p.compare_at AS compareAt, p.category_id AS categoryId, p.featured, p.specs AS specs,
   (SELECT key FROM product_images i WHERE i.product_id = p.id ORDER BY i.position LIMIT 1) AS image,
   (SELECT COUNT(*) FROM product_variants v WHERE v.product_id = p.id) AS variantCount,
   (SELECT COALESCE(SUM(v.stock),0) FROM product_variants v WHERE v.product_id = p.id) AS variantStock,
@@ -50,6 +51,7 @@ function toCard(r: Row): ProductCard {
     featured: !!r.featured,
     variantNames: r.variantNames ? String(r.variantNames).split("|") : [],
     variantCount: (r.variantCount as number) ?? 0,
+    specs: (r.specs as string) ?? "{}",
   };
 }
 

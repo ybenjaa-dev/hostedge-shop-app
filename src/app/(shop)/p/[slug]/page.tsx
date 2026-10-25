@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Star } from "lucide-react";
+import { Star, ScanSearch, AlertTriangle, Snowflake } from "lucide-react";
+import { parseFacts } from "@/lib/facts";
+import { splitFood } from "@/lib/foodfacts";
 import { getSettings } from "@/lib/settings";
 import { getT } from "@/lib/i18n";
 import { tr } from "@/lib/i18n-core";
@@ -10,7 +12,7 @@ import { toMajorString } from "@/lib/money";
 import { getProduct, listBundles, listCities, listProducts, listReviews, listCategories } from "@/features/catalog/queries";
 import { Gallery } from "@/features/catalog/components/gallery";
 import { ProductBuy } from "@/features/checkout/components/product-buy";
-import { ProductCard, ProductGrid } from "@/features/catalog/components/product-card";
+import { ProductCard } from "@/features/catalog/components/product-card";
 import { ReviewForm } from "@/features/catalog/components/review-form";
 import { ViewContent } from "@/features/catalog/components/view-content";
 
@@ -61,6 +63,8 @@ export default async function ProductPage({ params, searchParams }: Props) {
     ...(p.reviewCount ? { aggregateRating: { "@type": "AggregateRating", ratingValue: p.rating, reviewCount: p.reviewCount } } : {}),
   };
 
+  const f = splitFood(parseFacts(tr(p.specs, lang)));
+  const first = f.nutrition[0];
   return (
     <article className="mx-auto max-w-7xl px-4 py-6 pb-28 md:py-10 md:pb-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
@@ -71,14 +75,22 @@ export default async function ProductPage({ params, searchParams }: Props) {
       <div className="grid gap-8 md:grid-cols-2 lg:gap-14">
         <Gallery images={p.images} alt={name} closeLabel={t("cod.close")} />
         <div>
-          <h1 className="display text-3xl font-extrabold leading-tight sm:text-4xl">{name}</h1>
+          {f.origin && <p className="tag mb-3 !bg-[var(--mustard)] !text-[#1f2a1c]" dir="auto">{t("p.origin")}: {f.origin}</p>}
+          <h1 className="heading text-[clamp(2rem,5vw,3.3rem)]">{name}</h1>
           <p className="mt-2 flex items-center gap-2 text-sm text-muted">
             {p.rating != null ? <><Star className="size-4 fill-accent text-accent" /><span className="num font-bold text-ink">{p.rating}</span> · {t("p.reviews", { n: p.reviewCount })}</> : t("p.noReviews")}
             <span aria-hidden>·</span>
             <span className={inStock ? "font-semibold text-ok" : "font-semibold text-danger"}>{inStock ? t("p.inStock") : t("p.soldOut")}</span>
           </p>
           <p className="mt-4 leading-relaxed text-muted">{tr(p.shortDesc, lang)}</p>
-          <div className="mt-6 border-t border-line pt-6">
+          {(f.weight || f.shelf || f.diet.length > 0) && (
+            <div className="mt-5 flex flex-wrap gap-2">
+              {f.weight && <span className="tag !text-sm">{t("p.weight")}: <b dir="auto">{f.weight}</b></span>}
+              {f.shelf && <span className="tag !text-sm">{t("p.shelf")}: <b dir="auto">{f.shelf}</b></span>}
+              {f.diet.map((d) => <Link key={d} href={`/shop?q=${encodeURIComponent(d)}`} className="tag !bg-brand !text-sm !text-brand-ink hover:!bg-[var(--mustard)] hover:!text-[#1f2a1c]">✓ {d}</Link>)}
+            </div>
+          )}
+          <div className="mt-6 border-t-2 border-ink pt-6">
             <ProductBuy
               autoOpen={sp.order === "1"}
               product={{ id: p.id, slug: p.slug, name: p.name, price: p.price, compareAt: p.compareAt, stock: p.stock, trackStock: p.trackStock, variants: p.variants, image: p.images[0]?.key ?? null }}
@@ -86,19 +98,40 @@ export default async function ProductPage({ params, searchParams }: Props) {
               cities={cities}
             />
           </div>
+          <p className="mt-5 flex items-center gap-2.5 rounded-xl border-2 border-dashed border-ink p-3 text-sm font-semibold"><ScanSearch className="size-5 shrink-0 text-brand" />{t("p.fresh")}</p>
         </div>
       </div>
 
-      {tr(p.longDesc, lang) && (
-        <section className="mt-14 max-w-3xl">
-          <h2 className="display mb-3 text-2xl font-extrabold">{t("p.description")}</h2>
-          <div className="prose-lite text-muted"><p>{tr(p.longDesc, lang)}</p></div>
-        </section>
-      )}
+      <section className="mt-14 grid gap-6 lg:grid-cols-[1fr_22rem] lg:items-start">
+        <div className="space-y-6">
+          {tr(p.longDesc, lang) && (
+            <div className="card p-6">
+              <h2 className="heading mb-3 text-2xl">{t("p.description")}</h2>
+              <div className="prose-lite text-muted"><p>{tr(p.longDesc, lang)}</p></div>
+            </div>
+          )}
+          {(f.ingredients || f.allergens || f.storage || f.rest.length > 0) && (
+            <div className="card divide-y-2 divide-ink/15 p-6">
+              {f.ingredients && <div className="pb-4"><h3 className="heading mb-1 text-lg">{t("p.ingredients")}</h3><p className="text-sm text-muted" dir="auto">{f.ingredients}</p></div>}
+              {f.allergens && <div className="py-4"><h3 className="heading mb-1 flex items-center gap-2 text-lg"><AlertTriangle className="size-4 text-accent" />{t("p.allergens")}</h3><p className="text-sm font-semibold" dir="auto">{f.allergens}</p></div>}
+              {f.storage && <div className="pt-4"><h3 className="heading mb-1 flex items-center gap-2 text-lg"><Snowflake className="size-4 text-brand" />{t("p.storage")}</h3><p className="text-sm text-muted" dir="auto">{f.storage}</p></div>}
+              {f.rest.map((r, i) => <div key={i} className="pt-4 text-sm"><b>{r.label}:</b> <span className="text-muted">{r.value}</span></div>)}
+            </div>
+          )}
+        </div>
+        {f.nutrition.length > 0 && (
+          <div className="nutri sticker !rounded-lg">
+            <h2 className="heading text-3xl">{t("p.nutrition")}</h2>
+            <p className="pb-1 text-sm font-semibold text-muted">{t("p.per100")}</p>
+            {first && <div className="nutri-row !border-t-[6px] !text-lg"><span className="font-extrabold">{first.label}</span><b dir="auto">{first.value}</b></div>}
+            {f.nutrition.slice(1).map((r, i) => <div key={i} className={`nutri-row ${/^(of which|dont|منها)/i.test(r.label) ? "sub" : ""}`}><span className={/^(of which|dont|منها)/i.test(r.label) ? "" : "font-bold"}>{r.label}</span><b dir="auto">{r.value}</b></div>)}
+          </div>
+        )}
+      </section>
 
       <section className="mt-14 grid gap-8 md:grid-cols-[1fr_22rem]" aria-labelledby="reviews-h">
         <div>
-          <h2 id="reviews-h" className="display mb-4 text-2xl font-extrabold">{t("p.reviews", { n: p.reviewCount })}</h2>
+          <h2 id="reviews-h" className="heading mb-4 text-3xl">{t("p.reviews", { n: p.reviewCount })}</h2>
           {reviews.length === 0 ? <p className="text-muted">{t("p.noReviews")}</p> : (
             <ul className="space-y-4">
               {reviews.map((r) => (
@@ -115,8 +148,8 @@ export default async function ProductPage({ params, searchParams }: Props) {
 
       {related.items.length > 0 && (
         <section className="mt-16">
-          <h2 className="display mb-6 text-2xl font-extrabold">{t("p.related")}</h2>
-          <ProductGrid>{related.items.map((r) => <ProductCard key={r.id} p={r} lang={lang} t={t} currency={s.store.currency} codMode={s.checkout.codMode} />)}</ProductGrid>
+          <h2 className="heading mb-6 text-3xl">{t("p.related")}</h2>
+          <div className="rail">{related.items.map((r) => <ProductCard key={r.id} p={r} lang={lang} t={t} currency={s.store.currency} codMode={s.checkout.codMode} />)}</div>
         </section>
       )}
     </article>

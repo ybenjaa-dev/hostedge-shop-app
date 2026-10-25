@@ -10,7 +10,7 @@ export function Gallery({ images, alt, closeLabel }: { images: { key: string; al
   const [idx, setIdx] = useState(0);
   const [zoomed, setZoomed] = useState(false);
   const [origin, setOrigin] = useState("50% 50%");
-  if (!images.length) return <div className="grid aspect-square place-items-center rounded-3xl bg-sunken text-5xl text-muted">▢</div>;
+  if (!images.length) return <div className="grid aspect-square place-items-center rounded-[var(--r-media,1.5rem)] bg-sunken text-5xl text-muted">▢</div>;
 
   const go = (i: number) => {
     const n = Math.max(0, Math.min(images.length - 1, i));
@@ -26,7 +26,7 @@ export function Gallery({ images, alt, closeLabel }: { images: { key: string; al
   return (
     <div>
       <div className="relative">
-        <div ref={scroller} onScroll={onScroll} className="scroll-snap-x flex aspect-square overflow-x-auto rounded-3xl bg-sunken" tabIndex={0} aria-label={alt}>
+        <div ref={scroller} onScroll={onScroll} className="scroll-snap-x flex aspect-square overflow-x-auto rounded-[var(--r-media,1.5rem)] bg-sunken" tabIndex={0} aria-label={alt}>
           {images.map((im, i) => (
             <button key={im.key} type="button" onClick={() => { setIdx(i); dialog.current?.showModal(); }} className="relative block size-full cursor-zoom-in" aria-label={`Zoom ${i + 1}/${images.length}`}>
               {/* eslint-disable-next-line @next/next/no-img-element */}

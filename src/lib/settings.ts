@@ -65,7 +65,7 @@ export const DEFAULT_SETTINGS: Settings = {
   setupDone: false,
   store: {
     name: "My Store",
-    tagline: {},
+    tagline: { en: "Good food, honestly made.", fr: "De bons produits, faits honnêtement.", ar: "طعام جيد، يُصنع بصدق." },
     country: "MA",
     currency: "MAD",
     defaultLang: "fr",
@@ -83,11 +83,11 @@ export const DEFAULT_SETTINGS: Settings = {
   branding: {
     logo: "",
     favicon: "",
-    primary: "#0f766e",
-    secondary: "#1f2937",
-    accent: "#f59e0b",
+    primary: "#2f6b3a",
+    secondary: "#1f2a1c",
+    accent: "#e0452f",
     buttonStyle: "rounded",
-    fontLatin: "Manrope",
+    fontLatin: "DM Sans",
     fontArabic: "Cairo",
   },
   checkout: {
@@ -118,9 +118,9 @@ export const DEFAULT_SETTINGS: Settings = {
     banner: { image: "", title: {}, sub: {}, href: "" },
   },
   trust: [
-    { icon: "cod", title: { en: "Pay on delivery", fr: "Paiement à la livraison", ar: "الدفع عند الاستلام" }, text: { en: "Inspect first, then pay the courier", fr: "Vérifiez puis payez au livreur", ar: "افحص طلبك ثم ادفع للمندوب" } },
-    { icon: "delivery", title: { en: "Fast delivery", fr: "Livraison rapide", ar: "توصيل سريع" }, text: { en: "2–4 days across the country", fr: "2 à 4 jours partout", ar: "من 2 إلى 4 أيام لكل المدن" } },
-    { icon: "returns", title: { en: "Free returns", fr: "Retours gratuits", ar: "إرجاع مجاني" }, text: { en: "Not happy? Send it back", fr: "Pas satisfait ? Retournez-le", ar: "غير راضٍ؟ أرجعه لنا" } },
+    { icon: "quality", title: { en: "Checked before it ships", fr: "Contrôlé avant l'envoi", ar: "يُفحص قبل الشحن" }, text: { en: "Best-before dates you can trust", fr: "Des DLUO sur lesquelles compter", ar: "تواريخ صلاحية موثوقة" } },
+    { icon: "cod", title: { en: "Pay on delivery", fr: "Paiement à la livraison", ar: "الدفع عند الاستلام" }, text: { en: "Open it, then pay the courier", fr: "Ouvrez puis payez au livreur", ar: "افتح ثم ادفع للمندوب" } },
+    { icon: "delivery", title: { en: "Careful packing", fr: "Emballage soigné", ar: "تغليف محكم" }, text: { en: "Glass and jars well protected", fr: "Verre et bocaux bien protégés", ar: "الزجاج والمرطبانات محمية جيداً" } },
   ],
   footer: { text: {} },
   analytics: { metaPixel: "", tiktokPixel: "", ga: "", snapPixel: "" },
