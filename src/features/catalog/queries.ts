@@ -189,17 +189,17 @@ export async function listReviews(opts: { productId?: string; limit?: number }):
   return (await q.all<ReviewRow>()).results;
 }
 
-type BundleRow = { productId: string | null; minQty: number; percent: number; price: number | null; label: string | null; popular: number; basePrice: number | null };
+type BundleRow = { productId: string | null; minQty: number; percent: number; price: number | null; label: string | null; popular: number; basePrice: number | null; image: string | null };
 
 /** Active bundle rules (percentage tiers and fixed-price offers), shaped as pricing-engine rules. */
 export async function listBundles(productId?: string): Promise<BundleRule[]> {
   await ensureSchema();
   const db = getEnv().DB;
-  const sel = "SELECT b.product_id AS productId, b.min_qty AS minQty, b.percent, b.price, b.label, b.popular, p.price AS basePrice FROM bundles b LEFT JOIN products p ON p.id = b.product_id WHERE b.active = 1";
+  const sel = "SELECT b.product_id AS productId, b.min_qty AS minQty, b.percent, b.price, b.label, b.popular, b.image, p.price AS basePrice FROM bundles b LEFT JOIN products p ON p.id = b.product_id WHERE b.active = 1";
   const r = productId
     ? await db.prepare(`${sel} AND (b.product_id IS NULL OR b.product_id = ?) ORDER BY b.min_qty`).bind(productId).all<BundleRow>()
     : await db.prepare(`${sel} ORDER BY b.min_qty`).all<BundleRow>();
-  return r.results.map((x) => ({ productId: x.productId, minQty: x.minQty, percent: x.percent, price: x.price, basePrice: x.basePrice, label: x.label, popular: !!x.popular }));
+  return r.results.map((x) => ({ productId: x.productId, minQty: x.minQty, percent: x.percent, price: x.price, basePrice: x.basePrice, label: x.label, popular: !!x.popular, image: x.image }));
 }
 
 export type CityOpt = { id: string; name: string; nameAr: string | null; region: string | null; fee: number | null; freeAbove: number | null; codAvailable: boolean; country: string };
