@@ -39,7 +39,7 @@ export default async function OrderDonePage({ params, searchParams }: { params: 
           {items.map((i, k) => (
             <li key={k} className="flex items-center gap-3 py-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              {i.image && <img src={fileUrl(i.image)} alt="" className="size-14 rounded-lg object-cover" />}
+              {i.image && <img src={fileUrl(i.image, "thumb")} alt="" className="size-14 rounded-lg object-cover" />}
               <div className="min-w-0 flex-1"><p className="truncate font-semibold">{tr(i.name, lang)}</p><p className="text-sm text-muted">{i.variantName ? `${i.variantName} · ` : ""}{i.qty} ×</p></div>
               <Money amount={i.price * i.qty} currency={cur} lang={lang} className="font-bold" />
             </li>

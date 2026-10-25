@@ -23,7 +23,7 @@ export function SiteFooter({ s, lang, t, pages }: { s: Settings; lang: Lang; t: 
           <p className="heading text-4xl text-[#e3c36f] sm:text-5xl">
             {logo ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={logo} alt={s.store.name} className="mx-auto h-14 w-auto" />
+              <img src={logo} alt={s.store.name} className="brand-logo mx-auto h-14 w-auto" />
             ) : (
               <><span className="orn me-3 !size-7 align-[-3px]" aria-hidden />{s.store.name}<span className="orn ms-3 !size-7 align-[-3px]" aria-hidden /></>
             )}

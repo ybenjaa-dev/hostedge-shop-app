@@ -77,7 +77,16 @@ Offers can be shown in five layouts: **List** (default), **Tiles**, **Photo card
 - Photo cards use the offer's own photo, or the product image stacked ×N when none is set.
 - Sample data gives the featured products different templates so you can compare them.
 
-Screenshots of every template on every storefront theme (390 px) are in [`docs/screenshots/offer-templates/`](docs/screenshots/offer-templates). The sample data per storefront is in [`docs/sample-data/`](docs/sample-data).
+Screenshots of every template on every storefront theme (390 px) are in [`docs/screenshots/offer-templates/`](docs/screenshots/offer-templates). Names and logos of every storefront: [`docs/brand/`](docs/brand). The sample data per storefront is in [`docs/sample-data/`](docs/sample-data).
+
+### Media library (Admin → Media)
+Every upload goes through one library, WordPress-style: a searchable grid with a details panel (rename, alt text, where it's used, copy link, delete — pictures still in use are protected). Anywhere you pick a picture (product images, categories, offer photos, logo, hero) a modal opens the same library, with drag-and-drop upload built in.
+- **Compressed in the browser:** each upload becomes a full-size WebP (max 1600 px), a medium one (800 px) and a thumbnail (320 px). Storefront cards use the medium size, carts/admin lists the thumbnail (`fileUrl(key, "thumb" | "md" | "full")`; older uploads fall back to the full file).
+- **No duplicates:** the file's SHA-256 is checked before upload (and again on the server); re-uploading the same picture reuses the existing entry. Table: `media` (migration `0005`). Files uploaded before the library existed (and seeded placeholders) are registered automatically.
+- *Match photos to products* tab keeps the bulk "name the file after the product" importer.
+
+### Admin UI kit
+One look everywhere: `DataTable` (card that scrolls sideways *inside* itself), `Tabs`, `FilterBar` (filters and the Filter button always stay inside their card), and custom `DateField` / `DateRangeField` pickers (presets, keyboard support, bottom-sheet on phones) instead of the browser's native date input.
 
 ### Storefront
 Mobile-first and light on JS: server-rendered pages, scroll-snap swipe gallery, native `<dialog>` for sheets/drawers, GET-form filters, localized RTL-safe layout (logical CSS properties).

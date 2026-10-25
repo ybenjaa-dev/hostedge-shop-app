@@ -41,7 +41,7 @@ export function SiteHeader({ s, lang, t, categories }: { s: Settings; lang: Lang
         <Link href="/" className="heading flex items-center justify-center gap-2.5 text-[1.6rem] leading-none sm:text-3xl" aria-label={s.store.name}>
           {logo ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={logo} alt={s.store.name} className="h-9 w-auto max-w-44 object-contain sm:h-11" height={44} />
+            <img src={logo} alt={s.store.name} className="brand-logo h-9 w-auto max-w-44 object-contain sm:h-11" height={44} />
           ) : (
             <>
               <span className="orn !size-6 sm:!size-7" aria-hidden />

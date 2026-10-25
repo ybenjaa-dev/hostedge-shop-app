@@ -64,7 +64,7 @@ export default async function Home() {
                 <Link key={c.id} href={`/category/${c.slug}`} className="group flex w-[7.5rem] flex-col items-center text-center sm:w-40">
                   <span className="frame arch block aspect-[3/4] w-full overflow-hidden bg-sunken p-[5px] transition group-hover:-translate-y-1">
                     <span className="arch block size-full overflow-hidden bg-sunken">
-                      {c.image ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image)} alt="" loading="lazy" className="size-full object-cover transition duration-700 group-hover:scale-110" /> : <span className="bg-zel block size-full" />}
+                      {c.image ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image, "md")} alt="" loading="lazy" className="size-full object-cover transition duration-700 group-hover:scale-110" /> : <span className="bg-zel block size-full" />}
                     </span>
                   </span>
                   <span className="heading mt-3 text-xl leading-tight group-hover:text-brand">{tr(c.name, lang)}</span>

@@ -30,7 +30,7 @@ export function Gallery({ images, alt, closeLabel }: { images: { key: string; al
           {images.map((im, i) => (
             <button key={im.key} type="button" onClick={() => { setIdx(i); dialog.current?.showModal(); }} className="relative block size-full cursor-zoom-in" aria-label={`Zoom ${i + 1}/${images.length}`}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={fileUrl(im.key)} alt={im.alt || alt} width={800} height={800} className="size-full object-cover" loading={i === 0 ? "eager" : "lazy"} fetchPriority={i === 0 ? "high" : "auto"} decoding="async" />
+              <img src={fileUrl(im.key, "md")} alt={im.alt || alt} width={800} height={800} className="size-full object-cover" loading={i === 0 ? "eager" : "lazy"} fetchPriority={i === 0 ? "high" : "auto"} decoding="async" />
             </button>
           ))}
         </div>
@@ -49,7 +49,7 @@ export function Gallery({ images, alt, closeLabel }: { images: { key: string; al
         <div className="mt-3 hidden gap-2 md:flex">
           {images.map((im, i) => (
             // eslint-disable-next-line @next/next/no-img-element
-            <button key={im.key} type="button" onClick={() => go(i)} aria-label={`${i + 1}`} className={`size-16 overflow-hidden rounded-full border-2 ${i === idx ? "border-gold" : "border-transparent opacity-70 hover:opacity-100"}`}><img src={fileUrl(im.key)} alt="" className="size-full object-cover" loading="lazy" /></button>
+            <button key={im.key} type="button" onClick={() => go(i)} aria-label={`${i + 1}`} className={`size-16 overflow-hidden rounded-full border-2 ${i === idx ? "border-gold" : "border-transparent opacity-70 hover:opacity-100"}`}><img src={fileUrl(im.key, "thumb")} alt="" className="size-full object-cover" loading="lazy" /></button>
           ))}
         </div>
       )}
