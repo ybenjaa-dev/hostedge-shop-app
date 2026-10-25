@@ -31,6 +31,7 @@ const en = {
   "p.disclaimer": "Food supplements are not a substitute for a varied and balanced diet. Do not exceed the recommended daily dose. Keep out of reach of children. If you are pregnant, breastfeeding, taking medication or have a medical condition, ask a health professional before use.",
   "home.clear": "Clear labels, no guesswork", "home.clearD": "Every product page shows the serving size, the dose of each ingredient and how to take it.",
   "p.shade": "Shade", "p.shades": "{n} shades", "p.pickShade": "Choose your shade", "p.ritual": "The ritual", "p.pickedFor": "Our pick", "home.concern": "Shop by concern",
+  "offer.title": "Choose your pack", "offer.one": "1 item", "offer.many": "{n} items", "offer.popular": "Most popular", "offer.best": "Best value", "offer.save": "Save {pct}%", "offer.each": "{price} each", "offer.normal": "Regular price", "offer.youSave": "You save {amount}", "offer.same": "Every item has the options you chose above.", "offer.other": "Need another quantity?",
   "p.from": "From", "home.ages": "Shop by age", "home.agesD": "Pick your little one's age", "p.age": "Age", "p.safety": "Safe & gentle", "p.material": "Material", "p.size": "Size", "p.care": "Care", "p.growing": "Growing fast? Free size exchange on delivery", "p.checkKids": "Open the parcel with the courier and check it before you pay", "home.gentle": "Gentle on little ones", "home.forAge": "For ages",
 } as const;
 
@@ -67,6 +68,7 @@ const fr: D = {
   "p.disclaimer": "Les compléments alimentaires ne se substituent pas à une alimentation variée et équilibrée. Ne pas dépasser la dose journalière recommandée. Tenir hors de portée des enfants. En cas de grossesse, d'allaitement, de traitement médical ou de pathologie, demandez l'avis d'un professionnel de santé avant utilisation.",
   "home.clear": "Des étiquettes claires, sans devinettes", "home.clearD": "Chaque fiche produit indique la portion, la dose de chaque ingrédient et le mode d'emploi.",
   "p.shade": "Teinte", "p.shades": "{n} teintes", "p.pickShade": "Choisissez votre teinte", "p.ritual": "Le rituel", "p.pickedFor": "Notre coup de cœur", "home.concern": "Acheter par besoin",
+  "offer.title": "Choisissez votre pack", "offer.one": "1 article", "offer.many": "{n} articles", "offer.popular": "Le plus populaire", "offer.best": "Meilleur prix", "offer.save": "Économisez {pct} %", "offer.each": "{price} l'unité", "offer.normal": "Prix normal", "offer.youSave": "Vous économisez {amount}", "offer.same": "Chaque article aura les options choisies ci-dessus.", "offer.other": "Besoin d'une autre quantité ?",
   "p.from": "Dès", "home.ages": "Acheter par âge", "home.agesD": "Choisissez l'âge de votre enfant", "p.age": "Âge", "p.safety": "Sûr et doux", "p.material": "Matière", "p.size": "Taille", "p.care": "Entretien", "p.growing": "Il grandit vite ? Échange de taille gratuit à la livraison", "p.checkKids": "Ouvrez le colis devant le livreur et vérifiez avant de payer", "home.gentle": "Tout en douceur pour les petits", "home.forAge": "Dès l'âge de",
 };
 
@@ -100,6 +102,7 @@ const ar: D = {
   "p.disclaimer": "المكملات الغذائية ليست بديلاً عن نظام غذائي متنوع ومتوازن. لا تتجاوز الجرعة اليومية الموصى بها. يحفظ بعيداً عن متناول الأطفال. في حالة الحمل أو الرضاعة أو تناول أدوية أو وجود مرض، استشر مختصاً في الصحة قبل الاستعمال.",
   "home.clear": "ملصقات واضحة دون تخمين", "home.clearD": "تعرض كل صفحة منتج الحصة والجرعة لكل مكوّن وطريقة الاستعمال.",
   "p.shade": "اللون", "p.shades": "{n} ألوان", "p.pickShade": "اختاري لونك", "p.ritual": "الروتين", "p.pickedFor": "اختيارنا لكِ", "home.concern": "تسوّقي حسب احتياجك",
+  "offer.title": "اختر باقتك", "offer.one": "قطعة واحدة", "offer.many": "{n} قطع", "offer.popular": "الأكثر طلباً", "offer.best": "أفضل قيمة", "offer.save": "وفّر {pct}٪", "offer.each": "{price} للقطعة", "offer.normal": "السعر العادي", "offer.youSave": "توفّر {amount}", "offer.same": "كل القطع بنفس الخيارات المختارة أعلاه.", "offer.other": "تحتاج كمية أخرى؟",
   "p.from": "ابتداءً من", "home.ages": "تسوّق حسب العمر", "home.agesD": "اختر عمر صغيرك", "p.age": "العمر", "p.safety": "آمن ولطيف", "p.material": "الخامة", "p.size": "المقاس", "p.care": "العناية", "p.growing": "يكبر بسرعة؟ تبديل مجاني للمقاس عند التسليم", "p.checkKids": "افتح الطرد أمام المندوب وافحصه قبل أن تدفع", "home.gentle": "لطيف على الصغار", "home.forAge": "من عمر",
 };
 
