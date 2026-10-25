@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "4531f565-6248-4c51-acdb-a8f6653e3e47",
+  "id": "3783248e-6abd-4e09-a4d7-a6c8327eebb9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "abandoned_orders": {
@@ -1471,7 +1471,12 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {}
+      "checkConstraints": {
+        "variants_stock_nonneg": {
+          "name": "variants_stock_nonneg",
+          "value": "\"product_variants\".\"stock\" >= 0"
+        }
+      }
     },
     "products": {
       "name": "products",
@@ -1655,7 +1660,12 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "checkConstraints": {}
+      "checkConstraints": {
+        "products_stock_nonneg": {
+          "name": "products_stock_nonneg",
+          "value": "\"products\".\"stock\" >= 0"
+        }
+      }
     },
     "rate_limits": {
       "name": "rate_limits",

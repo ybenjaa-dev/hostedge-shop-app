@@ -1,4 +1,5 @@
-import { sqliteTable, text, integer, index, uniqueIndex, primaryKey } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, index, uniqueIndex, primaryKey, check } from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
 
 const now = () => Date.now();
 const ts = (name: string) => integer(name).notNull().$defaultFn(now);
@@ -89,6 +90,8 @@ export const products = sqliteTable(
     index("products_status_cat_idx").on(t.status, t.categoryId),
     index("products_status_created_idx").on(t.status, t.createdAt),
     index("products_sku_idx").on(t.sku),
+    // Makes concurrent over-selling impossible: a decrement below zero aborts the whole D1 batch.
+    check("products_stock_nonneg", sql`${t.stock} >= 0`),
   ],
 );
 
@@ -104,7 +107,7 @@ export const productVariants = sqliteTable(
     stock: integer("stock").notNull().default(0),
     position: integer("position").notNull().default(0),
   },
-  (t) => [index("variants_product_idx").on(t.productId)],
+  (t) => [index("variants_product_idx").on(t.productId), check("variants_stock_nonneg", sql`${t.stock} >= 0`)],
 );
 
 export const productImages = sqliteTable(

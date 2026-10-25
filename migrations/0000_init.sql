@@ -224,7 +224,8 @@ CREATE TABLE `product_variants` (
 	`sku` text,
 	`price` integer,
 	`stock` integer DEFAULT 0 NOT NULL,
-	`position` integer DEFAULT 0 NOT NULL
+	`position` integer DEFAULT 0 NOT NULL,
+	CONSTRAINT "variants_stock_nonneg" CHECK("product_variants"."stock" >= 0)
 );
 --> statement-breakpoint
 CREATE INDEX `variants_product_idx` ON `product_variants` (`product_id`);--> statement-breakpoint
@@ -247,7 +248,8 @@ CREATE TABLE `products` (
 	`seo_title` text DEFAULT '{}' NOT NULL,
 	`seo_desc` text DEFAULT '{}' NOT NULL,
 	`created_at` integer NOT NULL,
-	`updated_at` integer NOT NULL
+	`updated_at` integer NOT NULL,
+	CONSTRAINT "products_stock_nonneg" CHECK("products"."stock" >= 0)
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `products_slug_idx` ON `products` (`slug`);--> statement-breakpoint
