@@ -152,7 +152,7 @@ function Hero({ s, lang, t, picks, ticker }: { s: Awaited<ReturnType<typeof getS
         </div>
       </div>
       <div className="ticker heading !not-italic py-2 text-lg" aria-hidden>
-        <div className="ticker-track">{[0, 1, 2, 3].map((k) => <span key={k} className="px-6">{ticker} <span className="px-3">///</span></span>)}</div>
+        <div className="ticker-track">{[0, 1, 2, 3].map((k) => <span key={k} className="px-6">{ticker} <span className="px-3">{"///"}</span></span>)}</div>
       </div>
     </section>
   );
