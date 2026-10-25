@@ -6,7 +6,6 @@ import { computeTotals, freeShippingRemaining, type BundleRule, type CouponRule 
 import { COUNTRIES, countryByCode, normalizePhone } from "@/lib/phone";
 import { formatMoney } from "@/lib/money";
 import { tr } from "@/lib/i18n-core";
-import { fileUrl } from "@/lib/storage";
 import { placeOrder, saveAbandoned, validateCoupon } from "../actions";
 import { useStore, useT, type CityOpt } from "../store-context";
 import { CityCombobox } from "./city-combobox";
