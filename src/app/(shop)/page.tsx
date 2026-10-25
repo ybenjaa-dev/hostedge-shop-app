@@ -52,7 +52,7 @@ export default async function Home() {
                 const Icon = roomIcon(`${c.slug} ${tr(c.name, lang)}`);
                 return (
                   <Link key={c.id} href={`/category/${c.slug}`} className={`group relative block overflow-hidden rounded-[1.75rem] bg-sunken ${i === 0 ? "col-span-2 aspect-[16/10] md:aspect-auto md:row-span-2" : "aspect-square"}`}>
-                    {c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image)} alt="" loading="lazy" className="absolute inset-0 size-full object-cover transition duration-700 group-hover:scale-105" />}
+                    {c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image, "md")} alt="" loading="lazy" className="absolute inset-0 size-full object-cover transition duration-700 group-hover:scale-105" />}
                     <span className="absolute bottom-3 start-3 inline-flex items-center gap-2 rounded-full bg-surface/95 py-1.5 pe-4 ps-1.5 text-sm font-bold shadow-sm backdrop-blur">
                       <span className="grid size-8 place-items-center rounded-full bg-brand text-brand-ink"><Icon className="size-4" /></span>{tr(c.name, lang)}
                     </span>

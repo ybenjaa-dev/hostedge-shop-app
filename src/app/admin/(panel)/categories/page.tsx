@@ -38,7 +38,7 @@ export default async function CategoriesPage() {
   ]);
   const countOf = new Map(counts.map((c) => [c.id, c.n]));
   return (
-    <div className="max-w-4xl">
+    <div>
       <PageHeader title="Categories" sub="Group products for navigation and filters." />
       <Panel className="mb-6">
         <details>

@@ -1,8 +1,9 @@
 "use client";
 import { useId, useState, type ReactNode } from "react";
 import { contrastRatio, onColor, isHex } from "@/lib/color";
-import { Upload, X, Loader2, AlertTriangle, CheckCircle2 } from "lucide-react";
-import { fileUrl } from "@/lib/storage";
+import { AlertTriangle, CheckCircle2 } from "lucide-react";
+import { uploadMedia } from "@/lib/media-client";
+import { MediaImageInput } from "@/features/media/image-input";
 
 export function Field({ label, hint, children, htmlFor }: { label: string; hint?: string; children: ReactNode; htmlFor?: string }) {
   return (
@@ -73,60 +74,19 @@ export function ColorField({ label, name, value, against = "#ffffff", hint }: { 
   );
 }
 
-/** Resize + re-encode to WebP in the browser (max 1600px) before upload to cut bytes on slow links. */
-async function compress(file: File, max = 1600): Promise<File> {
-  if (!/^image\/(jpeg|png|webp)$/.test(file.type)) return file;
-  try {
-    const bmp = await createImageBitmap(file);
-    const scale = Math.min(1, max / Math.max(bmp.width, bmp.height));
-    const w = Math.round(bmp.width * scale), h = Math.round(bmp.height * scale);
-    const canvas = document.createElement("canvas");
-    canvas.width = w; canvas.height = h;
-    canvas.getContext("2d")!.drawImage(bmp, 0, 0, w, h);
-    const blob: Blob | null = await new Promise((r) => canvas.toBlob(r, "image/webp", 0.85));
-    if (!blob || blob.size >= file.size) return file;
-    return new File([blob], file.name.replace(/\.\w+$/, "") + ".webp", { type: "image/webp" });
-  } catch { return file; }
+/** Upload through the media library (compressed WebP + thumbnails, duplicates reuse the stored file). */
+export async function uploadImage(file: File, opts: { compress?: boolean } = {}): Promise<{ ok: true; key: string; duplicate?: boolean } | { ok: false; error: string }> {
+  const r = await uploadMedia(file, opts);
+  return r.ok ? { ok: true, key: r.key, duplicate: r.duplicate } : r;
 }
 
-export async function uploadImage(file: File, opts: { compress?: boolean } = {}): Promise<{ ok: true; key: string } | { ok: false; error: string }> {
-  const f = opts.compress === false ? file : await compress(file);
-  const form = new FormData();
-  form.append("file", f);
-  const res = await fetch("/api/admin/upload", { method: "POST", body: form });
-  return (await res.json().catch(() => ({ ok: false, error: "Upload failed" }))) as { ok: true; key: string } | { ok: false; error: string };
-}
-
-/** Single-image uploader that stores the R2 key in a hidden input. */
-export function ImageField({ label, name, value = "", hint, compressImg = true }: { label: string; name: string; value?: string; hint?: string; compressImg?: boolean }) {
+/** Single-image field: choose from the media library (or upload into it); stores the R2 key in a hidden input. */
+export function ImageField({ label, name, value = "", hint }: { label: string; name: string; value?: string; hint?: string; compressImg?: boolean }) {
   const [key, setKey] = useState(value);
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState("");
-  const id = useId();
   return (
     <div>
-      <span className="label">{label}</span>
       <input type="hidden" name={name} value={key} />
-      <div className="flex items-center gap-3">
-        <div className="grid size-20 shrink-0 place-items-center overflow-hidden rounded-xl border border-dashed border-line bg-sunken">
-          {key ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(key)} alt="" className="size-full object-contain" /> : <Upload className="size-5 text-muted" />}
-        </div>
-        <div className="space-y-1.5">
-          <label htmlFor={id} className="btn btn-outline btn-sm cursor-pointer">{busy ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />} {key ? "Replace" : "Upload"}</label>
-          <input id={id} type="file" accept="image/jpeg,image/png,image/webp,image/avif" className="sr-only" disabled={busy}
-            onChange={async (e) => {
-              const f = e.target.files?.[0]; e.target.value = "";
-              if (!f) return;
-              setBusy(true); setErr("");
-              const r = await uploadImage(f, { compress: compressImg });
-              setBusy(false);
-              if (r.ok) setKey(r.key); else setErr(r.error);
-            }} />
-          {key && <button type="button" className="btn btn-ghost btn-sm text-danger" onClick={() => setKey("")}><X className="size-4" />Remove</button>}
-        </div>
-      </div>
-      {err && <p className="err">{err}</p>}
-      {hint && <p className="mt-1 text-xs text-muted">{hint}</p>}
+      <MediaImageInput label={label} value={key} onChange={setKey} hint={hint} />
     </div>
   );
 }
