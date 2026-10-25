@@ -71,6 +71,7 @@ export const products = sqliteTable(
     shortDesc: text("short_desc").notNull().default("{}"),
     longDesc: text("long_desc").notNull().default("{}"),
     specs: text("specs").notNull().default("{}"), // JSON i18n; one "Label: value" per line (supplement facts, specs…)
+    offerTemplate: text("offer_template"), // quantity-offer card layout for this product; null → store default
     categoryId: text("category_id"),
     sku: text("sku"),
     price: integer("price").notNull(), // minor units
@@ -165,6 +166,8 @@ export const bundles = sqliteTable("bundles", {
   /** Optional badge text on the offer card, e.g. "Family pack". */
   label: text("label"),
   popular: integer("popular", { mode: "boolean" }).notNull().default(false),
+  /** Optional picture for the offer card (R2 key), e.g. a photo of the 3-pack. */
+  image: text("image"),
   active: integer("active", { mode: "boolean" }).notNull().default(true),
 });
 
