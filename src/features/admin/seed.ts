@@ -168,6 +168,8 @@ export async function seedSampleData(env: Env, currency: string) {
   products.forEach((p, i) => {
     if (!p.feat) return;
     for (const [q, f, pop] of [[2, 0.9, 1], [3, 0.82, 0]] as const) stmts.push(db.prepare("INSERT INTO bundles (id, product_id, min_qty, percent, price, label, popular, active) VALUES (?,?,?,0,?,NULL,?,1)").bind(newId(), pids[i]!, q, price(Math.round(p.p * q * f)), pop));
+    // show a few of the offer-card layouts: every product after the first uses the next template (the first keeps the store default)
+    if (i > 0) stmts.push(db.prepare("UPDATE products SET offer_template = ? WHERE id = ?").bind((["tiles", "photo", "pills", "highlight"] as const)[(i - 1) % 4], pids[i]!));
   });
   for (let i = 0; i < stmts.length; i += 40) await db.batch(stmts.slice(i, i + 40));
   await putSvg(env, "uploads/sample-hero.svg", svg("dogface", PAL.dog));
