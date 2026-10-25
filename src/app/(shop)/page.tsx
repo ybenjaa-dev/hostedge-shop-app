@@ -52,7 +52,7 @@ export default async function Home() {
                 const Icon = petIcon(`${c.slug} ${tr(c.name, lang)}`);
                 return (
                   <Link key={c.id} href={`/category/${c.slug}`} className="group relative block overflow-hidden rounded-[2rem] border-2 border-line bg-sunken transition hover:-translate-y-1 hover:border-[var(--paw)]">
-                    <div className="aspect-[4/5] overflow-hidden">{c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image)} alt="" loading="lazy" className="size-full object-cover transition duration-500 group-hover:scale-105" />}</div>
+                    <div className="aspect-[4/5] overflow-hidden">{c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image, "md")} alt="" loading="lazy" className="size-full object-cover transition duration-500 group-hover:scale-105" />}</div>
                     <span className={`heading absolute inset-x-2.5 bottom-2.5 flex items-center justify-between rounded-full bg-surface p-1.5 ps-4 text-lg ${i % 2 ? "" : ""}`}>{tr(c.name, lang)}<span className="grid size-9 place-items-center rounded-full bg-[var(--paw)] text-[#2b1608]"><Icon className="size-5" /></span></span>
                   </Link>
                 );

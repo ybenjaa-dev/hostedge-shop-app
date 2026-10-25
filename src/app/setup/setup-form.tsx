@@ -1,4 +1,5 @@
 "use client";
+import { BRAND } from "@/lib/brand";
 import { useActionState, useState } from "react";
 import { runSetup, type SetupState } from "@/features/admin/setup-actions";
 import { SubmitButton } from "@/components/ui/submit";
@@ -17,7 +18,7 @@ export function SetupForm() {
         <legend className="display mb-1 text-lg font-extrabold">1 · Your store</legend>
         <div>
           <label className="label" htmlFor="storeName">Store name</label>
-          <input id="storeName" name="storeName" className="field" required minLength={2} autoFocus aria-invalid={!!err("storeName")} placeholder="e.g. Atlas Home" />
+          <input id="storeName" name="storeName" className="field" required minLength={2} autoFocus aria-invalid={!!err("storeName")} defaultValue={BRAND.name === "My Store" ? undefined : BRAND.name} placeholder="e.g. Atlas Home" />
           {err("storeName") && <p className="err">{err("storeName")}</p>}
         </div>
         <div className="grid gap-4 sm:grid-cols-2">

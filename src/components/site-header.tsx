@@ -24,7 +24,7 @@ export function SiteHeader({ s, lang, t, categories }: { s: Settings; lang: Lang
         <Link href="/" className="heading flex shrink-0 items-center gap-2 text-xl sm:text-2xl" aria-label={s.store.name}>
           {logo ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={logo} alt={s.store.name} className="h-9 w-auto max-w-40 object-contain" height={36} />
+            <img src={logo} alt={s.store.name} className="brand-logo h-9 w-auto max-w-40 object-contain" height={36} />
           ) : (<>
             <span className="grid size-10 place-items-center rounded-full bg-brand text-brand-ink"><PawPrint className="size-5" /></span>
             <span dir="auto" className="block max-w-[7.5rem] truncate sm:max-w-xs">{s.store.name}</span>

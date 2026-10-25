@@ -37,3 +37,18 @@ export function Pager({ page, pages, base, params }: { page: number; pages: numb
     </nav>
   );
 }
+
+/** Every list page's filters: one card, fields wrap and shrink inside it, the buttons never leave it. */
+export function FilterBar({ children, actions, hidden }: { children: ReactNode; actions?: ReactNode; hidden?: Record<string, string | undefined> }) {
+  return (
+    <form method="get" role="search" className="filter-bar">
+      {Object.entries(hidden ?? {}).map(([k, v]) => v ? <input key={k} type="hidden" name={k} value={v} /> : null)}
+      {children}
+      <div className="fb-actions">{actions ?? <button className="btn btn-primary">Filter</button>}</div>
+    </form>
+  );
+}
+/** A labelled slot inside a FilterBar. `grow` makes it the wide one (search). */
+export function FbItem({ label, grow, wide, children }: { label?: string; grow?: boolean; wide?: boolean; children: ReactNode }) {
+  return <div className={grow ? "fb-grow" : "fb-item"} style={wide ? { flexBasis: "17rem" } : undefined}>{label && <span className="label">{label}</span>}{children}</div>;
+}

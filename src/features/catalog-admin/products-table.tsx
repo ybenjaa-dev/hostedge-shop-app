@@ -1,4 +1,5 @@
 "use client";
+import { DataTable } from "@/features/settings/components/table";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -41,28 +42,23 @@ export function ProductsTable({ rows, currency, categories }: { rows: AdminProdu
           <button className="btn btn-ghost btn-sm ms-auto" onClick={() => setSel(new Set())}>Clear</button>
         </div>
       )}
-      <div className="card overflow-hidden"><div className="overflow-x-auto">
-        <table className="w-full min-w-[44rem] text-sm">
-          <thead className="border-b border-line bg-sunken/60 text-xs uppercase tracking-wider text-muted"><tr>
-            <th className="w-10 p-3"><input type="checkbox" aria-label="Select all" className="size-4 accent-[var(--brand)]" checked={rows.length > 0 && sel.size === rows.length} onChange={() => setSel(sel.size === rows.length ? new Set() : new Set(rows.map((r) => r.id)))} /></th>
-            <th className="p-3 text-start">Product</th><th className="p-3 text-start">Status</th><th className="p-3 text-start">Category</th><th className="p-3 text-end">Stock</th><th className="p-3 text-end">Price</th></tr></thead>
-          <tbody className="divide-y divide-line">
+      <DataTable minWidth="44rem" head={[
+        { label: <input type="checkbox" aria-label="Select all" className="size-4 accent-[var(--brand)]" checked={rows.length > 0 && sel.size === rows.length} onChange={() => setSel(sel.size === rows.length ? new Set() : new Set(rows.map((r) => r.id)))} />, narrow: true },
+        "Product", "Status", "Category", { label: "Stock", end: true }, { label: "Price", end: true }]}>
             {rows.map((r) => (
-              <tr key={r.id} className={`hover:bg-sunken/50 ${sel.has(r.id) ? "bg-brand-soft" : ""}`}>
-                <td className="p-3"><input type="checkbox" aria-label={`Select ${tr(r.name, "en")}`} className="size-4 accent-[var(--brand)]" checked={sel.has(r.id)} onChange={() => setSel((s) => { const n = new Set(s); if (n.has(r.id)) n.delete(r.id); else n.add(r.id); return n; })} /></td>
-                <td className="p-3"><Link href={`/admin/products/${r.id}`} className="flex items-center gap-3">
+              <tr key={r.id} data-selected={sel.has(r.id)}>
+                <td><input type="checkbox" aria-label={`Select ${tr(r.name, "en")}`} className="size-4 accent-[var(--brand)]" checked={sel.has(r.id)} onChange={() => setSel((s) => { const n = new Set(s); if (n.has(r.id)) n.delete(r.id); else n.add(r.id); return n; })} /></td>
+                <td><Link href={`/admin/products/${r.id}`} className="flex items-center gap-3">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  {r.image ? <img src={fileUrl(r.image)} alt="" className="size-11 rounded-lg object-cover" /> : <span className="size-11 rounded-lg bg-sunken" />}
+                  {r.image ? <img src={fileUrl(r.image, "thumb")} alt="" className="size-11 rounded-lg object-cover" /> : <span className="size-11 rounded-lg bg-sunken" />}
                   <span><span className="block font-semibold hover:text-brand">{tr(r.name, "en")}</span><span className="text-xs text-muted">{r.sku ?? r.slug}{r.variants ? ` · ${r.variants} variants` : ""}</span></span></Link></td>
-                <td className="p-3"><Badge color={r.status === "published" ? "#16a34a" : "#64748b"}>{r.status}</Badge></td>
-                <td className="p-3 text-muted">{r.category ? tr(r.category, "en") : "—"}</td>
-                <td className={`num p-3 text-end font-semibold ${r.stock <= 0 ? "text-danger" : r.stock < 5 ? "text-accent" : ""}`}>{r.stock}</td>
-                <td dir="ltr" className="num p-3 text-end font-bold">{formatMoney(r.price, currency, "en")}</td>
+                <td><Badge color={r.status === "published" ? "#16a34a" : "#64748b"}>{r.status}</Badge></td>
+                <td className="text-muted">{r.category ? tr(r.category, "en") : "—"}</td>
+                <td className={`num is-end font-semibold ${r.stock <= 0 ? "text-danger" : r.stock < 5 ? "text-accent" : ""}`}>{r.stock}</td>
+                <td dir="ltr" className="num is-end font-bold">{formatMoney(r.price, currency, "en")}</td>
               </tr>
             ))}
-          </tbody>
-        </table>
-      </div></div>
+      </DataTable>
     </div>
   );
 }

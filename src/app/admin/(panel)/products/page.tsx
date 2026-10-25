@@ -3,7 +3,7 @@ import { Plus, Upload, Download } from "lucide-react";
 import { listAdminProducts, listCategoryOptions } from "@/features/catalog-admin/queries";
 import { getSettings } from "@/lib/settings";
 import { tr } from "@/lib/i18n-core";
-import { PageHeader, Empty, Pager } from "@/features/admin/components/ui";
+import { PageHeader, Empty, Pager, FilterBar, FbItem } from "@/features/admin/components/ui";
 import { ProductsTable } from "@/features/catalog-admin/products-table";
 
 export const metadata = { title: "Products" };
@@ -19,11 +19,11 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
         <Link href="/admin/products/import" className="btn btn-outline btn-sm"><Upload className="size-4" />Import CSV</Link>
         <a href="/admin/products/export" className="btn btn-outline btn-sm"><Download className="size-4" />Export CSV</a>
         <Link href="/admin/products/new" className="btn btn-primary btn-sm"><Plus className="size-4" />New product</Link></>} />
-      <form className="card mb-4 grid gap-3 p-4 sm:grid-cols-4">
-        <input name="q" defaultValue={sp.q} placeholder="Search name, SKU…" aria-label="Search" className="field sm:col-span-2" />
-        <select name="status" defaultValue={sp.status ?? ""} aria-label="Status" className="field"><option value="">Any status</option><option value="published">Published</option><option value="draft">Draft</option></select>
-        <div className="flex gap-2"><select name="category" defaultValue={sp.category ?? ""} aria-label="Category" className="field"><option value="">All categories</option>{catOpts.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}</select><button className="btn btn-primary">Filter</button></div>
-      </form>
+      <FilterBar>
+        <FbItem grow><input name="q" defaultValue={sp.q} placeholder="Search name, SKU…" aria-label="Search" className="field" /></FbItem>
+        <FbItem><select name="status" defaultValue={sp.status ?? ""} aria-label="Status" className="field"><option value="">Any status</option><option value="published">Published</option><option value="draft">Draft</option></select></FbItem>
+        <FbItem><select name="category" defaultValue={sp.category ?? ""} aria-label="Category" className="field"><option value="">All categories</option>{catOpts.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}</select></FbItem>
+      </FilterBar>
       {rows.length === 0 ? <Empty title="No products" hint="Create your first product or import a CSV." action={<Link href="/admin/products/new" className="btn btn-primary btn-sm">New product</Link>} /> : <ProductsTable rows={rows} currency={s.store.currency} categories={catOpts} />}
       <Pager page={page} pages={Math.max(1, Math.ceil(total / perPage))} base="/admin/products" params={sp} />
     </>

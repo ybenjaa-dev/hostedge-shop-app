@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { BRAND } from "@/lib/brand";
 import { getDb, schema } from "@/db";
 import { ensureSchema } from "@/db/ensure-schema";
 import type { I18n, Lang } from "@/lib/i18n-core";
@@ -67,7 +68,7 @@ export type Settings = {
 export const DEFAULT_SETTINGS: Settings = {
   setupDone: false,
   store: {
-    name: "My Store",
+    name: BRAND.name,
     tagline: { en: "Everything your pet will love.", fr: "Tout ce que votre animal va adorer.", ar: "كل ما سيحبه حيوانك الأليف." },
     country: "MA",
     currency: "MAD",
@@ -84,8 +85,8 @@ export const DEFAULT_SETTINGS: Settings = {
   },
   social: { instagram: "", facebook: "", tiktok: "", snapchat: "", youtube: "", x: "", whatsappChannel: "" },
   branding: {
-    logo: "",
-    favicon: "",
+    logo: BRAND.logo,
+    favicon: BRAND.icon,
     primary: "#0f766e",
     secondary: "#2b2118",
     accent: "#ff8a1f",
