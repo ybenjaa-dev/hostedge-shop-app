@@ -21,7 +21,7 @@ export function SiteFooter({ s, lang, t, pages, categories }: { s: Settings; lan
       <a href="#main" className="block bg-white/10 py-2.5 text-center text-sm font-bold hover:bg-white/20"><ArrowUp className="me-1.5 inline size-4" aria-hidden />{t("common.skip")}</a>
       <div className="mx-auto grid max-w-[84rem] gap-8 px-4 py-10 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <p className="text-2xl font-extrabold">{logo ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={logo} alt={s.store.name} className="h-9 w-auto brightness-0 invert" /> : s.store.name}</p>
+          <p className="text-2xl font-extrabold">{logo ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={logo} alt={s.store.name} className="brand-logo h-9 w-auto brightness-0 invert" /> : s.store.name}</p>
           <p className="mt-3 max-w-xs text-sm leading-relaxed text-white/70">{tr(s.footer.text, lang) || tr(s.store.tagline, lang)}</p>
           <div className="mt-4 flex flex-wrap gap-2">
             {socials.filter(([u]) => u).map(([u, Icon, label]) => (

@@ -1,3 +1,4 @@
+import { DateField } from "@/features/admin/components/date-picker";
 import { asc, desc } from "drizzle-orm";
 import Link from "next/link";
 import { Plus } from "lucide-react";
@@ -31,8 +32,8 @@ function CouponForm({ c, cur }: { c?: Coupon; cur: string }) {
         <CouponTypeValue idp={k} type={c?.type} currency={cur} value={c ? (c.type === "fixed" ? toMajorString(c.value, cur) : c.type === "percent" ? String(c.value) : "") : ""} />
         <Field label={`Minimum subtotal (${cur})`} htmlFor={`${k}-min`} hint="0 = no minimum"><input id={`${k}-min`} name="minSubtotal" inputMode="decimal" defaultValue={toMajorString(c?.minSubtotal ?? 0, cur)} className="field num" /></Field>
         <Field label="Max uses" htmlFor={`${k}-max`} hint="Empty = unlimited"><input id={`${k}-max`} name="maxUses" type="number" min={1} defaultValue={c?.maxUses ?? ""} className="field num" /></Field>
-        <Field label="Starts" htmlFor={`${k}-from`}><input id={`${k}-from`} name="startsAt" type="date" defaultValue={day(c?.startsAt ?? null)} className="field" /></Field>
-        <Field label="Ends" htmlFor={`${k}-to`}><input id={`${k}-to`} name="endsAt" type="date" defaultValue={day(c?.endsAt ?? null)} className="field" /></Field>
+        <DateField name="startsAt" label="Starts" defaultValue={day(c?.startsAt ?? null)} placeholder="Immediately" />
+        <DateField name="endsAt" label="Ends" defaultValue={day(c?.endsAt ?? null)} placeholder="No end date" />
       </div>
       <Toggle name="active" label="Active" defaultChecked={c?.active ?? true} />
     </AdminForm>
@@ -69,7 +70,7 @@ export default async function CouponsPage() {
   const nameOf = new Map(products.map((p) => [p.id, p.name]));
   const now = nowMs();
   return (
-    <div className="max-w-5xl space-y-8">
+    <div className="space-y-8">
       <PageHeader title="Coupons & bundles" sub="Discount codes and quantity discounts." />
 
       <section aria-labelledby="coupons-h" className="space-y-3">

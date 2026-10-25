@@ -57,7 +57,7 @@ export default async function Home() {
             <div className="grid grid-cols-2 bg-surface sm:grid-cols-3 lg:grid-cols-6">
               {cats.map((c) => (
                 <Link key={c.id} href={`/category/${c.slug}`} className="group flex flex-col items-center gap-2 border-b border-e border-line p-4 text-center hover:bg-sunken">
-                  <span className="block aspect-square w-full max-w-28 overflow-hidden border border-line bg-white">{c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image)} alt="" loading="lazy" className="size-full object-cover" />}</span>
+                  <span className="block aspect-square w-full max-w-28 overflow-hidden border border-line bg-white">{c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image, "md")} alt="" loading="lazy" className="size-full object-cover" />}</span>
                   <span className="text-sm font-bold group-hover:text-brand group-hover:underline">{tr(c.name, lang)}</span>
                   <span className="num text-xs text-muted">{c.count}</span>
                 </Link>

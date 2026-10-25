@@ -16,7 +16,7 @@ export function SiteHeader({ s, lang, t, categories }: { s: Settings; lang: Lang
   const phone = s.store.phones.filter(Boolean)[0];
   const logoEl = logo ? (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={logo} alt={s.store.name} className="h-9 w-auto max-w-44 object-contain sm:h-11" height={44} />
+    <img src={logo} alt={s.store.name} className="brand-logo h-9 w-auto max-w-44 object-contain sm:h-11" height={44} />
   ) : (
     <span dir="auto" className="display text-[1.55rem] font-extrabold tracking-tight text-brand sm:text-3xl">{s.store.name}</span>
   );
