@@ -72,6 +72,7 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
   }
 
   function openOrder() {
+    if (!anyInStock || soldOutSelected) return; // sold out: never open the form
     if (!requireChoice()) return;
     track("AddToCart", { value: unit * qty, currency: st.currency, ids: [product.id] });
     if (st.placement === "popup") dialogRef.current?.showModal();
