@@ -108,3 +108,49 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body), 
 /* Hide number input arrows */
 input[type=number]::-webkit-inner-spin-button { display: none; }
 @keyframes wiggle { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+/* ───────────────────── Storefront v9 — "Essence" (perfume) ─────────────────────
+   Ivory paper, deep plum panels, gold hairlines, high-contrast serif headlines with italic accents, centred composition.
+   Scoped under .v9 so the admin keeps its own look. */
+.v9 {
+  --bg: #faf6ef; --surface: #fffdf9; --sunken: #f2eadf; --ink: #1d1418; --muted: #7a6a66; --line: #e7ddcd; --panel: #1c0d18; --gold: #b58a4e; --r-media: 0.25rem;
+  --brand-soft: color-mix(in srgb, var(--brand) 8%, #faf6ef);
+  background: var(--bg); color: var(--ink); min-height: 100dvh;
+}
+:root[data-theme="dark"] .v9 { --bg: #130b10; --surface: #1b1016; --sunken: #23161d; --ink: #f4ebe3; --muted: #b3a29c; --line: #34232c; --panel: #1b0e17; --brand: #d9a7c8; --brand-ink: #1a0f16; --gold: #d2a96a; --brand-soft: color-mix(in srgb, var(--brand) 16%, #130b10); }
+.v9 .display, .v9 .heading { font-family: var(--font-heading), var(--font-display), serif; font-weight: 600; letter-spacing: 0; line-height: 1.02; }
+[dir="rtl"] .v9 .display, [dir="rtl"] .v9 .heading { line-height: 1.25; font-weight: 700; }
+.v9 .heading em, .v9 .display em { font-style: italic; font-weight: 500; color: var(--gold); }
+.v9 .eyebrow { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase; color: var(--gold); }
+[dir="rtl"] .v9 .eyebrow { letter-spacing: 0; text-transform: none; font-size: 0.85rem; }
+.v9 :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+.v9 .panel-plum { background: radial-gradient(48rem 26rem at 82% 0%, rgb(181 138 78 / .28), transparent 60%), radial-gradient(40rem 26rem at 0% 100%, color-mix(in srgb, var(--brand) 55%, transparent), transparent 62%), var(--panel); color: #f6ece3; position: relative; overflow: hidden; }
+.v9 .gold-rule { display: flex; align-items: center; gap: 0.9rem; color: var(--gold); }
+.v9 .gold-rule::before, .v9 .gold-rule::after { content: ""; height: 1px; flex: 1; background: linear-gradient(90deg, transparent, var(--gold)); }
+.v9 .gold-rule::after { transform: scaleX(-1); }
+@layer components {
+  .v9 .btn { border-radius: 2px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.78rem; }
+  [dir="rtl"] .v9 .btn { letter-spacing: 0; text-transform: none; font-size: 0.95rem; }
+  .v9 .btn-primary { background: var(--brand); color: var(--brand-ink); }
+  .v9 .btn-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--brand) 82%, #000); }
+  .v9 .btn-accent { background: var(--gold); color: #1d1418; }
+  .v9 .btn-outline { border-color: var(--ink); background: transparent; }
+  .v9 .btn-outline:hover:not(:disabled) { background: var(--ink); color: var(--bg); }
+  .v9 .field { background: var(--surface); border-color: var(--line); border-radius: 2px; }
+  .v9 .field:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgb(181 138 78 / .22); }
+  .v9 .card { background: var(--surface); border-color: var(--line); border-radius: 2px; box-shadow: none; }
+  .v9 .label { font-weight: 600; font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+  [dir="rtl"] .v9 .label { letter-spacing: 0; text-transform: none; font-size: 0.85rem; }
+}
+.v9 .rail { display: flex; gap: 1.1rem; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; padding-bottom: 0.5rem; margin-inline: -1rem; padding-inline: 1rem; }
+.v9 .rail::-webkit-scrollbar { display: none; }
+.v9 .rail > * { scroll-snap-align: start; flex: 0 0 min(62vw, 15rem); }
+@media (min-width: 768px) { .v9 .rail { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.6rem; overflow: visible; margin: 0; padding: 0; } .v9 .rail > * { flex: initial; } .v9 .rail > :nth-child(n+5) { display: none; } }
+.v9 .note { display: inline-flex; align-items: center; border: 1px solid var(--gold); color: var(--ink); border-radius: 9999px; padding: 0.3rem 0.85rem; font-size: 0.85rem; background: transparent; transition: background .2s, color .2s; }
+.v9 a.note:hover { background: var(--gold); color: #1d1418; }
+.v9 .tier { display: grid; grid-template-columns: 7.5rem 1fr; gap: 1rem; align-items: start; padding-block: 1.1rem; border-top: 1px solid var(--line); }
+.v9 .tier:first-child { border-top: 0; }
+@media (max-width: 480px) { .v9 .tier { grid-template-columns: 1fr; gap: 0.5rem; } }
+.v9 .meter { height: 4px; background: var(--line); border-radius: 9999px; overflow: hidden; }
+.v9 .meter > i { display: block; height: 100%; background: linear-gradient(90deg, var(--gold), var(--brand)); border-radius: inherit; }
+[dir="rtl"] .v9 .italic, [dir="rtl"] .v9 em { font-style: normal; }

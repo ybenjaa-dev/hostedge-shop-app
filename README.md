@@ -56,6 +56,9 @@ Schema changes: edit `src/db/schema.ts`, run `npm run db:generate` (drizzle-kit 
 
 ## What's inside
 
+### Storefront (design v9 — "Essence", perfume)
+This branch is a storefront built for a fragrance store: ivory paper, deep plum panels and gold hairlines, Cormorant Garamond serif headlines with italics, centred "maison" header (plum message strip, centred wordmark, centred nav), arch-framed hero, round **scent-family** tiles plus a **shop-by-note** chip row (links to search), gallery-style centred product cards ("from" price, family · concentration line), and on the product page an **olfactive pyramid** (top / heart / base notes, each note links to a search for it) and a **longevity meter** — all read from the product's facts field (`Top notes: Bergamot, Lemon`, `Heart notes: …`, `Base notes: …`, `Longevity: 6–8 h`, in EN/FR/AR labels). Sizes (30/50/100 ml) are ordinary variants. Sample data is a generic fragrance catalogue (citrus, aquatic, floral, woody, gourmand, discovery and travel sets) with glass-flacon illustrations. Colors, fonts, hero and sections remain editable in Admin → Appearance.
+
 ### Storefront
 Mobile-first and light on JS: server-rendered pages, scroll-snap swipe gallery, native `<dialog>` for sheets/drawers, GET-form filters, localized RTL-safe layout (logical CSS properties).
 Home (hero slides, announcement bar, categories, featured/best sellers, reviews, trust badges, footer with contacts + socials), catalog (search, category, price, in-stock filters, sort, pagination, skeletons), product page (gallery with swipe + zoom, variants with per-variant price/stock, quantity, reviews, related, sticky mobile buy bar, sold-out state, JSON-LD), guest cart (localStorage) with slide-over drawer + full page, free-shipping progress bar and coupons, single-page guest checkout, order confirmation, order tracking (order number + phone), static pages, sitemap, robots, OpenGraph, WhatsApp floating button.

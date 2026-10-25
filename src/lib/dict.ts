@@ -31,6 +31,7 @@ const en = {
   "p.disclaimer": "Food supplements are not a substitute for a varied and balanced diet. Do not exceed the recommended daily dose. Keep out of reach of children. If you are pregnant, breastfeeding, taking medication or have a medical condition, ask a health professional before use.",
   "home.clear": "Clear labels, no guesswork", "home.clearD": "Every product page shows the serving size, the dose of each ingredient and how to take it.",
   "p.shade": "Shade", "p.shades": "{n} shades", "p.pickShade": "Choose your shade", "p.ritual": "The ritual", "p.pickedFor": "Our pick", "home.concern": "Shop by concern",
+  "p.pyramid": "Olfactory pyramid", "p.top": "Top notes", "p.heart": "Heart notes", "p.base": "Base notes", "p.longevity": "Longevity", "home.families": "Scent families", "home.byNote": "Shop by note", "p.from": "From", "p.giftWrap": "Free gift wrapping on request", "p.sealed": "Sealed, authentic bottle — open the box with the courier before you pay", "home.discover": "The collection",
 } as const;
 
 export type DictKey = keyof typeof en;
@@ -66,6 +67,7 @@ const fr: D = {
   "p.disclaimer": "Les compléments alimentaires ne se substituent pas à une alimentation variée et équilibrée. Ne pas dépasser la dose journalière recommandée. Tenir hors de portée des enfants. En cas de grossesse, d'allaitement, de traitement médical ou de pathologie, demandez l'avis d'un professionnel de santé avant utilisation.",
   "home.clear": "Des étiquettes claires, sans devinettes", "home.clearD": "Chaque fiche produit indique la portion, la dose de chaque ingrédient et le mode d'emploi.",
   "p.shade": "Teinte", "p.shades": "{n} teintes", "p.pickShade": "Choisissez votre teinte", "p.ritual": "Le rituel", "p.pickedFor": "Notre coup de cœur", "home.concern": "Acheter par besoin",
+  "p.pyramid": "Pyramide olfactive", "p.top": "Notes de tête", "p.heart": "Notes de cœur", "p.base": "Notes de fond", "p.longevity": "Tenue", "home.families": "Familles olfactives", "home.byNote": "Acheter par note", "p.from": "Dès", "p.giftWrap": "Emballage cadeau offert sur demande", "p.sealed": "Flacon authentique et scellé — ouvrez le coffret devant le livreur avant de payer", "home.discover": "La collection",
 };
 
 const ar: D = {
@@ -98,6 +100,7 @@ const ar: D = {
   "p.disclaimer": "المكملات الغذائية ليست بديلاً عن نظام غذائي متنوع ومتوازن. لا تتجاوز الجرعة اليومية الموصى بها. يحفظ بعيداً عن متناول الأطفال. في حالة الحمل أو الرضاعة أو تناول أدوية أو وجود مرض، استشر مختصاً في الصحة قبل الاستعمال.",
   "home.clear": "ملصقات واضحة دون تخمين", "home.clearD": "تعرض كل صفحة منتج الحصة والجرعة لكل مكوّن وطريقة الاستعمال.",
   "p.shade": "اللون", "p.shades": "{n} ألوان", "p.pickShade": "اختاري لونك", "p.ritual": "الروتين", "p.pickedFor": "اختيارنا لكِ", "home.concern": "تسوّقي حسب احتياجك",
+  "p.pyramid": "الهرم العطري", "p.top": "النوتات العليا", "p.heart": "نوتات القلب", "p.base": "نوتات القاعدة", "p.longevity": "الثبات", "home.families": "العائلات العطرية", "home.byNote": "تسوّق حسب النوتة", "p.from": "ابتداءً من", "p.giftWrap": "تغليف هدايا مجاني عند الطلب", "p.sealed": "زجاجة أصلية مختومة — افتح العلبة أمام المندوب قبل أن تدفع", "home.discover": "المجموعة",
 };
 
 export const DICT: Record<Lang, D> = { en: en as unknown as D, fr, ar };

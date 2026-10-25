@@ -65,7 +65,7 @@ export const DEFAULT_SETTINGS: Settings = {
   setupDone: false,
   store: {
     name: "My Store",
-    tagline: {},
+    tagline: { en: "Fine fragrance, delivered — pay when it arrives.", fr: "Le parfum d'exception, livré — payez à la réception.", ar: "عطور فاخرة تصلك — ادفع عند الاستلام." },
     country: "MA",
     currency: "MAD",
     defaultLang: "fr",
@@ -83,11 +83,11 @@ export const DEFAULT_SETTINGS: Settings = {
   branding: {
     logo: "",
     favicon: "",
-    primary: "#0f766e",
-    secondary: "#1f2937",
-    accent: "#f59e0b",
+    primary: "#4b1d3f",
+    secondary: "#1d1418",
+    accent: "#b58a4e",
     buttonStyle: "rounded",
-    fontLatin: "Manrope",
+    fontLatin: "Jost",
     fontArabic: "Cairo",
   },
   checkout: {
@@ -118,9 +118,9 @@ export const DEFAULT_SETTINGS: Settings = {
     banner: { image: "", title: {}, sub: {}, href: "" },
   },
   trust: [
-    { icon: "cod", title: { en: "Pay on delivery", fr: "Paiement à la livraison", ar: "الدفع عند الاستلام" }, text: { en: "Inspect first, then pay the courier", fr: "Vérifiez puis payez au livreur", ar: "افحص طلبك ثم ادفع للمندوب" } },
-    { icon: "delivery", title: { en: "Fast delivery", fr: "Livraison rapide", ar: "توصيل سريع" }, text: { en: "2–4 days across the country", fr: "2 à 4 jours partout", ar: "من 2 إلى 4 أيام لكل المدن" } },
-    { icon: "returns", title: { en: "Free returns", fr: "Retours gratuits", ar: "إرجاع مجاني" }, text: { en: "Not happy? Send it back", fr: "Pas satisfait ? Retournez-le", ar: "غير راضٍ؟ أرجعه لنا" } },
+    { icon: "quality", title: { en: "Authentic only", fr: "100 % authentique", ar: "أصلي 100٪" }, text: { en: "Sealed bottles, batch-coded", fr: "Flacons scellés, numéro de lot", ar: "زجاجات مختومة برقم تشغيلة" } },
+    { icon: "cod", title: { en: "Pay on delivery", fr: "Paiement à la livraison", ar: "الدفع عند الاستلام" }, text: { en: "Open the box, then pay the courier", fr: "Ouvrez le coffret puis payez", ar: "افتح العلبة ثم ادفع للمندوب" } },
+    { icon: "returns", title: { en: "Gift-ready", fr: "Prêt à offrir", ar: "جاهز للإهداء" }, text: { en: "Wrapped on request, free", fr: "Emballage cadeau offert", ar: "تغليف هدايا مجاني" } },
   ],
   footer: { text: {} },
   analytics: { metaPixel: "", tiktokPixel: "", ga: "", snapPixel: "" },

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Star } from "lucide-react";
+import { Star, Gift, ShieldCheck } from "lucide-react";
+import { parseFacts } from "@/lib/facts";
+import { splitScent, longevityHours } from "@/lib/scent";
 import { getSettings } from "@/lib/settings";
 import { getT } from "@/lib/i18n";
 import { tr } from "@/lib/i18n-core";
@@ -10,7 +12,7 @@ import { toMajorString } from "@/lib/money";
 import { getProduct, listBundles, listCities, listProducts, listReviews, listCategories } from "@/features/catalog/queries";
 import { Gallery } from "@/features/catalog/components/gallery";
 import { ProductBuy } from "@/features/checkout/components/product-buy";
-import { ProductCard, ProductGrid } from "@/features/catalog/components/product-card";
+import { ProductCard } from "@/features/catalog/components/product-card";
 import { ReviewForm } from "@/features/catalog/components/review-form";
 import { ViewContent } from "@/features/catalog/components/view-content";
 
@@ -61,6 +63,10 @@ export default async function ProductPage({ params, searchParams }: Props) {
     ...(p.reviewCount ? { aggregateRating: { "@type": "AggregateRating", ratingValue: p.rating, reviewCount: p.reviewCount } } : {}),
   };
 
+  const sc = splitScent(parseFacts(tr(p.specs, lang)));
+  const hours = longevityHours(sc.longevity);
+  const tiers = [[t("p.top"), sc.top], [t("p.heart"), sc.heart], [t("p.base"), sc.base]] as const;
+  const hasPyramid = tiers.some(([, n]) => n.length);
   return (
     <article className="mx-auto max-w-7xl px-4 py-6 pb-28 md:py-10 md:pb-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
@@ -71,13 +77,17 @@ export default async function ProductPage({ params, searchParams }: Props) {
       <div className="grid gap-8 md:grid-cols-2 lg:gap-14">
         <Gallery images={p.images} alt={name} closeLabel={t("cod.close")} />
         <div>
-          <h1 className="display text-3xl font-extrabold leading-tight sm:text-4xl">{name}</h1>
+          {sc.rest[0] && <p className="eyebrow mb-2" dir="auto">{sc.rest[0].value}{sc.rest[1] ? ` · ${sc.rest[1].value}` : ""}</p>}
+          <h1 className="heading text-[clamp(2.2rem,5vw,3.4rem)] italic">{name}</h1>
           <p className="mt-2 flex items-center gap-2 text-sm text-muted">
             {p.rating != null ? <><Star className="size-4 fill-accent text-accent" /><span className="num font-bold text-ink">{p.rating}</span> · {t("p.reviews", { n: p.reviewCount })}</> : t("p.noReviews")}
             <span aria-hidden>·</span>
             <span className={inStock ? "font-semibold text-ok" : "font-semibold text-danger"}>{inStock ? t("p.inStock") : t("p.soldOut")}</span>
           </p>
           <p className="mt-4 leading-relaxed text-muted">{tr(p.shortDesc, lang)}</p>
+          {sc.longevity && (
+            <div className="mt-5 max-w-xs"><p className="label mb-1.5 flex justify-between"><span>{t("p.longevity")}</span><span className="num normal-case tracking-normal text-ink" dir="auto">{sc.longevity}</span></p><div className="meter"><i style={{ width: `${Math.min(100, Math.round(((hours ?? 6) / 12) * 100))}%` }} /></div></div>
+          )}
           <div className="mt-6 border-t border-line pt-6">
             <ProductBuy
               autoOpen={sp.order === "1"}
@@ -86,19 +96,38 @@ export default async function ProductPage({ params, searchParams }: Props) {
               cities={cities}
             />
           </div>
+          <ul className="mt-5 space-y-2 text-sm text-muted">
+            <li className="flex items-center gap-2.5"><ShieldCheck className="size-4 shrink-0 text-[var(--gold)]" strokeWidth={1.5} />{t("p.sealed")}</li>
+            <li className="flex items-center gap-2.5"><Gift className="size-4 shrink-0 text-[var(--gold)]" strokeWidth={1.5} />{t("p.giftWrap")}</li>
+          </ul>
         </div>
       </div>
 
+      {hasPyramid && (
+        <section className="mx-auto mt-16 max-w-3xl text-center" aria-labelledby="pyr-h">
+          <p className="eyebrow mb-2">{name}</p>
+          <h2 id="pyr-h" className="heading text-[clamp(1.9rem,4vw,2.6rem)]">{t("p.pyramid")}</h2>
+          <div className="mt-6 text-start">
+            {tiers.map(([label, notes], i) => notes.length > 0 && (
+              <div key={i} className="tier">
+                <p className="heading text-xl italic text-[var(--gold)]"><span className="num me-2 text-sm not-italic text-muted">0{i + 1}</span>{label}</p>
+                <p className="flex flex-wrap gap-2">{notes.map((n) => <Link key={n} href={`/shop?q=${encodeURIComponent(n)}`} className="note">{n}</Link>)}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {tr(p.longDesc, lang) && (
-        <section className="mt-14 max-w-3xl">
-          <h2 className="display mb-3 text-2xl font-extrabold">{t("p.description")}</h2>
+        <section className="mx-auto mt-14 max-w-2xl text-center">
+          <h2 className="heading mb-3 text-2xl">{t("p.description")}</h2>
           <div className="prose-lite text-muted"><p>{tr(p.longDesc, lang)}</p></div>
         </section>
       )}
 
       <section className="mt-14 grid gap-8 md:grid-cols-[1fr_22rem]" aria-labelledby="reviews-h">
         <div>
-          <h2 id="reviews-h" className="display mb-4 text-2xl font-extrabold">{t("p.reviews", { n: p.reviewCount })}</h2>
+          <h2 id="reviews-h" className="heading mb-4 text-3xl">{t("p.reviews", { n: p.reviewCount })}</h2>
           {reviews.length === 0 ? <p className="text-muted">{t("p.noReviews")}</p> : (
             <ul className="space-y-4">
               {reviews.map((r) => (
@@ -115,8 +144,8 @@ export default async function ProductPage({ params, searchParams }: Props) {
 
       {related.items.length > 0 && (
         <section className="mt-16">
-          <h2 className="display mb-6 text-2xl font-extrabold">{t("p.related")}</h2>
-          <ProductGrid>{related.items.map((r) => <ProductCard key={r.id} p={r} lang={lang} t={t} currency={s.store.currency} codMode={s.checkout.codMode} />)}</ProductGrid>
+          <h2 className="heading mb-8 text-center text-3xl">{t("p.related")}</h2>
+          <div className="rail">{related.items.map((r) => <ProductCard key={r.id} p={r} lang={lang} t={t} currency={s.store.currency} codMode={s.checkout.codMode} />)}</div>
         </section>
       )}
     </article>

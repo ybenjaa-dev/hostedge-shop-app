@@ -14,44 +14,28 @@ export function SiteFooter({ s, lang, t, pages }: { s: Settings; lang: Lang; t: 
     [so.youtube, Youtube, "YouTube"], [so.x, Twitter, "X"], [so.whatsappChannel, MessageCircle, "WhatsApp channel"],
   ] as const;
   const logo = fileUrl(s.branding.logo);
+  const a = "text-white/70 hover:text-white hover:underline underline-offset-4";
   return (
-    <footer className="mt-20 border-t border-line bg-sunken pb-24 pt-12 md:pb-12">
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 md:grid-cols-4">
-        <div className="md:col-span-2">
-          <p className="display text-2xl font-extrabold">
-            {logo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={logo} alt={s.store.name} className="h-9 w-auto" />
-            ) : (
-              s.store.name
-            )}
-          </p>
-          <p className="mt-3 max-w-md text-sm leading-relaxed text-muted">{tr(s.footer.text, lang) || tr(s.store.tagline, lang)}</p>
-          <div className="mt-5 flex flex-wrap gap-2">
-            {socials.filter(([u]) => u).map(([u, Icon, label]) => (
-              <a key={label} href={u} target="_blank" rel="noopener noreferrer" aria-label={label} className="grid size-10 place-items-center rounded-full border border-line bg-surface hover:border-brand hover:text-brand"><Icon className="size-4" /></a>
-            ))}
-          </div>
+    <footer className="panel-plum mt-20 text-white">
+      <div className="relative mx-auto max-w-7xl px-5 pt-12">
+        <p className="heading text-center text-4xl italic sm:text-5xl">{logo ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={logo} alt={s.store.name} className="h-12 w-auto brightness-0 invert" /> : s.store.name}</p>
+        {(tr(s.footer.text, lang) || tr(s.store.tagline, lang)) && <p className="mx-auto mt-3 max-w-lg text-center text-white/70">{tr(s.footer.text, lang) || tr(s.store.tagline, lang)}</p>}
+        <div className="mt-10 grid gap-10 border-t border-white/15 pt-10 sm:grid-cols-2 lg:grid-cols-3">
+          <div><h2 className="eyebrow mb-4">{t("footer.pages")}</h2><ul className="space-y-2.5 text-sm">{pages.map((p) => <li key={p.slug}><Link href={`/page/${p.slug}`} className={a}>{tr(p.title, lang)}</Link></li>)}<li><Link href="/track" className={a}>{t("nav.track")}</Link></li></ul></div>
+          <div><h2 className="eyebrow mb-4">{t("footer.contact")}</h2>
+            <ul className="space-y-2.5 text-sm text-white/80">
+              {s.store.phones.filter(Boolean).map((p) => (<li key={p} className="flex items-center gap-2"><Phone className="size-4 shrink-0" /><a href={`tel:+${p.replace(/\D/g, "")}`} dir="ltr" className={a}>{formatPhoneIntl(p.replace(/\D/g, ""))}</a></li>))}
+              {s.store.whatsapp && <li className="flex items-center gap-2"><MessageCircle className="size-4 shrink-0" /><a href={whatsappLink(s.store.whatsapp)} target="_blank" rel="noopener noreferrer" className={a}>{t("common.whatsapp")}</a></li>}
+              {s.store.email && <li className="flex items-center gap-2"><Mail className="size-4 shrink-0" /><a href={`mailto:${s.store.email}`} className={a}>{s.store.email}</a></li>}
+              {tr(s.store.address, lang) && <li className="flex items-start gap-2"><MapPin className="mt-0.5 size-4 shrink-0" />{tr(s.store.address, lang)}</li>}
+              {tr(s.store.hours, lang) && <li className="flex items-start gap-2"><Clock className="mt-0.5 size-4 shrink-0" />{tr(s.store.hours, lang)}</li>}
+            </ul></div>
+          <div><h2 className="eyebrow mb-4">{t("footer.follow")}</h2>
+            <div className="flex flex-wrap gap-2">{socials.filter(([u]) => u).map(([u, Icon, label]) => <a key={label} href={u} target="_blank" rel="noopener noreferrer" aria-label={label} className="grid size-11 place-items-center rounded-full border border-white/25 transition hover:bg-white hover:text-black"><Icon className="size-4" /></a>)}</div>
+            </div>
         </div>
-        <div>
-          <h2 className="mb-3 text-sm font-extrabold uppercase tracking-wider">{t("footer.pages")}</h2>
-          <ul className="space-y-2 text-sm text-muted">
-            {pages.map((p) => (<li key={p.slug}><Link href={`/page/${p.slug}`} className="hover:text-ink hover:underline">{tr(p.title, lang)}</Link></li>))}
-            <li><Link href="/track" className="hover:text-ink hover:underline">{t("nav.track")}</Link></li>
-          </ul>
-        </div>
-        <div>
-          <h2 className="mb-3 text-sm font-extrabold uppercase tracking-wider">{t("footer.contact")}</h2>
-          <ul className="space-y-2.5 text-sm text-muted">
-            {s.store.phones.filter(Boolean).map((p) => (<li key={p} className="flex items-center gap-2"><Phone className="size-4 shrink-0" /><a href={`tel:+${p.replace(/\D/g, "")}`} dir="ltr" className="hover:text-ink">{formatPhoneIntl(p.replace(/\D/g, ""))}</a></li>))}
-            {s.store.whatsapp && (<li className="flex items-center gap-2"><MessageCircle className="size-4 shrink-0" /><a href={whatsappLink(s.store.whatsapp)} target="_blank" rel="noopener noreferrer" className="hover:text-ink">{t("common.whatsapp")}</a></li>)}
-            {s.store.email && (<li className="flex items-center gap-2"><Mail className="size-4 shrink-0" /><a href={`mailto:${s.store.email}`} className="hover:text-ink">{s.store.email}</a></li>)}
-            {tr(s.store.address, lang) && (<li className="flex items-start gap-2"><MapPin className="mt-0.5 size-4 shrink-0" />{tr(s.store.address, lang)}</li>)}
-            {tr(s.store.hours, lang) && (<li className="flex items-start gap-2"><Clock className="mt-0.5 size-4 shrink-0" />{tr(s.store.hours, lang)}</li>)}
-          </ul>
-        </div>
+        <p className="mt-12 pb-28 text-xs text-white/40 md:pb-10">© {new Date().getFullYear()} {s.store.name} · {t("footer.rights")}</p>
       </div>
-      <p className="mx-auto mt-10 max-w-7xl px-4 text-xs text-muted">© {new Date().getFullYear()} {s.store.name}. {t("footer.rights")}</p>
     </footer>
   );
 }
