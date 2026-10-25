@@ -74,6 +74,8 @@ Offers can be shown in five layouts: **List** (default), **Tiles**, **Photo card
 - Photo cards use the offer's own photo, or the product image stacked ×N when none is set.
 - Sample data gives the featured products different templates so you can compare them.
 
+Screenshots of every template on every storefront theme (390 px) are in [`docs/screenshots/offer-templates/`](docs/screenshots/offer-templates). The sample data per storefront is in [`docs/sample-data/`](docs/sample-data).
+
 ### Storefront
 Mobile-first and light on JS: server-rendered pages, scroll-snap swipe gallery, native `<dialog>` for sheets/drawers, GET-form filters, localized RTL-safe layout (logical CSS properties).
 Home (hero slides, announcement bar, categories, featured/best sellers, reviews, trust badges, footer with contacts + socials), catalog (search, category, price, in-stock filters, sort, pagination, skeletons), product page (gallery with swipe + zoom, variants with per-variant price/stock, quantity, reviews, related, sticky mobile buy bar, sold-out state, JSON-LD), guest cart (localStorage) with slide-over drawer + full page, free-shipping progress bar and coupons, single-page guest checkout, order confirmation, order tracking (order number + phone), static pages, sitemap, robots, OpenGraph, WhatsApp floating button.
