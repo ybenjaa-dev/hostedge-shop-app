@@ -54,7 +54,7 @@ export function StorePreview({ v, storeName, tagline, currency, lang, slide = 0 
       {v.announcement.enabled && tr(v.announcement.text, lang) && <div className="bg-secondary px-3 py-1.5 text-center text-[11px] font-semibold text-white">{tr(v.announcement.text, lang)}</div>}
       <div className="flex h-12 items-center gap-2 border-b border-line bg-bg px-3">
         <Menu className="size-4 text-muted" aria-hidden />
-        {logo ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={logo} alt={storeName} className="h-7 w-auto max-w-28 object-contain" /> : <span className="display text-base font-extrabold">{storeName}</span>}
+        {logo ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={logo} alt={storeName} className="brand-logo h-7 w-auto max-w-28 object-contain" /> : <span className="display text-base font-extrabold">{storeName}</span>}
         <span className="ms-auto inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-bold" style={{ background: primary, color: onColor(primary) }}><ShoppingBag className="size-3.5" aria-hidden />0</span>
       </div>
       {sections.map((s) => {

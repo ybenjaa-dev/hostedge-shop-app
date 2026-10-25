@@ -1,4 +1,5 @@
 "use client";
+import { DataTable } from "@/features/settings/components/table";
 import { AdminForm } from "@/features/admin/components/admin-form";
 import { Field } from "@/features/admin/components/fields";
 import { bulkRegionAction, saveCitiesAction } from "../actions";
@@ -24,24 +25,17 @@ export function CitiesEditor({ country, currency, cities, carriers }: { country:
       <AdminForm action={saveCitiesAction} submitLabel="Save cities">
         <input type="hidden" name="ids" value={cities.map((c) => c.id).join(",")} />
         <p className="text-xs text-muted">Empty fee = store default fee; empty free-above = store threshold. Amounts in {currency}.</p>
-        <div className="overflow-x-auto rounded-xl border border-line">
-          <table className="w-full min-w-[44rem] text-sm">
-            <thead className="bg-sunken text-start text-xs uppercase tracking-wider text-muted">
-              <tr><th className="p-2 text-start">City</th><th className="p-2 text-start">Fee</th><th className="p-2 text-start">Free above</th><th className="p-2 text-start">COD</th><th className="p-2 text-start">Default carrier</th></tr>
-            </thead>
-            <tbody>
-              {cities.map((c) => (
-                <tr key={c.id} className="border-t border-line">
-                  <td className="p-2 font-semibold">{c.name}{c.region && <span className="block text-xs font-normal text-muted">{c.region}</span>}</td>
-                  <td className="p-2"><input aria-label={`Fee ${c.name}`} name={`fee:${c.id}`} defaultValue={c.fee} inputMode="decimal" className="field num !min-h-10 !py-1.5" /></td>
-                  <td className="p-2"><input aria-label={`Free above ${c.name}`} name={`free:${c.id}`} defaultValue={c.freeAbove} inputMode="decimal" className="field num !min-h-10 !py-1.5" /></td>
-                  <td className="p-2"><select aria-label={`COD ${c.name}`} name={`cod:${c.id}`} defaultValue={c.codAvailable ? "1" : "0"} className="field !min-h-10 !py-1.5"><option value="1">Yes</option><option value="0">No</option></select></td>
-                  <td className="p-2"><select aria-label={`Default carrier ${c.name}`} name={`dc:${c.id}`} defaultValue={c.defaultCarrier ?? ""} className="field !min-h-10 !py-1.5"><option value="">None</option>{carriers.map((k) => <option key={k.id} value={k.id}>{k.name}</option>)}</select></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTable minWidth="44rem" head={["City", "Fee", "Free above", "COD", "Default carrier"]}>
+          {cities.map((c) => (
+            <tr key={c.id}>
+              <td className="font-semibold">{c.name}{c.region && <span className="block text-xs font-normal text-muted">{c.region}</span>}</td>
+              <td><input aria-label={`Fee ${c.name}`} name={`fee:${c.id}`} defaultValue={c.fee} inputMode="decimal" className="field num !min-h-10 !py-1.5" /></td>
+              <td><input aria-label={`Free above ${c.name}`} name={`free:${c.id}`} defaultValue={c.freeAbove} inputMode="decimal" className="field num !min-h-10 !py-1.5" /></td>
+              <td><select aria-label={`COD ${c.name}`} name={`cod:${c.id}`} defaultValue={c.codAvailable ? "1" : "0"} className="field !min-h-10 !py-1.5"><option value="1">Yes</option><option value="0">No</option></select></td>
+              <td><select aria-label={`Default carrier ${c.name}`} name={`dc:${c.id}`} defaultValue={c.defaultCarrier ?? ""} className="field !min-h-10 !py-1.5"><option value="">None</option>{carriers.map((k) => <option key={k.id} value={k.id}>{k.name}</option>)}</select></td>
+            </tr>
+          ))}
+        </DataTable>
       </AdminForm>
     </div>
   );

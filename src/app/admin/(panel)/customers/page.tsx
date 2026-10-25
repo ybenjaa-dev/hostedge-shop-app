@@ -5,7 +5,7 @@ import { getDb, schema } from "@/db";
 import { getSettings } from "@/lib/settings";
 import { formatMoney } from "@/lib/money";
 import { formatPhoneIntl, latinDigits } from "@/lib/phone";
-import { Badge, Empty, PageHeader, Pager } from "@/features/admin/components/ui";
+import { Badge, Empty, PageHeader, Pager, FilterBar, FbItem } from "@/features/admin/components/ui";
 import { DataTable, Td } from "@/features/settings/components/table";
 import { Tabs } from "@/features/settings/components/tabs";
 import { ActionButton } from "@/features/settings/components/action-button";
@@ -29,7 +29,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
       <div>
         <PageHeader title="Customers" sub="Blocked numbers cannot place orders." />
         <Tabs base="/admin/customers" current="blocked" items={[{ id: "customers", label: "Customers" }, { id: "blocked", label: "Blocked numbers" }]} />
-        <div className="max-w-4xl space-y-6">
+        <div className="space-y-6">
           <section className="card p-5"><h2 className="display mb-4 text-lg font-extrabold">Block a number</h2><BlockForm /></section>
           {rows.length === 0 ? <Empty title="No blocked numbers" hint="Block fake or abusive numbers here, or from a customer's page." /> : (
             <DataTable head={["Phone", "Reason", "Blocked on", ""]}>
@@ -61,11 +61,9 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
     <div>
       <PageHeader title="Customers" sub={`${total?.n ?? 0} customer${total?.n === 1 ? "" : "s"}`} />
       <Tabs base="/admin/customers" current="customers" items={[{ id: "customers", label: "Customers" }, { id: "blocked", label: "Blocked numbers" }]} />
-      <form role="search" className="mb-4 flex max-w-md gap-2">
-        <input name="q" defaultValue={q} placeholder="Search by name or phone…" aria-label="Search customers" className="field" />
-        <button className="btn btn-primary">Search</button>
-        {q && <Link href="/admin/customers" className="btn btn-outline">Clear</Link>}
-      </form>
+      <FilterBar actions={<><button className="btn btn-primary">Search</button>{q && <Link href="/admin/customers" className="btn btn-outline">Clear</Link>}</>}>
+        <FbItem grow><input name="q" defaultValue={q} placeholder="Search by name or phone…" aria-label="Search customers" className="field" /></FbItem>
+      </FilterBar>
       {rows.length === 0 ? <Empty title={q ? "No customers match" : "No customers yet"} hint={q ? "Try a different name or part of the phone number." : "Customers appear here after their first order."} /> : (
         <DataTable head={["Customer", "Orders", "Delivered", "Returned", "Spent", "Last order"]}>
           {rows.map((c) => (

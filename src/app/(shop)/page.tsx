@@ -55,7 +55,7 @@ export default async function Home() {
                   <Link key={c.id} href={`/category/${c.slug}`} className="group flex w-32 shrink-0 flex-col items-center gap-3 text-center md:w-auto">
                     <span className="relative block aspect-square w-full overflow-hidden rounded-full border border-[var(--gold)] p-1.5">
                       <span className="block size-full overflow-hidden rounded-full bg-sunken">
-                        {c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image)} alt="" loading="lazy" className="size-full object-cover transition duration-700 group-hover:scale-110" />}
+                        {c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image, "md")} alt="" loading="lazy" className="size-full object-cover transition duration-700 group-hover:scale-110" />}
                       </span>
                       <span className="absolute bottom-1 end-1 grid size-8 place-items-center rounded-full bg-[var(--panel)] text-[var(--gold)]"><Icon className="size-4" strokeWidth={1.5} /></span>
                     </span>
