@@ -255,3 +255,5 @@ input[type=number]::-webkit-inner-spin-button { display: none; }
 .v15 .offer-count, .v15 .offer-price { font-family: var(--font-heading), sans-serif; letter-spacing: -0.01em; }
 .v15 .offer-flag { border-radius: 0.3rem; background: var(--chrome); color: #12161c; }
 .v15 .offer-save { border-radius: 0.3rem; }
+/* this storefront's header is dark in both modes: its logo is already drawn for it, so skip the dark-mode inversion */
+:root[data-theme="dark"] .brand-logo, .brand-logo { filter: none; }
