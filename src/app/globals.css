@@ -105,6 +105,21 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body), 
 .scroll-snap-x > * { scroll-snap-align: center; flex: 0 0 100%; }
 .prose-lite p { margin: 0 0 1em; line-height: 1.75; white-space: pre-line; }
 .prose-lite h2 { font-weight: 800; font-size: 1.25rem; margin: 1.5em 0 .5em; }
+/* Quantity-offer cards ("buy 1 / 2 / 3 for …"). Themes tweak radius and accents in their own scope. */
+@layer components {
+  .offer-card { position: relative; display: flex; align-items: center; gap: 0.85rem; padding: 0.85rem 1rem; border: 2px solid var(--line); border-radius: 1rem; background: var(--surface); cursor: pointer; transition: border-color .15s, background-color .15s, box-shadow .15s, transform .15s; }
+  .offer-card:hover:not(.is-off) { border-color: color-mix(in srgb, var(--brand) 55%, var(--line)); }
+  .offer-card:has(:focus-visible) { outline: 2px solid var(--brand); outline-offset: 2px; }
+  .offer-card.is-on { border-color: var(--brand); background: var(--brand-soft); box-shadow: 0 8px 20px -14px var(--brand); }
+  .offer-card.is-off { cursor: not-allowed; opacity: .45; }
+  .offer-radio { display: grid; place-items: center; flex: none; width: 1.35rem; height: 1.35rem; border-radius: 9999px; border: 2px solid var(--line); background: var(--surface); color: var(--brand-ink); transition: background-color .15s, border-color .15s; }
+  .offer-card.is-on .offer-radio { background: var(--brand); border-color: var(--brand); }
+  .offer-count { font-weight: 800; font-size: 1rem; }
+  .offer-price { font-weight: 800; font-size: 1.1rem; }
+  .offer-flag { display: inline-flex; align-items: center; gap: 0.25rem; border-radius: 9999px; background: var(--brand); color: var(--brand-ink); padding: 0.1rem 0.55rem; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.02em; }
+  .offer-flag.is-plain { background: var(--sunken); color: var(--ink); }
+  .offer-save { display: inline-block; margin-top: 0.15rem; border-radius: 9999px; background: color-mix(in srgb, var(--ok, #16a34a) 16%, transparent); color: var(--ok, #16a34a); padding: 0.05rem 0.5rem; font-size: 0.7rem; font-weight: 800; }
+}
 /* Hide number input arrows */
 input[type=number]::-webkit-inner-spin-button { display: none; }
 @keyframes wiggle { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
@@ -158,3 +173,14 @@ input[type=number]::-webkit-inner-spin-button { display: none; }
 .v14 .size-table th { background: var(--ink); color: #fff; font-family: var(--font-heading), sans-serif; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-size: 0.78rem; }
 .v14 .v14-bar .btn-ghost, .v14 .v14-bar summary { color: #fff; }
 .v14 .v14-bar .btn-ghost:hover:not(:disabled) { background: rgb(255 255 255 / .12); }
+
+/* quantity-offer cards — v14 (angular) */
+.v14 .offer-card { border-radius: 0; border: 2px solid var(--ink); background: var(--surface); clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%); }
+.v14 .offer-card.is-on { background: var(--lime); color: #0d0d0d; border-color: #0d0d0d; box-shadow: none; }
+.v14 .offer-card.is-on .text-muted { color: #2c3a00; }
+.v14 .offer-radio { border-radius: 0; border-color: var(--ink); transform: skewX(-10deg); }
+.v14 .offer-card.is-on .offer-radio { background: #0d0d0d; border-color: #0d0d0d; color: var(--lime); }
+.v14 .offer-count, .v14 .offer-price { font-family: var(--font-heading), sans-serif; text-transform: uppercase; font-style: italic; font-weight: 700; }
+.v14 .offer-flag { border-radius: 0; background: #0d0d0d; color: var(--lime); transform: skewX(-10deg); }
+.v14 .offer-save { border-radius: 0; background: #0d0d0d; color: var(--lime); }
+[dir="rtl"] .v14 .offer-count, [dir="rtl"] .v14 .offer-price { text-transform: none; font-style: normal; }
