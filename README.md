@@ -87,6 +87,15 @@ Every upload goes through one library, WordPress-style: a searchable grid with a
 ### Admin UI kit
 One look everywhere: `DataTable` (card that scrolls sideways *inside* itself), `Tabs`, `FilterBar` (filters and the Filter button always stay inside their card), and custom `DateField` / `DateRangeField` pickers (presets, keyboard support, bottom-sheet on phones) instead of the browser's native date input.
 
+- **Rows with side sheets:** categories and coupons are tables like products; *New / Edit* opens a drawer that closes after saving. Coupons show a live "what customers see" ticket while you type.
+- **Language tabs everywhere:** translated fields (name, descriptions, page body, appearance texts…) use one tab bar — FR / AR / EN with flags and a dot for "has content". Long descriptions and page bodies use a built-in rich-text editor (headings, lists, quotes, links); HTML is sanitised on save *and* on render (`src/lib/rich-text.ts`), older plain-text content still renders as paragraphs.
+- **Offers:** fixed-price quantity offers are set on each product (with a live preview of the real offer cards in the shop's theme). The store-wide default layout and optional "buy N, save %" rule live in Settings → Offers.
+- **Appearance studio:** big live preview next to the editor — click any part of the preview to jump to its settings, type straight onto texts, reorder/hide homepage sections from the preview, switch phone/tablet/desktop and language.
+- **New-order alerts:** the admin polls for orders; a soft double "pip" (synthesised, no audio file), a toast, a bell toggle, a pending count on *Orders* and an optional desktop notification.
+- **Order timeline:** progress tracker (New → Confirmed → Shipped → Delivered) plus an event feed with who changed what, how long each step took, and notes.
+- **Language switcher:** soft-rounded colourful flags (Arabic → Morocco, French → France, English → United Kingdom); closes on outside click / Esc.
+- **Anti-spam honeypot:** neutral field name with no label, so browsers/password managers can't auto-fill it and turn a real order into a fake one.
+
 ### Storefront
 Mobile-first and light on JS: server-rendered pages, scroll-snap swipe gallery, native `<dialog>` for sheets/drawers, GET-form filters, localized RTL-safe layout (logical CSS properties).
 Home (hero slides, announcement bar, categories, featured/best sellers, reviews, trust badges, footer with contacts + socials), catalog (search, category, price, in-stock filters, sort, pagination, skeletons), product page (gallery with swipe + zoom, variants with per-variant price/stock, quantity, reviews, related, sticky mobile buy bar, sold-out state, JSON-LD), guest cart (localStorage) with slide-over drawer + full page, free-shipping progress bar and coupons, single-page guest checkout, order confirmation, order tracking (order number + phone), static pages, sitemap, robots, OpenGraph, WhatsApp floating button.
