@@ -57,5 +57,19 @@ export const MIGRATIONS: { name: string; statements: string[] }[] = [
       "CREATE TABLE `users` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`email` text NOT NULL,\n\t`name` text NOT NULL,\n\t`password_hash` text NOT NULL,\n\t`role` text DEFAULT 'staff' NOT NULL,\n\t`active` integer DEFAULT true NOT NULL,\n\t`created_at` integer NOT NULL\n);",
       "CREATE UNIQUE INDEX `users_email_idx` ON `users` (`email`);"
     ]
+  },
+  {
+    "name": "0001_lean_captain_universe",
+    "statements": [
+      "ALTER TABLE `products` ADD `specs` text DEFAULT '{}' NOT NULL;"
+    ]
+  },
+  {
+    "name": "0002_quantity_offers",
+    "statements": [
+      "ALTER TABLE `bundles` ADD `price` integer;",
+      "ALTER TABLE `bundles` ADD `label` text;",
+      "ALTER TABLE `bundles` ADD `popular` integer DEFAULT false NOT NULL;"
+    ]
   }
 ];

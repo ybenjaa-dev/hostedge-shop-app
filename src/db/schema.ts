@@ -70,6 +70,7 @@ export const products = sqliteTable(
     name: text("name").notNull(), // JSON i18n
     shortDesc: text("short_desc").notNull().default("{}"),
     longDesc: text("long_desc").notNull().default("{}"),
+    specs: text("specs").notNull().default("{}"), // JSON i18n; one "Label: value" per line (supplement facts, specs…)
     categoryId: text("category_id"),
     sku: text("sku"),
     price: integer("price").notNull(), // minor units
@@ -159,6 +160,11 @@ export const bundles = sqliteTable("bundles", {
   productId: text("product_id"), // null → applies to all products
   minQty: integer("min_qty").notNull(),
   percent: integer("percent").notNull(),
+  /** Fixed-price offer: total price (minor units) for exactly `minQty` units of `productId` ("buy 2 for 229"). null → percentage bundle. */
+  price: integer("price"),
+  /** Optional badge text on the offer card, e.g. "Family pack". */
+  label: text("label"),
+  popular: integer("popular", { mode: "boolean" }).notNull().default(false),
   active: integer("active", { mode: "boolean" }).notNull().default(true),
 });
 
