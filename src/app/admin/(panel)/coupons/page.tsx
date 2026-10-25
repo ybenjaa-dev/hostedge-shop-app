@@ -5,9 +5,10 @@ import { requireUser } from "@/lib/auth";
 import { getDb, schema } from "@/db";
 import { getSettings } from "@/lib/settings";
 import { formatMoney, toMajorString } from "@/lib/money";
+import { fileUrl } from "@/lib/storage";
 import { tr } from "@/lib/i18n-core";
 import { AdminForm } from "@/features/admin/components/admin-form";
-import { Field, Toggle } from "@/features/admin/components/fields";
+import { Field, ImageField, Toggle } from "@/features/admin/components/fields";
 import { Badge, Empty, PageHeader, Panel } from "@/features/admin/components/ui";
 import { nowMs } from "@/features/settings/lib";
 import { ActionButton } from "@/features/settings/components/action-button";
@@ -47,6 +48,7 @@ function BundleForm({ b, products }: { b?: Bundle; products: { id: string; name:
         <Field label="Buy at least (qty)" htmlFor={`${k}-qty`}><input id={`${k}-qty`} name="minQty" type="number" min={2} max={1000} required defaultValue={b?.minQty ?? 2} className="field num" /></Field>
         <Field label="Save (%)" htmlFor={`${k}-pct`}><input id={`${k}-pct`} name="percent" type="number" min={1} max={90} required defaultValue={b?.percent ?? 10} className="field num" /></Field>
       </div>
+      <ImageField label="Photo (optional)" name="image" value={b?.image ?? ""} hint="Shown on this offer card on the product page, e.g. a photo of the pack." />
       <Toggle name="active" label="Active" defaultChecked={b?.active ?? true} />
     </AdminForm>
   );
@@ -98,6 +100,7 @@ export default async function CouponsPage() {
           <ul className="space-y-2">{bundles.map((b) => (
             <li key={b.id} className="card"><details className="group">
               <summary className="flex min-h-14 cursor-pointer list-none flex-wrap items-center gap-x-4 gap-y-1 p-3 [&::-webkit-details-marker]:hidden">
+                {b.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(b.image)} alt="" className="size-10 rounded-lg border border-line object-cover" />}
                 <span className="font-bold">{b.price != null ? `Buy ${b.minQty} for ${toMajorString(b.price, cur)}${b.label ? ` · ${b.label}` : ""}` : `Buy ${b.minQty}+, save ${b.percent}%`}</span>
                 <span className="text-sm text-muted">{b.productId ? nameOf.get(b.productId) ?? "Deleted product" : "All products"}</span>
                 <span className="ms-auto flex items-center gap-2">{b.active ? <Badge color="#16a34a">Active</Badge> : <Badge>Inactive</Badge>}<span className="btn btn-outline btn-sm">Edit</span></span>

@@ -78,8 +78,9 @@ export async function saveBundle(_p: ActionState, form: FormData): Promise<Actio
         productId: z.string().max(40),
         minQty: z.number().int().min(2, "Quantity must be at least 2").max(1000),
         percent: z.number().int().min(1, "Discount must be 1–90%").max(90, "Discount must be 1–90%"),
+        image: z.string().regex(/^(uploads\/[A-Za-z0-9._-]{4,120})?$/, "Invalid image"),
       }),
-      { id: fd(form, "id"), productId: fd(form, "productId"), minQty: Number(fd(form, "minQty")), percent: Number(fd(form, "percent")) },
+      { id: fd(form, "id"), productId: fd(form, "productId"), minQty: Number(fd(form, "minQty")), percent: Number(fd(form, "percent")), image: fd(form, "image") },
     );
     if (!p.ok) return p.state;
     const d = p.data;
@@ -87,7 +88,7 @@ export async function saveBundle(_p: ActionState, form: FormData): Promise<Actio
       const pr = await getDb().select({ id: schema.products.id }).from(schema.products).where(eq(schema.products.id, d.productId)).get();
       if (!pr) return fail("Product not found");
     }
-    const values = { productId: d.productId || null, minQty: d.minQty, percent: d.percent, active: form.get("active") === "1" };
+    const values = { productId: d.productId || null, minQty: d.minQty, percent: d.percent, image: d.image || null, active: form.get("active") === "1" };
     const db = getDb();
     if (d.id) {
       await db.update(schema.bundles).set(values).where(eq(schema.bundles.id, d.id));
