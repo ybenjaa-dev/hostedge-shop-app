@@ -21,7 +21,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
     <div>
       <PageHeader title="Settings" sub="Store configuration, checkout and shipping rules." />
       <Tabs base="/admin/settings" current={tab} items={TABS} />
-      <div className="max-w-5xl space-y-5">
+      <div className="space-y-5">
         {tab === "store" && <StoreSection s={s} />}
         {tab === "checkout" && <CheckoutSection s={s} />}
         {tab === "cities" && <CitiesSection s={s} sp={{ country: one(sp.country), q: one(sp.q), page: one(sp.page) }} />}

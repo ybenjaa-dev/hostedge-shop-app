@@ -49,7 +49,7 @@ export default async function Home() {
             <div className="scroll-snap-x -mx-4 flex gap-3 px-4 [&>*]:!flex-none [&>*]:!basis-auto md:grid md:grid-cols-4 md:overflow-visible">
               {cats.map((c) => (
                 <Link key={c.id} href={`/category/${c.slug}`} className="group relative block aspect-[4/3] w-44 overflow-hidden rounded-2xl bg-sunken md:w-auto">
-                  {c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image)} alt="" loading="lazy" className="size-full object-cover transition duration-500 group-hover:scale-105" />}
+                  {c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image, "md")} alt="" loading="lazy" className="size-full object-cover transition duration-500 group-hover:scale-105" />}
                   <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
                   <span className="display absolute inset-x-3 bottom-3 text-lg font-extrabold leading-tight text-white">{tr(c.name, lang)}</span>
                 </Link>

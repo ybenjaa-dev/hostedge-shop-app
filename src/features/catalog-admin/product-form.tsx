@@ -1,12 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, Loader2, Plus, Sparkles, Star, Tag, Trash2, Upload, Wand2, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Images, Loader2, Plus, Sparkles, Star, Tag, Trash2, Upload, Wand2 } from "lucide-react";
 import { AdminForm } from "@/features/admin/components/admin-form";
 import { Field, I18nField, Toggle, uploadImage } from "@/features/admin/components/fields";
 import { saveProductAction } from "./actions";
 import { OfferTemplatePicker } from "./components/offer-template-picker";
 import { OFFER_TEMPLATES } from "@/lib/offer-templates";
 import { fileUrl } from "@/lib/storage";
+import { MediaImageInput } from "@/features/media/image-input";
+import { MediaPicker } from "@/features/media/media-picker";
 import type { I18n } from "@/lib/i18n-core";
 
 type Img = { key: string; alt: string | null };
@@ -24,25 +26,12 @@ const fmtOptions = (o: Record<string, string>) => Object.entries(o).map(([k, v])
 
 /** Small picture picker for one offer ("3-pack photo"). */
 function OfferImage({ value, onChange }: { value: string; onChange: (k: string) => void }) {
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState("");
-  return (
-    <div>
-      <span className="label">Photo</span>
-      <div className="flex items-center gap-1.5">
-        <label className="relative grid size-11 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-lg border border-dashed border-line bg-sunken hover:border-ink/40" title={value ? "Replace photo" : "Add a photo of this pack"}>
-          {value ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(value)} alt="" className="size-full object-cover" /> : busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Upload className="size-4 text-muted" aria-hidden />}
-          <input type="file" accept="image/jpeg,image/png,image/webp,image/avif" className="sr-only" disabled={busy} aria-label="Offer photo" onChange={async (e) => { const f = e.target.files?.[0]; e.target.value = ""; if (!f) return; setBusy(true); setErr(""); const r = await uploadImage(f); setBusy(false); if (r.ok) onChange(r.key); else setErr(r.error); }} />
-        </label>
-        {value && <button type="button" aria-label="Remove offer photo" className="btn btn-ghost btn-sm !px-1.5" onClick={() => onChange("")}><X className="size-4" /></button>}
-      </div>
-      {err && <p role="alert" className="err">{err}</p>}
-    </div>
-  );
+  return <MediaImageInput label="Photo" value={value} onChange={onChange} fit="cover" size="size-11" compactLabel="Offer photo" />;
 }
 
 export function ProductForm({ data, categories, storeTemplate = "list" }: { data: ProductFormData; categories: { id: string; label: string }[]; storeTemplate?: string }) {
   const [images, setImages] = useState<Img[]>(data.images);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [variants, setVariants] = useState<Var[]>(data.variants);
   const [busy, setBusy] = useState(false);
   const [upErr, setUpErr] = useState("");
@@ -107,13 +96,13 @@ export function ProductForm({ data, categories, storeTemplate = "list" }: { data
           </section>
 
           <section className="card p-5">
-            <div className="mb-3 flex items-center justify-between"><h2 className="display text-lg font-extrabold">Images</h2><label className="btn btn-outline btn-sm cursor-pointer">{busy ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}Upload<input type="file" multiple accept="image/jpeg,image/png,image/webp,image/avif" className="sr-only" disabled={busy} onChange={(e) => { void addFiles(e.target.files); e.target.value = ""; }} /></label></div>
-            {images.length === 0 ? <label onDragOver={(e) => { e.preventDefault(); setDropOver(true); }} onDragLeave={() => setDropOver(false)} onDrop={(e) => { e.preventDefault(); setDropOver(false); void addFiles(e.dataTransfer.files); }} className={`grid cursor-pointer place-items-center gap-1 rounded-xl border-2 border-dashed p-8 text-center text-sm transition ${dropOver ? "border-brand bg-brand-soft" : "border-line text-muted hover:border-ink/40"}`}><Upload className="size-6" aria-hidden /><span className="font-bold text-ink">Drop photos here or click to choose</span><span>JPEG, PNG, WebP or AVIF, up to 5 MB — resized to WebP in your browser. Square or 4:5 photos on a plain background look best.</span><input type="file" multiple accept="image/jpeg,image/png,image/webp,image/avif" className="sr-only" disabled={busy} onChange={(e) => { void addFiles(e.target.files); e.target.value = ""; }} /></label> : (
+            <div className="mb-3 flex items-center justify-between"><h2 className="display text-lg font-extrabold">Images</h2><div className="flex flex-wrap gap-2"><button type="button" className="btn btn-primary btn-sm" onClick={() => setPickerOpen(true)}><Images className="size-4" aria-hidden />Media library</button><label className="btn btn-outline btn-sm cursor-pointer">{busy ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}Upload<input type="file" multiple accept="image/jpeg,image/png,image/webp,image/avif" className="sr-only" disabled={busy} onChange={(e) => { void addFiles(e.target.files); e.target.value = ""; }} /></label></div></div>
+            {images.length === 0 ? <label onDragOver={(e) => { e.preventDefault(); setDropOver(true); }} onDragLeave={() => setDropOver(false)} onDrop={(e) => { e.preventDefault(); setDropOver(false); void addFiles(e.dataTransfer.files); }} className={`grid cursor-pointer place-items-center gap-1 rounded-xl border-2 border-dashed p-8 text-center text-sm transition ${dropOver ? "border-brand bg-brand-soft" : "border-line text-muted hover:border-ink/40"}`}><Upload className="size-6" aria-hidden /><span className="font-bold text-ink">Drop photos here or click to upload</span><span>JPEG, PNG, WebP or AVIF, up to 5 MB — compressed to WebP with thumbnails; pictures already in the library are reused, never stored twice. Square or 4:5 photos on a plain background look best.</span><input type="file" multiple accept="image/jpeg,image/png,image/webp,image/avif" className="sr-only" disabled={busy} onChange={(e) => { void addFiles(e.target.files); e.target.value = ""; }} /></label> : (
               <ul className="grid grid-cols-3 gap-3 sm:grid-cols-4">
                 {images.map((im, i) => (
                   <li key={im.key} draggable onDragStart={() => setDrag(i)} onDragOver={(e) => e.preventDefault()} onDrop={() => { if (drag != null) move(drag, i); setDrag(null); }} className={`group relative aspect-square cursor-grab overflow-hidden rounded-xl border bg-sunken ${i === 0 ? "border-brand ring-2 ring-brand/30" : "border-line"}`}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={fileUrl(im.key)} alt="" className="size-full object-cover" />
+                    <img src={fileUrl(im.key, "thumb")} alt="" className="size-full object-cover" />
                     {i === 0 && <span className="absolute start-1 top-1 rounded bg-brand px-1.5 text-[10px] font-extrabold text-brand-ink">MAIN</span>}
                     {im.key.startsWith("uploads/sample-") && <span className="absolute end-1 top-1 rounded bg-black/70 px-1.5 text-[10px] font-extrabold text-white">PLACEHOLDER</span>}
                     <div className="absolute inset-x-0 bottom-0 flex justify-between bg-black/60 p-1 opacity-100 sm:opacity-0 sm:transition sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
@@ -126,7 +115,8 @@ export function ProductForm({ data, categories, storeTemplate = "list" }: { data
               </ul>
             )}
             {upErr && <p className="err">{upErr}</p>}
-            <p className="mt-2 text-xs text-muted">Drag to reorder (or use the arrows). The first image is the main one. Uploading a real photo removes the placeholder illustration. Need many at once? Use <a href="/admin/photos" className="font-bold text-brand underline">Photos</a>.</p>
+            <MediaPicker open={pickerOpen} onClose={() => setPickerOpen(false)} multiple title="Choose product images" onPick={(items) => setImages((x) => [...x.filter((i) => !i.key.startsWith("uploads/sample-")), ...items.filter((it) => !x.some((i) => i.key === it.key)).map((it) => ({ key: it.key, alt: it.alt }))].slice(0, 20))} />
+            <p className="mt-2 text-xs text-muted">Drag to reorder (or use the arrows). The first image is the main one. Uploading a real photo removes the placeholder illustration. Need many at once? Use <a href="/admin/media" className="font-bold text-brand underline">Media</a>.</p>
           </section>
 
           <section className="card p-5">
