@@ -5,6 +5,7 @@ export const NAV: NavItem[] = [
   { href: "/admin/cash", label: "COD cash", icon: "Banknote", group: "Sales" },
   { href: "/admin/abandoned", label: "Abandoned", icon: "PhoneMissed", group: "Sales" },
   { href: "/admin/products", label: "Products", icon: "Package", group: "Catalog" },
+  { href: "/admin/photos", label: "Photos", icon: "ImagePlus", group: "Catalog" },
   { href: "/admin/categories", label: "Categories", icon: "Tags", group: "Catalog" },
   { href: "/admin/coupons", label: "Coupons & bundles", icon: "Ticket", group: "Catalog" },
   { href: "/admin/reviews", label: "Reviews", icon: "Star", group: "Catalog" },
