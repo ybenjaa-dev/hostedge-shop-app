@@ -111,17 +111,19 @@ export function CheckoutSection({ s }: { s: Settings }) {
   );
 }
 
+function AnalyticsInput({ k, label, ph, value }: { k: keyof Settings["analytics"]; label: string; ph: string; value: string }) {
+  return (
+    <Field label={label} htmlFor={`an-${k}`}><input id={`an-${k}`} name={k} defaultValue={value} placeholder={ph} pattern="[A-Za-z0-9_\-]{3,40}" maxLength={40} dir="ltr" className="field" autoComplete="off" /></Field>
+  );
+}
 export function AnalyticsSection({ s }: { s: Settings }) {
   const a = s.analytics;
-  const F = ({ k, label, ph }: { k: keyof Settings["analytics"]; label: string; ph: string }) => (
-    <Field label={label} htmlFor={`an-${k}`}><input id={`an-${k}`} name={k} defaultValue={a[k]} placeholder={ph} pattern="[A-Za-z0-9_\-]{3,40}" maxLength={40} dir="ltr" className="field" autoComplete="off" /></Field>
-  );
   return (
     <AdminForm action={saveAnalytics} submitLabel="Save analytics IDs">
       <Panel title="Tracking IDs"><p className="mb-4 text-sm text-muted">Only the ID, not the full script. Letters, numbers, - and _ (3–40 chars).</p>
         <div className="grid gap-4 sm:grid-cols-2">
-          <F k="metaPixel" label="Meta (Facebook) Pixel ID" ph="1234567890" /><F k="tiktokPixel" label="TikTok Pixel ID" ph="C1ABCDEF" />
-          <F k="ga" label="Google Analytics ID" ph="G-XXXXXXXX" /><F k="snapPixel" label="Snapchat Pixel ID" ph="a1b2c3d4-…" />
+          <AnalyticsInput k="metaPixel" label="Meta (Facebook) Pixel ID" ph="1234567890" value={a.metaPixel} /><AnalyticsInput k="tiktokPixel" label="TikTok Pixel ID" ph="C1ABCDEF" value={a.tiktokPixel} />
+          <AnalyticsInput k="ga" label="Google Analytics ID" ph="G-XXXXXXXX" value={a.ga} /><AnalyticsInput k="snapPixel" label="Snapchat Pixel ID" ph="a1b2c3d4-…" value={a.snapPixel} />
         </div>
       </Panel>
     </AdminForm>

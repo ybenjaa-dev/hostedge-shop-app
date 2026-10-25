@@ -3,7 +3,7 @@ import { z } from "zod";
 import { run, audit, fd, fdI18n, type ActionState } from "@/features/admin/run";
 import { getSettings, saveSettings, type Settings } from "@/lib/settings";
 import { CURRENCIES, toMinor } from "@/lib/money";
-import { COUNTRIES, countryByCode, normalizePhone } from "@/lib/phone";
+import { countryByCode, normalizePhone } from "@/lib/phone";
 import { LANGS, isLang, type Lang } from "@/lib/i18n-core";
 import { DEFAULT_STATUS_DEFS, ORDER_STATUSES, type StatusDef } from "@/lib/order-status";
 import { isHex } from "@/lib/color";

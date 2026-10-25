@@ -8,6 +8,7 @@ import { tr } from "@/lib/i18n-core";
 import { AdminForm } from "@/features/admin/components/admin-form";
 import { Field, Toggle } from "@/features/admin/components/fields";
 import { Badge, Empty, PageHeader, Panel } from "@/features/admin/components/ui";
+import { nowMs } from "@/features/settings/lib";
 import { ActionButton } from "@/features/settings/components/action-button";
 import { CouponTypeValue } from "@/features/catalog-admin/components/coupon-fields";
 import { saveCoupon, deleteCoupon, saveBundle, deleteBundle } from "@/features/catalog-admin/promo-actions";
@@ -62,7 +63,7 @@ export default async function CouponsPage() {
   ]);
   const products = prods.map((p) => ({ id: p.id, name: tr(p.name, "en") || p.id }));
   const nameOf = new Map(products.map((p) => [p.id, p.name]));
-  const now = Date.now();
+  const now = nowMs();
   return (
     <div className="max-w-5xl space-y-8">
       <PageHeader title="Coupons & bundles" sub="Discount codes and quantity discounts." />

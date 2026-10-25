@@ -40,3 +40,4 @@ export function pageNum(v: string | string[] | undefined): number {
   return Number.isFinite(n) && n > 0 ? Math.min(n, 100000) : 1;
 }
 export const one = (v: string | string[] | undefined): string => (Array.isArray(v) ? v[0] ?? "" : v ?? "");
+export const nowMs = (): number => Date.now();
