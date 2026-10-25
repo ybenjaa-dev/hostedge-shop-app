@@ -12,9 +12,15 @@
     "cf:build": "opennextjs-cloudflare build",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "db:generate": "drizzle-kit generate",
+    "db:generate": "drizzle-kit generate && npm run gen:migrations",
     "db:migrate:local": "wrangler d1 migrations apply main --local",
-    "seed": "tsx scripts/seed.ts"
+    "seed": "tsx scripts/seed.ts",
+    "gen:migrations": "node scripts/gen-migrations.mjs",
+    "predev": "npm run gen:migrations",
+    "prebuild": "npm run gen:migrations",
+    "precf:build": "npm run gen:migrations",
+    "prepreview": "npm run gen:migrations",
+    "predeploy": "npm run gen:migrations"
   },
   "dependencies": {
     "@noble/hashes": "^2.4.0",
