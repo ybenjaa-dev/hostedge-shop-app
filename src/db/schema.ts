@@ -160,6 +160,11 @@ export const bundles = sqliteTable("bundles", {
   productId: text("product_id"), // null → applies to all products
   minQty: integer("min_qty").notNull(),
   percent: integer("percent").notNull(),
+  /** Fixed-price offer: total price (minor units) for exactly `minQty` units of `productId` ("buy 2 for 229"). null → percentage bundle. */
+  price: integer("price"),
+  /** Optional badge text on the offer card, e.g. "Family pack". */
+  label: text("label"),
+  popular: integer("popular", { mode: "boolean" }).notNull().default(false),
   active: integer("active", { mode: "boolean" }).notNull().default(true),
 });
 
