@@ -224,3 +224,5 @@ input[type=number]::-webkit-inner-spin-button { display: none; }
 .v2 .offer-count, .v2 .offer-price { font-weight: 800; letter-spacing: -0.01em; }
 .v2 .offer-flag { background: var(--ink); color: var(--accent); border-radius: 0.4rem; }
 .v2 .offer-save { background: #fff; color: #14532d; border: 2px solid var(--ink); }
+
+.v2 .offer-thumb { border: 2px solid var(--ink); border-radius: 0.6rem; }
