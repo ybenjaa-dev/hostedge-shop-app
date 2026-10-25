@@ -65,7 +65,7 @@ export const DEFAULT_SETTINGS: Settings = {
   setupDone: false,
   store: {
     name: "My Store",
-    tagline: {},
+    tagline: { en: "Accessories that fit your car.", fr: "Des accessoires qui vont à votre voiture.", ar: "إكسسوارات تناسب سيارتك." },
     country: "MA",
     currency: "MAD",
     defaultLang: "fr",
@@ -83,11 +83,11 @@ export const DEFAULT_SETTINGS: Settings = {
   branding: {
     logo: "",
     favicon: "",
-    primary: "#0f766e",
-    secondary: "#1f2937",
-    accent: "#f59e0b",
+    primary: "#e11d2e",
+    secondary: "#12161c",
+    accent: "#cfd6df",
     buttonStyle: "rounded",
-    fontLatin: "Manrope",
+    fontLatin: "Inter",
     fontArabic: "Cairo",
   },
   checkout: {
@@ -118,9 +118,9 @@ export const DEFAULT_SETTINGS: Settings = {
     banner: { image: "", title: {}, sub: {}, href: "" },
   },
   trust: [
-    { icon: "cod", title: { en: "Pay on delivery", fr: "Paiement à la livraison", ar: "الدفع عند الاستلام" }, text: { en: "Inspect first, then pay the courier", fr: "Vérifiez puis payez au livreur", ar: "افحص طلبك ثم ادفع للمندوب" } },
-    { icon: "delivery", title: { en: "Fast delivery", fr: "Livraison rapide", ar: "توصيل سريع" }, text: { en: "2–4 days across the country", fr: "2 à 4 jours partout", ar: "من 2 إلى 4 أيام لكل المدن" } },
-    { icon: "returns", title: { en: "Free returns", fr: "Retours gratuits", ar: "إرجاع مجاني" }, text: { en: "Not happy? Send it back", fr: "Pas satisfait ? Retournez-le", ar: "غير راضٍ؟ أرجعه لنا" } },
+    { icon: "quality", title: { en: "Fitment checked", fr: "Compatibilité vérifiée", ar: "التوافق مؤكد" }, text: { en: "Pick your car, see what fits", fr: "Choisissez votre voiture, voyez ce qui va", ar: "اختر سيارتك وشاهد ما يناسبها" } },
+    { icon: "cod", title: { en: "Pay on delivery", fr: "Paiement à la livraison", ar: "الدفع عند الاستلام" }, text: { en: "Check it, then pay the courier", fr: "Vérifiez puis payez", ar: "افحص ثم ادفع للمندوب" } },
+    { icon: "returns", title: { en: "Doesn't fit? Exchange", fr: "Ne va pas ? Échange", ar: "لا يناسب؟ تبديل" }, text: { en: "Free exchange within 14 days", fr: "Échange gratuit sous 14 jours", ar: "تبديل مجاني خلال 14 يوماً" } },
   ],
   footer: { text: {} },
   analytics: { metaPixel: "", tiktokPixel: "", ga: "", snapPixel: "" },

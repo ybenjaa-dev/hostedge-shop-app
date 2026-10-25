@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Star } from "lucide-react";
+import { Star, Wrench, ShieldCheck } from "lucide-react";
+import { parseFacts } from "@/lib/facts";
+import { fitList } from "@/lib/fitment";
+import { FitCheck } from "@/features/catalog/components/car-select";
 import { getSettings } from "@/lib/settings";
 import { getT } from "@/lib/i18n";
 import { tr } from "@/lib/i18n-core";
@@ -10,7 +13,7 @@ import { toMajorString } from "@/lib/money";
 import { getProduct, listBundles, listCities, listProducts, listReviews, listCategories } from "@/features/catalog/queries";
 import { Gallery } from "@/features/catalog/components/gallery";
 import { ProductBuy } from "@/features/checkout/components/product-buy";
-import { ProductCard, ProductGrid } from "@/features/catalog/components/product-card";
+import { ProductCard } from "@/features/catalog/components/product-card";
 import { ReviewForm } from "@/features/catalog/components/review-form";
 import { ViewContent } from "@/features/catalog/components/view-content";
 
@@ -61,6 +64,10 @@ export default async function ProductPage({ params, searchParams }: Props) {
     ...(p.reviewCount ? { aggregateRating: { "@type": "AggregateRating", ratingValue: p.rating, reviewCount: p.reviewCount } } : {}),
   };
 
+  const facts = parseFacts(tr(p.specs, lang)).filter((f) => f.value);
+  const compat = facts.find((f) => /^(compatibility|compatibilité|التوافق)$/i.test(f.label));
+  const list = fitList(compat?.value);
+  const rest = facts.filter((f) => f !== compat);
   return (
     <article className="mx-auto max-w-7xl px-4 py-6 pb-28 md:py-10 md:pb-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
@@ -71,13 +78,15 @@ export default async function ProductPage({ params, searchParams }: Props) {
       <div className="grid gap-8 md:grid-cols-2 lg:gap-14">
         <Gallery images={p.images} alt={name} closeLabel={t("cod.close")} />
         <div>
-          <h1 className="display text-3xl font-extrabold leading-tight sm:text-4xl">{name}</h1>
+          {p.sku && <p className="chip mb-3">SKU {p.sku}</p>}
+          <h1 className="heading text-[clamp(1.9rem,4.6vw,3rem)]">{name}</h1>
           <p className="mt-2 flex items-center gap-2 text-sm text-muted">
             {p.rating != null ? <><Star className="size-4 fill-accent text-accent" /><span className="num font-bold text-ink">{p.rating}</span> · {t("p.reviews", { n: p.reviewCount })}</> : t("p.noReviews")}
             <span aria-hidden>·</span>
             <span className={inStock ? "font-semibold text-ok" : "font-semibold text-danger"}>{inStock ? t("p.inStock") : t("p.soldOut")}</span>
           </p>
           <p className="mt-4 leading-relaxed text-muted">{tr(p.shortDesc, lang)}</p>
+          {compat && <div className="mt-5"><FitCheck text={compat.value} labels={{ title: t("p.fitCheck"), make: t("home.make"), model: t("home.model"), all: t("home.allModels"), pick: t("p.fitPick"), yes: t("p.fitYes", { car: "{car}" }), no: t("p.fitNo", { car: "{car}" }), universal: t("p.fitUniversal"), saved: t("p.carSaved") }} /></div>}
           <div className="mt-6 border-t border-line pt-6">
             <ProductBuy
               autoOpen={sp.order === "1"}
@@ -86,19 +95,32 @@ export default async function ProductPage({ params, searchParams }: Props) {
               cities={cities}
             />
           </div>
+          <p className="mt-5 flex items-center gap-2.5 rounded-xl bg-sunken p-3 text-sm font-semibold"><ShieldCheck className="size-5 shrink-0 text-brand" />{t("p.fitExchange")}</p>
         </div>
       </div>
 
-      {tr(p.longDesc, lang) && (
-        <section className="mt-14 max-w-3xl">
-          <h2 className="display mb-3 text-2xl font-extrabold">{t("p.description")}</h2>
-          <div className="prose-lite text-muted"><p>{tr(p.longDesc, lang)}</p></div>
-        </section>
-      )}
+      <section className="mt-12 grid gap-6 lg:grid-cols-[1fr_22rem]">
+        <div className="space-y-6">
+          {tr(p.longDesc, lang) && (
+            <div><h2 className="heading mb-3 text-2xl">{t("p.description")}</h2><div className="prose-lite text-muted"><p>{tr(p.longDesc, lang)}</p></div></div>
+          )}
+          {rest.length > 0 && (
+            <div><h2 className="heading mb-3 flex items-center gap-2 text-2xl"><Wrench className="size-5 text-brand" />{t("p.specs")}</h2>
+              <div className="overflow-hidden rounded-xl border border-line"><table className="spec-table"><tbody>{rest.map((f, i) => <tr key={i}><th scope="row">{f.label}</th><td dir="auto">{f.value}</td></tr>)}</tbody></table></div>
+            </div>
+          )}
+        </div>
+        {list.length > 0 && (
+          <aside className="carbon h-fit rounded-xl p-5">
+            <h2 className="heading relative mb-3 text-xl">{t("p.compat")}</h2>
+            <ul className="relative grid gap-1.5 text-sm">{list.map((x) => <li key={x} className="flex items-center gap-2"><span className="size-1.5 rounded-full bg-[var(--brand)]" /><Link href={`/shop?q=${encodeURIComponent(x)}`} className="hover:underline">{x}</Link></li>)}</ul>
+          </aside>
+        )}
+      </section>
 
       <section className="mt-14 grid gap-8 md:grid-cols-[1fr_22rem]" aria-labelledby="reviews-h">
         <div>
-          <h2 id="reviews-h" className="display mb-4 text-2xl font-extrabold">{t("p.reviews", { n: p.reviewCount })}</h2>
+          <h2 id="reviews-h" className="heading mb-4 text-2xl">{t("p.reviews", { n: p.reviewCount })}</h2>
           {reviews.length === 0 ? <p className="text-muted">{t("p.noReviews")}</p> : (
             <ul className="space-y-4">
               {reviews.map((r) => (
@@ -115,8 +137,8 @@ export default async function ProductPage({ params, searchParams }: Props) {
 
       {related.items.length > 0 && (
         <section className="mt-16">
-          <h2 className="display mb-6 text-2xl font-extrabold">{t("p.related")}</h2>
-          <ProductGrid>{related.items.map((r) => <ProductCard key={r.id} p={r} lang={lang} t={t} currency={s.store.currency} codMode={s.checkout.codMode} />)}</ProductGrid>
+          <h2 className="heading mb-6 text-2xl">{t("p.related")}</h2>
+          <div className="rail">{related.items.map((r) => <ProductCard key={r.id} p={r} lang={lang} t={t} currency={s.store.currency} codMode={s.checkout.codMode} />)}</div>
         </section>
       )}
     </article>

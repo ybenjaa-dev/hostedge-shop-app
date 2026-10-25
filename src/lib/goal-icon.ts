@@ -1,4 +1,4 @@
-import { Zap, ShieldCheck, Moon, Dumbbell, Leaf, Bone, Pill, Sparkles, Brain, Heart, type LucideIcon } from "lucide-react";
+import { Armchair, Cpu, Wrench, CarFront, Zap, ShieldCheck, Moon, Dumbbell, Leaf, Bone, Pill, Sparkles, Brain, Heart, type LucideIcon } from "lucide-react";
 
 /** Pick an icon for a health goal from its slug/name keywords (any language). */
 export function goalIcon(key: string): LucideIcon {
@@ -14,4 +14,14 @@ export function goalIcon(key: string): LucideIcon {
   if (has("brain", "memo", "cerveau", "mind")) return Brain;
   if (has("heart", "coeur", "cœur", "omega", "قلب")) return Heart;
   return Pill;
+}
+
+/** Icon for a car-accessory category from its slug/name keywords (any language). */
+export function autoIcon(key: string): LucideIcon {
+  const k = key.toLowerCase();
+  const has = (...w: string[]) => w.some((x) => k.includes(x));
+  if (has("interior", "intérieur", "seat", "داخل", "مقصورة")) return Armchair;
+  if (has("electro", "électro", "cam", "charg", "إلكترون")) return Cpu;
+  if (has("tool", "emergency", "outil", "urgence", "أدوات", "طوارئ")) return Wrench;
+  return CarFront;
 }

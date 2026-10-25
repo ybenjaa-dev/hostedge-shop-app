@@ -46,7 +46,7 @@ export async function runSetup(_prev: SetupState, form: FormData): Promise<Setup
   if (d.sample) {
     await seedSampleData(env, d.currency);
     await saveSettings("hero", {
-      slides: [{ image: "uploads/sample-hero.svg", title: { en: "Quality you can touch before you pay", fr: "La qualité que vous touchez avant de payer", ar: "جودة تلمسها قبل أن تدفع" }, sub: { en: "Order in 20 seconds. Pay the courier when it arrives.", fr: "Commandez en 20 secondes. Payez au livreur.", ar: "اطلب في 20 ثانية وادفع للمندوب عند الاستلام." }, cta: { en: "Shop now", fr: "Acheter", ar: "تسوّق الآن" }, href: "/shop" }],
+      slides: [{ image: "uploads/sample-hero.svg", title: { en: "Accessories that fit your car", fr: "Des accessoires qui vont à votre voiture", ar: "إكسسوارات تناسب سيارتك" }, sub: { en: "Pick your make and model, see what fits, and pay the courier when it arrives.", fr: "Choisissez marque et modèle, voyez ce qui va et payez le livreur à la réception.", ar: "اختر الماركة والطراز وشاهد ما يناسب سيارتك وادفع للمندوب عند الاستلام." }, cta: { en: "Shop all accessories", fr: "Tous les accessoires", ar: "كل الإكسسوارات" }, href: "/shop" }],
     });
   }
   await createSession(userId);
