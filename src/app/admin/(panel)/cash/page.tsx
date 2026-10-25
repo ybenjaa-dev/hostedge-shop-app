@@ -1,9 +1,11 @@
+import { DateRangeField } from "@/features/admin/components/date-picker";
+import { DataTable } from "@/features/settings/components/table";
 import Link from "next/link";
 import { cashSummary } from "@/features/orders/queries";
 import { getSettings } from "@/lib/settings";
 import { getEnv } from "@/lib/env";
 import { formatMoney } from "@/lib/money";
-import { PageHeader, Panel, Stat, Empty } from "@/features/admin/components/ui";
+import { PageHeader, Panel, Stat, Empty, FilterBar, FbItem } from "@/features/admin/components/ui";
 import { RemitButton } from "@/features/orders/components/remit-button";
 
 export const metadata = { title: "COD cash" };
@@ -22,7 +24,7 @@ export default async function CashPage({ searchParams }: { searchParams: Promise
   return (
     <>
       <PageHeader title="COD cash tracking" sub="Expected vs collected vs pending remittance from carriers" />
-      <form className="mb-5 flex flex-wrap items-end gap-2"><label className="text-xs font-bold text-muted">From<input type="date" name="from" defaultValue={sp.from} className="field mt-1 !min-h-10" /></label><label className="text-xs font-bold text-muted">To<input type="date" name="to" defaultValue={sp.to} className="field mt-1 !min-h-10" /></label><button className="btn btn-outline btn-sm">Apply</button></form>
+      <FilterBar actions={<button className="btn btn-primary">Apply</button>}><FbItem wide><DateRangeField from={sp.from} to={sp.to} label="Date range" /></FbItem></FilterBar>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat label="Expected cash" value={<bdi dir="ltr">{f(c.expected!)}</bdi>} sub="confirmed → delivered" />
         <Stat label="Collected" value={<bdi dir="ltr">{f(c.collected!)}</bdi>} tone="ok" sub={`${c.deliveredCount} delivered`} />
@@ -36,8 +38,9 @@ export default async function CashPage({ searchParams }: { searchParams: Promise
       <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_20rem]">
         <Panel title="Awaiting remittance" actions={<RemitButton ids={pending.map((p) => p.id)} remitted label="Mark all as remitted" />}>
           {pending.length === 0 ? <Empty title="Nothing pending" hint="Delivered orders appear here until you mark the carrier payout as received." /> : (
-            <div className="overflow-x-auto"><table className="w-full text-sm"><thead className="text-xs uppercase text-muted"><tr><th className="p-2 text-start">Order</th><th className="p-2 text-start">Carrier</th><th className="p-2 text-end">Cash</th><th className="p-2 text-end">Fee</th></tr></thead>
-              <tbody className="divide-y divide-line">{pending.map((p) => <tr key={p.id}><td className="p-2"><Link className="num font-bold text-brand hover:underline" href={`/admin/orders/${p.id}`}>#{p.number}</Link> <span className="text-muted">{p.name}</span></td><td className="p-2 capitalize">{p.carrier ?? "—"}</td><td dir="ltr" className="num p-2 text-end font-bold">{f(p.total)}</td><td dir="ltr" className="num p-2 text-end text-muted">{f(p.fee)}</td></tr>)}</tbody></table></div>
+            <DataTable minWidth="26rem" head={["Order", "Carrier", { label: "Cash", end: true }, { label: "Fee", end: true }]}>
+              {pending.map((p) => <tr key={p.id}><td><Link className="num font-bold text-brand hover:underline" href={`/admin/orders/${p.id}`}>#{p.number}</Link> <span className="text-muted">{p.name}</span></td><td className="capitalize">{p.carrier ?? "—"}</td><td dir="ltr" className="num is-end font-bold">{f(p.total)}</td><td dir="ltr" className="num is-end text-muted">{f(p.fee)}</td></tr>)}
+            </DataTable>
           )}
         </Panel>
         <Panel title="By carrier">

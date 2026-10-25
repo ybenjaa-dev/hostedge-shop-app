@@ -54,7 +54,7 @@ export default async function Home() {
                 const Icon = autoIcon(`${c.slug} ${tr(c.name, lang)}`);
                 return (
                   <Link key={c.id} href={`/category/${c.slug}`} className="group relative block aspect-[5/4] overflow-hidden rounded-xl bg-[#12161c]">
-                    {c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image)} alt="" loading="lazy" className="size-full object-cover opacity-90 transition duration-500 group-hover:scale-105" />}
+                    {c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image, "md")} alt="" loading="lazy" className="size-full object-cover opacity-90 transition duration-500 group-hover:scale-105" />}
                     <span className="absolute inset-x-0 bottom-0 flex items-center gap-2 bg-gradient-to-t from-black/85 to-transparent p-3 pt-10 text-white"><span className="grid size-8 shrink-0 place-items-center rounded-md bg-[var(--brand)]"><Icon className="size-4" /></span><span className="heading text-base sm:text-lg">{tr(c.name, lang)}</span></span>
                   </Link>
                 );
