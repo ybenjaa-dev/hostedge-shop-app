@@ -29,6 +29,13 @@
       "when": 1792946514708,
       "tag": "0003_bundle_images",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1792946977332,
+      "tag": "0004_offer_templates",
+      "breakpoints": true
     }
   ]
 }

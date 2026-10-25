@@ -4,6 +4,8 @@ import { ArrowLeft, ArrowRight, Loader2, Plus, Sparkles, Star, Tag, Trash2, Uplo
 import { AdminForm } from "@/features/admin/components/admin-form";
 import { Field, I18nField, Toggle, uploadImage } from "@/features/admin/components/fields";
 import { saveProductAction } from "./actions";
+import { OfferTemplatePicker } from "./components/offer-template-picker";
+import { OFFER_TEMPLATES } from "@/lib/offer-templates";
 import { fileUrl } from "@/lib/storage";
 import type { I18n } from "@/lib/i18n-core";
 
@@ -14,7 +16,7 @@ type Var = { id?: string; name: string; options: Record<string, string>; sku: st
 export type ProductFormData = {
   id?: string; slug: string; name: I18n; shortDesc: I18n; longDesc: I18n; specs: I18n; seoTitle: I18n; seoDesc: I18n;
   categoryId: string; sku: string; price: string; compareAt: string; stock: number; trackStock: boolean; status: "draft" | "published"; featured: boolean; bestseller: boolean;
-  images: Img[]; variants: Var[]; offers: Offer[];
+  images: Img[]; variants: Var[]; offers: Offer[]; offerTemplate: string;
 };
 
 const parseOptions = (s: string) => Object.fromEntries(s.split(/[;,]/).map((p) => p.split("=").map((x) => x.trim())).filter((p) => p[0] && p[1]) as [string, string][]);
@@ -39,7 +41,7 @@ function OfferImage({ value, onChange }: { value: string; onChange: (k: string) 
   );
 }
 
-export function ProductForm({ data, categories }: { data: ProductFormData; categories: { id: string; label: string }[] }) {
+export function ProductForm({ data, categories, storeTemplate = "list" }: { data: ProductFormData; categories: { id: string; label: string }[]; storeTemplate?: string }) {
   const [images, setImages] = useState<Img[]>(data.images);
   const [variants, setVariants] = useState<Var[]>(data.variants);
   const [busy, setBusy] = useState(false);
@@ -175,6 +177,10 @@ export function ProductForm({ data, categories }: { data: ProductFormData; categ
                   </div>
                 );
               })}
+            </div>
+            <div className="mt-5 border-t border-line pt-4">
+              <p className="label mb-2">Offer card layout</p>
+              <OfferTemplatePicker name="offerTemplate" value={data.offerTemplate ?? ""} allowDefault defaultLabel={OFFER_TEMPLATES.find((t) => t.id === storeTemplate)?.name} />
             </div>
             {offers.length < 6 && <button type="button" className="btn btn-outline btn-sm mt-3" onClick={() => { const q = (offers.at(-1)?.qty ?? 1) + 1; setOffers([...offers, { qty: q, price: base ? String(Math.round(base * q * 0.9)) : "", label: "", popular: false, image: "" }]); }}><Plus className="size-4" />Add offer</button>}
           </section>

@@ -12,8 +12,9 @@ import { Field, ImageField, Toggle } from "@/features/admin/components/fields";
 import { Badge, Empty, PageHeader, Panel } from "@/features/admin/components/ui";
 import { nowMs } from "@/features/settings/lib";
 import { ActionButton } from "@/features/settings/components/action-button";
+import { OfferTemplatePicker } from "@/features/catalog-admin/components/offer-template-picker";
 import { CouponTypeValue } from "@/features/catalog-admin/components/coupon-fields";
-import { saveCoupon, deleteCoupon, saveBundle, deleteBundle } from "@/features/catalog-admin/promo-actions";
+import { saveCoupon, deleteCoupon, saveBundle, deleteBundle, saveOfferTemplate } from "@/features/catalog-admin/promo-actions";
 
 export const metadata = { title: "Coupons & bundles" };
 type Coupon = typeof schema.coupons.$inferSelect;
@@ -95,6 +96,10 @@ export default async function CouponsPage() {
 
       <section aria-labelledby="bundles-h" className="space-y-3">
         <h2 id="bundles-h" className="display text-xl font-extrabold">Quantity bundles</h2>
+        <Panel title="Offer card layout">
+          <p className="mb-3 text-sm text-muted">How the “1 for 129 · 2 for 229 · 3 for 319” cards look on product pages. This is the default for every product — a product can pick its own layout in its <b>Quantity offers</b> section.</p>
+          <AdminForm action={saveOfferTemplate} submitLabel="Save layout for all products"><OfferTemplatePicker name="template" value={s.offers.template} /></AdminForm>
+        </Panel>
         <Panel><details><summary className="flex min-h-11 cursor-pointer items-center gap-2 font-bold"><Plus className="size-4" aria-hidden />New bundle</summary><div className="mt-4"><BundleForm products={products} /></div></details></Panel>
         {bundles.length === 0 ? <Empty title="No bundles yet" hint="“Buy 3, save 15%” encourages bigger orders." /> : (
           <ul className="space-y-2">{bundles.map((b) => (
