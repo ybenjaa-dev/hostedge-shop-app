@@ -77,5 +77,11 @@ export const MIGRATIONS: { name: string; statements: string[] }[] = [
     "statements": [
       "ALTER TABLE `bundles` ADD `image` text;"
     ]
+  },
+  {
+    "name": "0004_offer_templates",
+    "statements": [
+      "ALTER TABLE `products` ADD `offer_template` text;"
+    ]
   }
 ];

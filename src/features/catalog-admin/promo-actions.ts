@@ -3,7 +3,8 @@ import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { run, audit, fd, type ActionState } from "@/features/admin/run";
-import { getSettings } from "@/lib/settings";
+import { getSettings, saveSettings } from "@/lib/settings";
+import { isOfferTemplate } from "@/lib/offer-templates";
 import { toMinor } from "@/lib/money";
 import { newId } from "@/lib/id";
 import { parse, refresh, fail } from "@/features/settings/lib";
@@ -100,6 +101,17 @@ export async function saveBundle(_p: ActionState, form: FormData): Promise<Actio
     }
     refresh();
     return { message: d.id ? "Bundle saved" : "Bundle created" };
+  });
+}
+
+export async function saveOfferTemplate(_p: ActionState, form: FormData): Promise<ActionState> {
+  return run("staff", async (user) => {
+    const t = fd(form, "template");
+    if (!isOfferTemplate(t)) return { ok: false, error: "Choose a layout." };
+    await saveSettings("offers", { template: t });
+    await audit(user, "offers.template", "settings", t);
+    refresh();
+    return { message: "Offer card layout saved for all products" };
   });
 }
 

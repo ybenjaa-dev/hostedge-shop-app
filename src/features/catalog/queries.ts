@@ -1,4 +1,6 @@
 import type { BundleRule } from "@/lib/pricing";
+import { resolveOfferTemplate } from "@/lib/offer-templates";
+import { getSettings } from "@/lib/settings";
 import { getEnv } from "@/lib/env";
 import { ensureSchema } from "@/db/ensure-schema";
 
@@ -199,7 +201,12 @@ export async function listBundles(productId?: string): Promise<BundleRule[]> {
   const r = productId
     ? await db.prepare(`${sel} AND (b.product_id IS NULL OR b.product_id = ?) ORDER BY b.min_qty`).bind(productId).all<BundleRow>()
     : await db.prepare(`${sel} ORDER BY b.min_qty`).all<BundleRow>();
-  return r.results.map((x) => ({ productId: x.productId, minQty: x.minQty, percent: x.percent, price: x.price, basePrice: x.basePrice, label: x.label, popular: !!x.popular, image: x.image }));
+  let template: string | null = null;
+  if (productId) {
+    const own = await db.prepare("SELECT offer_template AS t FROM products WHERE id = ?").bind(productId).first<{ t: string | null }>();
+    template = resolveOfferTemplate(own?.t, (await getSettings()).offers.template);
+  }
+  return r.results.map((x) => ({ productId: x.productId, minQty: x.minQty, percent: x.percent, price: x.price, basePrice: x.basePrice, label: x.label, popular: !!x.popular, image: x.image, template }));
 }
 
 export type CityOpt = { id: string; name: string; nameAr: string | null; region: string | null; fee: number | null; freeAbove: number | null; codAvailable: boolean; country: string };
