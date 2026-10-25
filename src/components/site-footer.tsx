@@ -18,7 +18,7 @@ export function SiteFooter({ s, lang, t, pages }: { s: Settings; lang: Lang; t: 
   return (
     <footer className="mt-20 border-t-4 border-[var(--lime)] bg-[#0d0d0d] text-white">
       <div className="relative mx-auto max-w-7xl px-5 pt-12">
-        <p className="heading text-center text-4xl sm:text-5xl">{logo ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={logo} alt={s.store.name} className="h-12 w-auto brightness-0 invert" /> : s.store.name}</p>
+        <p className="heading text-center text-4xl sm:text-5xl">{logo ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={logo} alt={s.store.name} className="brand-logo h-12 w-auto brightness-0 invert" /> : s.store.name}</p>
         {(tr(s.footer.text, lang) || tr(s.store.tagline, lang)) && <p className="mx-auto mt-3 max-w-lg text-center text-white/70">{tr(s.footer.text, lang) || tr(s.store.tagline, lang)}</p>}
         <div className="mt-10 grid gap-10 border-t border-white/15 pt-10 sm:grid-cols-2 lg:grid-cols-3">
           <div><h2 className="heading mb-4 text-lg text-[var(--lime)]">{t("footer.pages")}</h2><ul className="space-y-2.5 text-sm">{pages.map((p) => <li key={p.slug}><Link href={`/page/${p.slug}`} className={a}>{tr(p.title, lang)}</Link></li>)}<li><Link href="/track" className={a}>{t("nav.track")}</Link></li></ul></div>

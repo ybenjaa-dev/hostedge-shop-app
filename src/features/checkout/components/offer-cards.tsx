@@ -31,9 +31,9 @@ export function OfferCards({ offers, qty, setQty, maxQty, fmt, customQty, setCus
     return (
       <span className="offer-visual" aria-hidden>
         {o.image
-          ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(o.image)} alt="" loading="lazy" className="size-full object-cover" />
+          ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(o.image, "thumb")} alt="" loading="lazy" className="size-full object-cover" />
           : fallbackImage
-            ? Array.from({ length: n }).map((_, k) => /* eslint-disable-next-line @next/next/no-img-element */ <img key={k} src={fileUrl(fallbackImage)} alt="" loading="lazy" className="offer-stack-img" style={{ width: n === 1 ? "100%" : "68%", insetInlineStart: n === 1 ? 0 : `${(k * 32) / (n - 1)}%`, top: n === 1 ? 0 : `${((n - 1 - k) * 12) / (n - 1)}%`, zIndex: k }} />)
+            ? Array.from({ length: n }).map((_, k) => /* eslint-disable-next-line @next/next/no-img-element */ <img key={k} src={fileUrl(fallbackImage, "thumb")} alt="" loading="lazy" className="offer-stack-img" style={{ width: n === 1 ? "100%" : "68%", insetInlineStart: n === 1 ? 0 : `${(k * 32) / (n - 1)}%`, top: n === 1 ? 0 : `${((n - 1 - k) * 12) / (n - 1)}%`, zIndex: k }} />)
             : null}
         {o.qty > 1 && <span className="offer-times">×{o.qty}</span>}
       </span>
@@ -100,7 +100,7 @@ export function OfferCards({ offers, qty, setQty, maxQty, fmt, customQty, setCus
           return (
             <label key={o.qty} className={cls}>{input}
               <Radio on={on} />
-              {o.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(o.image)} alt="" loading="lazy" className="offer-thumb" />}
+              {o.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(o.image, "thumb")} alt="" loading="lazy" className="offer-thumb" />}
               <span className="min-w-0 flex-1">
                 <span className="flex flex-wrap items-center gap-x-2 gap-y-1"><span className="offer-count">{count}</span><Flag o={o} /></span>
                 <span className="mt-0.5 block text-xs text-muted">{o.qty === 1 ? t("offer.normal") : t("offer.each", { price: fmt(o.perUnit) })}</span>

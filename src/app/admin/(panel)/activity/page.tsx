@@ -1,8 +1,9 @@
+import { DateRangeField } from "@/features/admin/components/date-picker";
 import Link from "next/link";
 import { and, desc, gte, lte, eq, sql } from "drizzle-orm";
 import { requireUser } from "@/lib/auth";
 import { getDb, schema } from "@/db";
-import { Empty, PageHeader, Pager } from "@/features/admin/components/ui";
+import { Empty, PageHeader, Pager, FilterBar, FbItem } from "@/features/admin/components/ui";
 import { DataTable, Td } from "@/features/settings/components/table";
 import { one, pageNum } from "@/features/settings/lib";
 
@@ -33,13 +34,11 @@ export default async function ActivityPage({ searchParams }: { searchParams: Pro
   return (
     <div>
       <PageHeader title="Activity log" sub="Who changed what, and when." />
-      <form className="card mb-5 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1fr_auto]" role="search">
-        <div><label className="label" htmlFor="f-user">User</label><select id="f-user" name="user" defaultValue={user} className="field"><option value="">Everyone</option>{users.map((u) => u.n && <option key={u.n} value={u.n}>{u.n}</option>)}</select></div>
-        <div><label className="label" htmlFor="f-action">Action starts with</label><input id="f-action" name="action" defaultValue={action} placeholder="order. / settings." className="field" dir="ltr" /></div>
-        <div><label className="label" htmlFor="f-from">From</label><input id="f-from" name="from" type="date" defaultValue={from} className="field" /></div>
-        <div><label className="label" htmlFor="f-to">To</label><input id="f-to" name="to" type="date" defaultValue={to} className="field" /></div>
-        <div className="flex items-end gap-2"><button className="btn btn-primary">Filter</button>{filtered && <Link href="/admin/activity" className="btn btn-outline">Clear</Link>}</div>
-      </form>
+      <FilterBar actions={<><button className="btn btn-primary">Filter</button>{filtered && <Link href="/admin/activity" className="btn btn-outline">Clear</Link>}</>}>
+        <FbItem label="User"><select id="f-user" name="user" defaultValue={user} className="field"><option value="">Everyone</option>{users.map((u) => u.n && <option key={u.n} value={u.n}>{u.n}</option>)}</select></FbItem>
+        <FbItem label="Action starts with"><input id="f-action" name="action" defaultValue={action} placeholder="order. / settings." className="field" dir="ltr" /></FbItem>
+        <FbItem wide><DateRangeField from={from} to={to} label="Date range" /></FbItem>
+      </FilterBar>
       {rows.length === 0 ? <Empty title="No activity found" hint={filtered ? "Try widening the filters." : "Changes made in the admin will be listed here."} /> : (
         <DataTable head={["When", "User", "Action", "Target", "Details"]}>
           {rows.map((r) => (

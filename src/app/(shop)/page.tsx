@@ -49,7 +49,7 @@ export default async function Home() {
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-5">
               {cats.map((c, i) => (
                 <Link key={c.id} href={`/category/${c.slug}`} className="cut group relative block aspect-[4/5] overflow-hidden bg-sunken">
-                  {c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image)} alt="" loading="lazy" className="size-full object-cover transition duration-500 group-hover:scale-105" />}
+                  {c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image, "md")} alt="" loading="lazy" className="size-full object-cover transition duration-500 group-hover:scale-105" />}
                   <span className="absolute inset-x-0 bottom-0 flex items-end justify-between bg-gradient-to-t from-black/85 to-transparent p-3 pt-16 text-white">
                     <span className="heading text-xl leading-none sm:text-2xl"><span className="num block text-sm not-italic text-[var(--lime)]">{String(i + 1).padStart(2, "0")}</span>{tr(c.name, lang)}</span>
                     <span aria-hidden className="grid size-9 shrink-0 -skew-x-12 place-items-center bg-[var(--lime)] text-[#0d0d0d] transition group-hover:translate-x-1"><ArrowRight className="size-5 skew-x-12 rtl:rotate-180" /></span>

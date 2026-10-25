@@ -7,7 +7,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ key: str
   if (!key.startsWith("uploads/") || key.includes("..")) return new Response("Not found", { status: 404 });
   const etag = `"${key}"`;
   if (req.headers.get("if-none-match") === etag) return new Response(null, { status: 304, headers: { ETag: etag } });
-  const obj = await getEnv().FILES.get(key);
+  let obj = await getEnv().FILES.get(key);
+  // a missing compressed variant (older upload) falls back to the full-size file
+  if (!obj && /-(thumb|md)\.webp$/.test(key)) obj = await getEnv().FILES.get(key.replace(/-(thumb|md)\.webp$/, ".webp"));
   if (!obj) return new Response("Not found", { status: 404 });
   const h = new Headers();
   h.set("Content-Type", obj.httpMetadata?.contentType ?? "application/octet-stream");
