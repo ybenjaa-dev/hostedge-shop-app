@@ -1,0 +1,144 @@
+"use client";
+import { useState } from "react";
+import { ArrowLeft, ArrowRight, Loader2, Plus, Trash2, Upload, Wand2 } from "lucide-react";
+import { AdminForm } from "@/features/admin/components/admin-form";
+import { Field, I18nField, Toggle, uploadImage } from "@/features/admin/components/fields";
+import { saveProductAction } from "./actions";
+import { fileUrl } from "@/lib/storage";
+import type { I18n } from "@/lib/i18n-core";
+
+type Img = { key: string; alt: string | null };
+type Var = { id?: string; name: string; options: Record<string, string>; sku: string; price: string; stock: number };
+
+export type ProductFormData = {
+  id?: string; slug: string; name: I18n; shortDesc: I18n; longDesc: I18n; seoTitle: I18n; seoDesc: I18n;
+  categoryId: string; sku: string; price: string; compareAt: string; stock: number; trackStock: boolean; status: "draft" | "published"; featured: boolean; bestseller: boolean;
+  images: Img[]; variants: Var[];
+};
+
+const parseOptions = (s: string) => Object.fromEntries(s.split(/[;,]/).map((p) => p.split("=").map((x) => x.trim())).filter((p) => p[0] && p[1]) as [string, string][]);
+const fmtOptions = (o: Record<string, string>) => Object.entries(o).map(([k, v]) => `${k}=${v}`).join("; ");
+
+export function ProductForm({ data, categories }: { data: ProductFormData; categories: { id: string; label: string }[] }) {
+  const [images, setImages] = useState<Img[]>(data.images);
+  const [variants, setVariants] = useState<Var[]>(data.variants);
+  const [busy, setBusy] = useState(false);
+  const [upErr, setUpErr] = useState("");
+  const [drag, setDrag] = useState<number | null>(null);
+  const [gen, setGen] = useState({ n1: "Size", v1: "", n2: "Color", v2: "" });
+
+  const move = (from: number, to: number) => {
+    if (to < 0 || to >= images.length) return;
+    const next = [...images];
+    const [x] = next.splice(from, 1);
+    next.splice(to, 0, x!);
+    setImages(next);
+  };
+  async function addFiles(files: FileList | null) {
+    if (!files?.length) return;
+    setBusy(true); setUpErr("");
+    for (const f of Array.from(files).slice(0, 10)) {
+      const r = await uploadImage(f);
+      if (r.ok) setImages((x) => [...x, { key: r.key, alt: null }]); else setUpErr(r.error);
+    }
+    setBusy(false);
+  }
+  function generate() {
+    const a = gen.v1.split(",").map((s) => s.trim()).filter(Boolean);
+    const b = gen.v2.split(",").map((s) => s.trim()).filter(Boolean);
+    if (!a.length) return;
+    const rows: Var[] = [];
+    for (const x of a) for (const y of b.length ? b : [""]) {
+      const options: Record<string, string> = { [gen.n1 || "Option"]: x };
+      if (y) options[gen.n2 || "Option 2"] = y;
+      rows.push({ name: y ? `${x} / ${y}` : x, options, sku: "", price: "", stock: 0 });
+    }
+    setVariants((v) => [...v, ...rows].slice(0, 100));
+  }
+  const upd = (i: number, patch: Partial<Var>) => setVariants((v) => v.map((x, k) => (k === i ? { ...x, ...patch } : x)));
+
+  return (
+    <AdminForm action={saveProductAction} submitLabel={data.id ? "Save product" : "Create product"} className="space-y-5">
+      {data.id && <input type="hidden" name="id" value={data.id} />}
+      <input type="hidden" name="images" value={JSON.stringify(images)} />
+      <input type="hidden" name="variants" value={JSON.stringify(variants.map((v) => ({ ...v, price: v.price || null, sku: v.sku || null })))} />
+      <div className="grid gap-5 lg:grid-cols-[1fr_22rem]">
+        <div className="space-y-5">
+          <section className="card space-y-4 p-5">
+            <I18nField label="Name" name="name" value={data.name} />
+            <I18nField label="Short description" name="short" value={data.shortDesc} textarea rows={2} />
+            <I18nField label="Long description" name="long" value={data.longDesc} textarea rows={5} />
+          </section>
+
+          <section className="card p-5">
+            <div className="mb-3 flex items-center justify-between"><h2 className="display text-lg font-extrabold">Images</h2><label className="btn btn-outline btn-sm cursor-pointer">{busy ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}Upload<input type="file" multiple accept="image/jpeg,image/png,image/webp,image/avif" className="sr-only" disabled={busy} onChange={(e) => { void addFiles(e.target.files); e.target.value = ""; }} /></label></div>
+            {images.length === 0 ? <p className="rounded-xl border border-dashed border-line p-8 text-center text-sm text-muted">No images yet. JPEG, PNG, WebP or AVIF, up to 5 MB — they are resized to WebP in your browser before upload.</p> : (
+              <ul className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+                {images.map((im, i) => (
+                  <li key={im.key} draggable onDragStart={() => setDrag(i)} onDragOver={(e) => e.preventDefault()} onDrop={() => { if (drag != null) move(drag, i); setDrag(null); }} className={`group relative aspect-square cursor-grab overflow-hidden rounded-xl border bg-sunken ${i === 0 ? "border-brand ring-2 ring-brand/30" : "border-line"}`}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={fileUrl(im.key)} alt="" className="size-full object-cover" />
+                    {i === 0 && <span className="absolute start-1 top-1 rounded bg-brand px-1.5 text-[10px] font-extrabold text-brand-ink">MAIN</span>}
+                    <div className="absolute inset-x-0 bottom-0 flex justify-between bg-black/60 p-1 opacity-100 sm:opacity-0 sm:transition sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+                      <button type="button" aria-label="Move earlier" className="grid size-7 place-items-center rounded text-white hover:bg-white/20" onClick={() => move(i, i - 1)}><ArrowLeft className="size-4 rtl:rotate-180" /></button>
+                      <button type="button" aria-label="Remove image" className="grid size-7 place-items-center rounded text-white hover:bg-red-500" onClick={() => setImages(images.filter((_, k) => k !== i))}><Trash2 className="size-4" /></button>
+                      <button type="button" aria-label="Move later" className="grid size-7 place-items-center rounded text-white hover:bg-white/20" onClick={() => move(i, i + 1)}><ArrowRight className="size-4 rtl:rotate-180" /></button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {upErr && <p className="err">{upErr}</p>}
+            <p className="mt-2 text-xs text-muted">Drag to reorder (or use the arrows). The first image is the main one.</p>
+          </section>
+
+          <section className="card p-5">
+            <h2 className="display mb-1 text-lg font-extrabold">Variants</h2>
+            <p className="mb-4 text-sm text-muted">Optional. Each variant has its own stock and (optionally) price. When variants exist the product-level stock is ignored.</p>
+            <div className="mb-4 grid gap-2 rounded-xl bg-sunken p-3 sm:grid-cols-[1fr_2fr_1fr_2fr_auto]">
+              <input aria-label="Option 1 name" className="field" value={gen.n1} onChange={(e) => setGen({ ...gen, n1: e.target.value })} placeholder="Size" />
+              <input aria-label="Option 1 values" className="field" value={gen.v1} onChange={(e) => setGen({ ...gen, v1: e.target.value })} placeholder="S, M, L" />
+              <input aria-label="Option 2 name" className="field" value={gen.n2} onChange={(e) => setGen({ ...gen, n2: e.target.value })} placeholder="Color" />
+              <input aria-label="Option 2 values" className="field" value={gen.v2} onChange={(e) => setGen({ ...gen, v2: e.target.value })} placeholder="Black, White (optional)" />
+              <button type="button" className="btn btn-outline" onClick={generate}><Wand2 className="size-4" />Generate</button>
+            </div>
+            <div className="space-y-2">
+              {variants.map((v, i) => (
+                <div key={v.id ?? i} className="grid items-end gap-2 rounded-xl border border-line p-3 sm:grid-cols-[2fr_2fr_1fr_1fr_1fr_auto]">
+                  <Field label="Name"><input className="field" value={v.name} onChange={(e) => upd(i, { name: e.target.value })} /></Field>
+                  <Field label="Options"><input className="field" value={fmtOptions(v.options)} onChange={(e) => upd(i, { options: parseOptions(e.target.value) })} placeholder="Size=M; Color=Black" /></Field>
+                  <Field label="SKU"><input className="field" value={v.sku} onChange={(e) => upd(i, { sku: e.target.value })} /></Field>
+                  <Field label="Price"><input className="field" inputMode="decimal" value={v.price} onChange={(e) => upd(i, { price: e.target.value })} placeholder="= product" /></Field>
+                  <Field label="Stock"><input className="field" type="number" min={0} value={v.stock} onChange={(e) => upd(i, { stock: Math.max(0, parseInt(e.target.value || "0", 10) || 0) })} /></Field>
+                  <button type="button" aria-label="Remove variant" className="btn btn-ghost btn-sm text-danger" onClick={() => setVariants(variants.filter((_, k) => k !== i))}><Trash2 className="size-4" /></button>
+                </div>
+              ))}
+            </div>
+            <button type="button" className="btn btn-outline btn-sm mt-3" onClick={() => setVariants([...variants, { name: "", options: {}, sku: "", price: "", stock: 0 }])}><Plus className="size-4" />Add variant</button>
+          </section>
+
+          <section className="card space-y-4 p-5">
+            <h2 className="display text-lg font-extrabold">SEO</h2>
+            <I18nField label="Meta title" name="seoTitle" value={data.seoTitle} />
+            <I18nField label="Meta description" name="seoDesc" value={data.seoDesc} textarea rows={2} />
+          </section>
+        </div>
+
+        <div className="space-y-5">
+          <section className="card space-y-4 p-5">
+            <Field label="Status" htmlFor="st"><select id="st" name="status" defaultValue={data.status} className="field"><option value="draft">Draft (hidden)</option><option value="published">Published</option></select></Field>
+            <Field label="Price" htmlFor="pr"><input id="pr" name="price" required inputMode="decimal" defaultValue={data.price} className="field" /></Field>
+            <Field label="Compare-at price" htmlFor="cp" hint="Shown struck-through to display a discount."><input id="cp" name="compareAt" inputMode="decimal" defaultValue={data.compareAt} className="field" /></Field>
+            <Field label="Category" htmlFor="ct"><select id="ct" name="categoryId" defaultValue={data.categoryId} className="field"><option value="">— None —</option>{categories.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}</select></Field>
+            <Field label="SKU" htmlFor="sk"><input id="sk" name="sku" defaultValue={data.sku} className="field" /></Field>
+            <Field label="Stock (no variants)" htmlFor="sc"><input id="sc" name="stock" type="number" min={0} defaultValue={data.stock} className="field" /></Field>
+            <Toggle name="trackStock" label="Track stock" hint="Off = always available." defaultChecked={data.trackStock} />
+            <Toggle name="featured" label="Featured on home" defaultChecked={data.featured} />
+            <Toggle name="bestseller" label="Mark as best seller" defaultChecked={data.bestseller} />
+            <Field label="URL slug" htmlFor="sl" hint="Leave empty to generate from the name."><input id="sl" name="slug" defaultValue={data.slug} className="field" dir="ltr" /></Field>
+          </section>
+        </div>
+      </div>
+    </AdminForm>
+  );
+}
