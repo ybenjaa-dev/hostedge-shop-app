@@ -108,3 +108,38 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body), 
 /* Hide number input arrows */
 input[type=number]::-webkit-inner-spin-button { display: none; }
 @keyframes wiggle { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+/* ───────────────────── Storefront v12 — "Tiny" (kids & baby) ─────────────────────
+   Soft sky paper, navy ink, coral/sunny/mint/lilac candies, Baloo 2 headlines, floating pill header, candy buttons and blobby shapes.
+   Scoped under .v12 so the admin keeps its own look. */
+.v12 {
+  --bg: #f5faff; --surface: #ffffff; --sunken: #e8f1fb; --ink: #1e2a4a; --muted: #5d6b8a; --line: #dbe6f5; --sunny: #ffc933; --mint: #3fb6a8; --lilac: #8b7bea; --sky: #3b82f6;
+  --brand-soft: color-mix(in srgb, var(--brand) 12%, #fff);
+  background: var(--bg); color: var(--ink); min-height: 100dvh;
+}
+:root[data-theme="dark"] .v12 { --bg: #0f1530; --surface: #182044; --sunken: #212b57; --ink: #eef2ff; --muted: #a7b2d6; --line: #2b3665; --brand-soft: color-mix(in srgb, var(--brand) 20%, #0f1530); }
+.v12 .display, .v12 .heading { font-family: var(--font-heading), var(--font-display), sans-serif; font-weight: 800; letter-spacing: -0.01em; line-height: 1.05; }
+[dir="rtl"] .v12 .display, [dir="rtl"] .v12 .heading { letter-spacing: 0; line-height: 1.3; }
+.v12 :focus-visible { outline: 3px solid var(--sunny); outline-offset: 2px; }
+.v12 .soft { box-shadow: 0 14px 30px -20px rgb(30 42 74 / .55); }
+.v12 .bubble { display: inline-flex; align-items: center; gap: 0.35rem; border-radius: 9999px; background: #fff; color: #1e2a4a; padding: 0.2rem 0.7rem; font-size: 0.75rem; font-weight: 800; box-shadow: 0 4px 10px -4px rgb(30 42 74 / .35); }
+@layer components {
+  .v12 .btn { border-radius: 9999px; font-weight: 800; }
+  .v12 .btn-primary { background: var(--brand); color: var(--brand-ink); box-shadow: 0 4px 0 color-mix(in srgb, var(--brand) 70%, #000); transition: transform .12s, box-shadow .12s; }
+  .v12 .btn-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--brand) 92%, #fff); transform: translateY(-1px); box-shadow: 0 5px 0 color-mix(in srgb, var(--brand) 70%, #000); }
+  .v12 .btn-primary:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 color-mix(in srgb, var(--brand) 70%, #000); }
+  .v12 .btn-accent { background: var(--sunny); color: #1e2a4a; box-shadow: 0 4px 0 #d9a514; }
+  .v12 .btn-outline { border-color: var(--line); background: var(--surface); border-width: 2px; }
+  .v12 .btn-outline:hover:not(:disabled) { border-color: var(--brand); color: var(--brand); background: var(--surface); }
+  .v12 .field { background: var(--surface); border: 2px solid var(--line); border-radius: 1rem; }
+  .v12 .field:focus { border-color: var(--sky); box-shadow: 0 0 0 4px color-mix(in srgb, var(--sky) 18%, transparent); }
+  .v12 .card { background: var(--surface); border-color: transparent; border-radius: 1.75rem; box-shadow: 0 14px 30px -20px rgb(30 42 74 / .55); }
+  .v12 .label { font-weight: 800; font-size: 0.82rem; color: var(--muted); }
+}
+.v12 .rail { display: flex; gap: 1rem; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; padding: 0.25rem 0.5rem 1rem; margin-inline: -1rem; padding-inline: 1rem; }
+.v12 .rail::-webkit-scrollbar { display: none; }
+.v12 .rail > * { scroll-snap-align: start; flex: 0 0 min(66vw, 16rem); }
+@media (min-width: 768px) { .v12 .rail { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; overflow: visible; margin: 0; padding: 0.25rem 0 1rem; } .v12 .rail > * { flex: initial; } .v12 .rail > :nth-child(n+5) { display: none; } }
+@keyframes bob { 0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); } 50% { transform: translateY(-8px) rotate(var(--r, 0deg)); } }
+.v12 .bob { animation: bob 4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .v12 .bob { animation: none; } }

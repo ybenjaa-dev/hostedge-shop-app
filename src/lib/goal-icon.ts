@@ -1,4 +1,4 @@
-import { Zap, ShieldCheck, Moon, Dumbbell, Leaf, Bone, Pill, Sparkles, Brain, Heart, type LucideIcon } from "lucide-react";
+import { Blocks, Baby, Shirt, Utensils, Zap, ShieldCheck, Moon, Dumbbell, Leaf, Bone, Pill, Sparkles, Brain, Heart, type LucideIcon } from "lucide-react";
 
 /** Pick an icon for a health goal from its slug/name keywords (any language). */
 export function goalIcon(key: string): LucideIcon {
@@ -14,4 +14,14 @@ export function goalIcon(key: string): LucideIcon {
   if (has("brain", "memo", "cerveau", "mind")) return Brain;
   if (has("heart", "coeur", "cœur", "omega", "قلب")) return Heart;
   return Pill;
+}
+
+/** Icon for a kids category from its slug/name keywords (any language). */
+export function kidIcon(key: string): LucideIcon {
+  const k = key.toLowerCase();
+  const has = (...w: string[]) => w.some((x) => k.includes(x));
+  if (has("toy", "jouet", "play", "ألعاب")) return Blocks;
+  if (has("feed", "bath", "care", "repas", "bain", "تغذية", "استحمام")) return Utensils;
+  if (has("cloth", "vêtement", "wear", "ملابس")) return Shirt;
+  return Baby;
 }

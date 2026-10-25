@@ -65,7 +65,7 @@ export const DEFAULT_SETTINGS: Settings = {
   setupDone: false,
   store: {
     name: "My Store",
-    tagline: {},
+    tagline: { en: "Little things for little people.", fr: "De petites merveilles pour les petits.", ar: "أشياء صغيرة لأصحاب القلوب الصغيرة." },
     country: "MA",
     currency: "MAD",
     defaultLang: "fr",
@@ -83,11 +83,11 @@ export const DEFAULT_SETTINGS: Settings = {
   branding: {
     logo: "",
     favicon: "",
-    primary: "#0f766e",
-    secondary: "#1f2937",
-    accent: "#f59e0b",
+    primary: "#ff6b57",
+    secondary: "#1e2a4a",
+    accent: "#ffc933",
     buttonStyle: "rounded",
-    fontLatin: "Manrope",
+    fontLatin: "Poppins",
     fontArabic: "Cairo",
   },
   checkout: {
@@ -118,9 +118,9 @@ export const DEFAULT_SETTINGS: Settings = {
     banner: { image: "", title: {}, sub: {}, href: "" },
   },
   trust: [
-    { icon: "cod", title: { en: "Pay on delivery", fr: "Paiement à la livraison", ar: "الدفع عند الاستلام" }, text: { en: "Inspect first, then pay the courier", fr: "Vérifiez puis payez au livreur", ar: "افحص طلبك ثم ادفع للمندوب" } },
-    { icon: "delivery", title: { en: "Fast delivery", fr: "Livraison rapide", ar: "توصيل سريع" }, text: { en: "2–4 days across the country", fr: "2 à 4 jours partout", ar: "من 2 إلى 4 أيام لكل المدن" } },
-    { icon: "returns", title: { en: "Free returns", fr: "Retours gratuits", ar: "إرجاع مجاني" }, text: { en: "Not happy? Send it back", fr: "Pas satisfait ? Retournez-le", ar: "غير راضٍ؟ أرجعه لنا" } },
+    { icon: "secure", title: { en: "Safety tested", fr: "Testé pour la sécurité", ar: "مختبر للسلامة" }, text: { en: "EN71 toys, BPA-free feeding", fr: "Jouets EN71, biberons sans BPA", ar: "ألعاب EN71 ورضّاعات بدون BPA" } },
+    { icon: "cod", title: { en: "Pay on delivery", fr: "Paiement à la livraison", ar: "الدفع عند الاستلام" }, text: { en: "Check it, then pay the courier", fr: "Vérifiez puis payez", ar: "افحص ثم ادفع للمندوب" } },
+    { icon: "returns", title: { en: "Size exchange", fr: "Échange de taille", ar: "تبديل المقاس" }, text: { en: "Kids grow — swap it for free", fr: "Ils grandissent — échange gratuit", ar: "الأطفال يكبرون — تبديل مجاني" } },
   ],
   footer: { text: {} },
   analytics: { metaPixel: "", tiktokPixel: "", ga: "", snapPixel: "" },
