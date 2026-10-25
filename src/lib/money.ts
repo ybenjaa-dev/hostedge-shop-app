@@ -60,5 +60,6 @@ export function formatMoney(minor: number, currency: CurrencyCode, lang = "en"):
   }).format(minor / 10 ** d);
   const sym = (CURRENCIES[currency]?.symbol as Record<string, string> | undefined)?.[lang] ?? currency;
   const prefix = sym === "$" || sym === "€" || sym === "₦" || sym === "R" || sym === "GH₵" || sym === "KSh";
-  return prefix ? `${sym}${num}` : lang === "ar" ? `${num} ${sym}` : `${num} ${sym}`;
+  if (lang === "ar") return `\u2067${num} ${sym}\u2069`; // RLI…PDI: keep "299 د.م." in correct visual order inside LTR containers
+  return prefix ? `${sym}${num}` : `${num} ${sym}`;
 }
