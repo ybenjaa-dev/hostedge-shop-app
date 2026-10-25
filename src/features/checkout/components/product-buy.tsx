@@ -12,6 +12,7 @@ import { OrderForm } from "./order-form";
 import { cart, setDrawer } from "../cart-store";
 import { useToast } from "@/components/toast";
 import { track } from "@/lib/track";
+import { swatchColor } from "@/lib/swatch";
 
 type Variant = ProductDetail["variants"][number];
 type P = Pick<ProductDetail, "id" | "slug" | "name" | "price" | "compareAt" | "stock" | "trackStock" | "variants"> & { image: string | null };
@@ -118,30 +119,39 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
               </div>
             </fieldset>
           ) : (
-            groupKeys.map((k) => (
-              <fieldset key={k} className="mb-4">
-                <legend className="label">{t("p.select", { opt: k })}</legend>
-                <div className="flex flex-wrap gap-2">
-                  {groups[k]!.map((val) => {
-                    const possible = product.variants.some((v) => v.options[k] === val && groupKeys.every((g) => g === k || !sel[g] || v.options[g] === sel[g]) && (!tracked || v.stock > 0));
-                    return (
-                      <button key={val} type="button" disabled={!possible} aria-pressed={sel[k] === val} onClick={() => setSel((s) => ({ ...s, [k]: val }))}
-                        className={`rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${sel[k] === val ? "border-brand bg-brand-soft text-brand ring-2 ring-brand/30" : "border-line bg-surface hover:border-ink/40"} ${!possible ? "cursor-not-allowed line-through opacity-40" : ""}`}>{val}</button>
-                    );
-                  })}
-                </div>
-              </fieldset>
-            ))
+            groupKeys.map((k) => {
+              const isColor = /^(colou?r|couleur|لون|اللون)$/i.test(k);
+              return (
+                <fieldset key={k} className="mb-5">
+                  <legend className="label">{k}{sel[k] && <span className="ms-2 normal-case tracking-normal text-ink">— {sel[k]}</span>}</legend>
+                  <div className={isColor ? "flex flex-wrap gap-3 pt-1" : "grid grid-cols-4 gap-2 pt-1 sm:grid-cols-5"}>
+                    {groups[k]!.map((val) => {
+                      const possible = product.variants.some((v) => v.options[k] === val && groupKeys.every((g) => g === k || !sel[g] || v.options[g] === sel[g]) && (!tracked || v.stock > 0));
+                      const on = sel[k] === val;
+                      return isColor ? (
+                        <button key={val} type="button" disabled={!possible} aria-pressed={on} aria-label={val} title={possible ? val : `${val} — ${t("p.soldOut")}`} onClick={() => setSel((x) => ({ ...x, [k]: val }))}
+                          className={`relative grid size-11 place-items-center rounded-full transition ${on ? "ring-2 ring-ink ring-offset-2 ring-offset-bg" : "hover:scale-105"} ${!possible ? "cursor-not-allowed opacity-35" : ""}`}>
+                          <span className="size-9 rounded-full border border-ink/20" style={{ background: swatchColor(val) }} />{!possible && <span aria-hidden className="absolute h-px w-9 rotate-45 bg-ink" />}
+                        </button>
+                      ) : (
+                        <button key={val} type="button" disabled={!possible} aria-pressed={on} onClick={() => setSel((x) => ({ ...x, [k]: val }))}
+                          className={`relative min-h-12 border text-sm font-semibold transition ${on ? "border-ink bg-ink text-bg" : "border-line bg-surface hover:border-ink"} ${!possible ? "cursor-not-allowed text-muted line-through opacity-50" : ""}`}>{val}</button>
+                      );
+                    })}
+                  </div>
+                </fieldset>
+              );
+            })
           )}
         </div>
       )}
       <div>
         <span className="label" id="qty-l">{t("p.qty")}</span>
         <div className="flex items-center gap-3">
-          <div role="group" aria-labelledby="qty-l" className="inline-flex items-center rounded-xl border border-line bg-surface">
-            <button type="button" aria-label="−" className="grid size-11 place-items-center rounded-s-xl hover:bg-sunken disabled:opacity-40" onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={qty <= 1}><Minus className="size-4" /></button>
+          <div role="group" aria-labelledby="qty-l" className="inline-flex items-center border border-ink bg-surface">
+            <button type="button" aria-label="−" className="grid size-11 place-items-center hover:bg-sunken disabled:opacity-40" onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={qty <= 1}><Minus className="size-4" /></button>
             <output className="num w-10 text-center font-bold" aria-live="polite">{qty}</output>
-            <button type="button" aria-label="+" className="grid size-11 place-items-center rounded-e-xl hover:bg-sunken disabled:opacity-40" onClick={() => setQty((q) => Math.min(maxQty, q + 1))} disabled={qty >= maxQty}><Plus className="size-4" /></button>
+            <button type="button" aria-label="+" className="grid size-11 place-items-center hover:bg-sunken disabled:opacity-40" onClick={() => setQty((q) => Math.min(maxQty, q + 1))} disabled={qty >= maxQty}><Plus className="size-4" /></button>
           </div>
           {tracked && available != null && available > 0 && available <= 5 && <span className="text-sm font-semibold text-danger">{t("p.onlyLeft", { n: available })}</span>}
         </div>
@@ -149,7 +159,7 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
       {st.bundlesInForm && bundleTiers.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {bundleTiers.map(([n, p]) => (
-            <button key={n} type="button" onClick={() => setQty(Math.min(maxQty, n))} className={`rounded-full border px-3 py-1.5 text-xs font-bold transition ${qty >= n ? "border-accent bg-accent/15 text-ink" : "border-dashed border-line text-muted hover:border-ink/40"}`}>
+            <button key={n} type="button" onClick={() => setQty(Math.min(maxQty, n))} className={`border px-3 py-1.5 text-xs font-semibold ${qty >= n ? "border-ink bg-sunken" : "border-dashed border-ink/40 hover:border-ink"}`}>
               🎁 {t("cod.bundle", { n, pct: p })}
             </button>
           ))}
@@ -175,9 +185,9 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
   return (
     <div>
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <span dir="ltr" className="num display text-3xl font-extrabold">{fmt(unit)}</span>
+        <span dir="ltr" className="num text-3xl font-semibold">{fmt(unit)}</span>
         {product.compareAt && product.compareAt > unit && <span dir="ltr" className="num text-lg text-muted line-through">{fmt(product.compareAt)}</span>}
-        {product.compareAt && product.compareAt > unit && <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-extrabold text-accent-ink">{t("p.save", { pct: Math.round(((product.compareAt - unit) / product.compareAt) * 100) })}</span>}
+        {product.compareAt && product.compareAt > unit && <span className="label-s bg-ink px-2 py-1 text-bg">{t("p.save", { pct: Math.round(((product.compareAt - unit) / product.compareAt) * 100) })}</span>}
       </div>
       {pct > 0 && <p className="mt-1 text-sm font-semibold text-ok">🎁 {t("cod.bundle", { n: qty, pct })}</p>}
 
@@ -213,7 +223,7 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
       )}
 
       {/* sticky mobile bar */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-bg/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur md:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-ink bg-bg p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:hidden">
         <div className="mx-auto flex max-w-lg items-center gap-3">
           <div className="min-w-0 leading-tight"><p className="truncate text-xs text-muted">{productLabel}</p><p dir="ltr" className="num text-lg font-extrabold">{fmt(unit * qty)}</p></div>
           {cta("btn-lg ms-auto flex-1 !text-base", true)}

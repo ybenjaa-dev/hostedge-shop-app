@@ -25,7 +25,7 @@ const CARD_SELECT = `
   (SELECT COUNT(*) FROM product_variants v WHERE v.product_id = p.id) AS variantCount,
   (SELECT COALESCE(SUM(v.stock),0) FROM product_variants v WHERE v.product_id = p.id) AS variantStock,
   (SELECT MIN(COALESCE(v.price, p.price)) FROM product_variants v WHERE v.product_id = p.id) AS variantMin,
-  (SELECT GROUP_CONCAT(name, '|') FROM (SELECT name FROM product_variants WHERE product_id = p.id ORDER BY position LIMIT 6)) AS variantNames,
+  (SELECT GROUP_CONCAT(name, '|') FROM (SELECT name FROM product_variants WHERE product_id = p.id ORDER BY position LIMIT 40)) AS variantNames,
   p.stock AS stock, p.track_stock AS trackStock,
   (SELECT ROUND(AVG(r.rating),1) FROM reviews r WHERE r.product_id = p.id AND r.status='approved') AS rating,
   (SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id AND r.status='approved') AS reviewCount`;

@@ -10,7 +10,7 @@ export function Gallery({ images, alt, closeLabel }: { images: { key: string; al
   const [idx, setIdx] = useState(0);
   const [zoomed, setZoomed] = useState(false);
   const [origin, setOrigin] = useState("50% 50%");
-  if (!images.length) return <div className="grid aspect-square place-items-center rounded-3xl bg-sunken text-5xl text-muted">▢</div>;
+  if (!images.length) return <div className="grid aspect-[3/4] place-items-center bg-sunken text-muted">—</div>;
 
   const go = (i: number) => {
     const n = Math.max(0, Math.min(images.length - 1, i));
@@ -26,7 +26,7 @@ export function Gallery({ images, alt, closeLabel }: { images: { key: string; al
   return (
     <div>
       <div className="relative">
-        <div ref={scroller} onScroll={onScroll} className="scroll-snap-x flex aspect-square overflow-x-auto rounded-3xl bg-sunken" tabIndex={0} aria-label={alt}>
+        <div ref={scroller} onScroll={onScroll} className="scroll-snap-x flex aspect-[3/4] overflow-x-auto bg-sunken md:hidden" tabIndex={0} aria-label={alt}>
           {images.map((im, i) => (
             <button key={im.key} type="button" onClick={() => { setIdx(i); dialog.current?.showModal(); }} className="relative block size-full cursor-zoom-in" aria-label={`Zoom ${i + 1}/${images.length}`}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -34,19 +34,20 @@ export function Gallery({ images, alt, closeLabel }: { images: { key: string; al
             </button>
           ))}
         </div>
-        <span className="pointer-events-none absolute end-3 top-3 grid size-9 place-items-center rounded-full bg-bg/80 backdrop-blur"><ZoomIn className="size-4" /></span>
+        <div className="hidden gap-2 md:grid md:grid-cols-2">{images.map((im, i) => (<button key={im.key} type="button" onClick={() => { setIdx(i); dialog.current?.showModal(); }} className={`block cursor-zoom-in bg-sunken ${i === 0 ? "col-span-2" : ""}`} aria-label={`Zoom ${i + 1}/${images.length}`}>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={fileUrl(im.key)} alt={im.alt || alt} className="aspect-[3/4] w-full object-cover" loading={i === 0 ? "eager" : "lazy"} /></button>))}</div>
+        <span className="pointer-events-none absolute end-3 top-3 grid size-9 place-items-center bg-bg/90 md:hidden"><ZoomIn className="size-4" /></span>
         {images.length > 1 && (
           <>
-            <button type="button" aria-label="Previous" onClick={() => go(idx - 1)} className="absolute start-2 top-1/2 hidden size-10 -translate-y-1/2 place-items-center rounded-full bg-bg/85 shadow backdrop-blur hover:bg-bg md:grid"><ChevronLeft className="size-5 rtl:rotate-180" /></button>
-            <button type="button" aria-label="Next" onClick={() => go(idx + 1)} className="absolute end-2 top-1/2 hidden size-10 -translate-y-1/2 place-items-center rounded-full bg-bg/85 shadow backdrop-blur hover:bg-bg md:grid"><ChevronRight className="size-5 rtl:rotate-180" /></button>
-            <div className="absolute inset-x-0 bottom-3 flex justify-center gap-1.5">
-              {images.map((_, i) => <span key={i} className={`h-1.5 rounded-full transition-all ${i === idx ? "w-5 bg-white" : "w-1.5 bg-white/60"}`} />)}
+            <button type="button" aria-label="Previous" onClick={() => go(idx - 1)} className="hidden"><ChevronLeft className="size-5 rtl:rotate-180" /></button>
+            <button type="button" aria-label="Next" onClick={() => go(idx + 1)} className="hidden"><ChevronRight className="size-5 rtl:rotate-180" /></button>
+            <div className="absolute inset-x-0 bottom-3 flex justify-center gap-1.5 md:hidden">
+              {images.map((_, i) => <span key={i} className={`h-1 transition-all ${i === idx ? "w-6 bg-ink" : "w-1.5 bg-ink/35"}`} />)}
             </div>
           </>
         )}
       </div>
       {images.length > 1 && (
-        <div className="mt-3 hidden gap-2 md:flex">
+        <div className="mt-3 hidden gap-2">
           {images.map((im, i) => (
             // eslint-disable-next-line @next/next/no-img-element
             <button key={im.key} type="button" onClick={() => go(i)} aria-label={`${i + 1}`} className={`size-16 overflow-hidden rounded-xl border-2 ${i === idx ? "border-brand" : "border-transparent opacity-70 hover:opacity-100"}`}><img src={fileUrl(im.key)} alt="" className="size-full object-cover" loading="lazy" /></button>

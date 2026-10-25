@@ -108,3 +108,44 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body), 
 /* Hide number input arrows */
 input[type=number]::-webkit-inner-spin-button { display: none; }
 @keyframes wiggle { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+/* ───────────────────── Storefront v7 — "Atelier" (fashion) ─────────────────────
+   Editorial monochrome: white page, black ink, hairlines, wide-tracked uppercase labels, large 3:4 imagery.
+   Scoped under .v7 so the admin keeps its own look. */
+.v7 {
+  --bg: #ffffff; --surface: #ffffff; --sunken: #f4f2ee; --ink: #111111; --muted: #6b6862; --line: #e4e1db; --sand: #c9b79c;
+  --brand-soft: #f4f2ee;
+  background: var(--bg); color: var(--ink); min-height: 100dvh;
+}
+:root[data-theme="dark"] .v7 { --bg: #0d0d0d; --surface: #141414; --sunken: #1c1b19; --ink: #f4f1ea; --muted: #a5a199; --line: #2e2c28; --brand-soft: #1c1b19; }
+.v7 .display, .v7 .heading { font-family: var(--font-heading), var(--font-display), sans-serif; font-weight: 700; letter-spacing: -0.01em; text-transform: uppercase; line-height: 0.95; }
+[dir="rtl"] .v7 .display, [dir="rtl"] .v7 .heading { text-transform: none; letter-spacing: 0; line-height: 1.2; }
+.v7 .label-s { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; }
+[dir="rtl"] .v7 .label-s { letter-spacing: 0.02em; font-size: 0.8rem; }
+.v7 :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 0; }
+@layer components {
+  .v7 .btn { border-radius: 0; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.82rem; min-height: 3rem; }
+  [dir="rtl"] .v7 .btn { letter-spacing: 0; text-transform: none; font-size: 0.95rem; }
+  .v7 .btn-primary { background: var(--ink); color: var(--bg); box-shadow: none; }
+  .v7 .btn-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--ink) 82%, var(--sand)); }
+  .v7 .btn-accent { background: var(--sand); color: #111; }
+  .v7 .btn-outline { border-color: var(--ink); background: transparent; }
+  .v7 .btn-outline:hover:not(:disabled) { background: var(--ink); color: var(--bg); }
+  .v7 .btn-sm { min-height: 2.4rem; }
+  .v7 .field { border: 0; border-bottom: 1px solid var(--ink); border-radius: 0; background: transparent; padding-inline: 0.15rem; }
+  .v7 .field:hover { border-color: var(--ink); }
+  .v7 .field:focus { box-shadow: none; border-bottom-width: 2px; }
+  .v7 .label { font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; color: var(--muted); }
+  [dir="rtl"] .v7 .label { letter-spacing: 0; text-transform: none; font-size: 0.82rem; }
+  .v7 .card { border: 1px solid var(--line); border-radius: 0; box-shadow: none; background: var(--surface); }
+}
+.v7 .rounded-2xl, .v7 .rounded-3xl, .v7 .rounded-xl, .v7 .rounded-lg { border-radius: 0; }
+.v7 .rail { display: flex; gap: 0.75rem; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; padding-bottom: 0.5rem; margin-inline: -1rem; padding-inline: 1rem; }
+.v7 .rail::-webkit-scrollbar { display: none; }
+.v7 .rail > * { scroll-snap-align: start; flex: 0 0 min(58vw, 15rem); }
+@media (min-width: 768px) { .v7 .rail { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; overflow: visible; margin: 0; padding: 0; } .v7 .rail > * { flex: initial; } .v7 .rail > :nth-child(n+5) { display: none; } }
+.v7 .dot { width: 0.8rem; height: 0.8rem; border-radius: 9999px; border: 1px solid color-mix(in srgb, var(--ink) 25%, transparent); display: inline-block; }
+.v7 .link-arrow { display: inline-flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid currentColor; padding-bottom: 2px; }
+.v7 .size-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+.v7 .size-table th, .v7 .size-table td { border-bottom: 1px solid var(--line); padding: 0.55rem 0.4rem; text-align: start; }
+.v7 .size-table th { font-weight: 700; width: 3.5rem; }

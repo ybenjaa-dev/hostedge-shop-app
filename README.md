@@ -56,6 +56,9 @@ Schema changes: edit `src/db/schema.ts`, run `npm run db:generate` (drizzle-kit 
 
 ## What's inside
 
+### Storefront (design v7 — "Atelier", fashion)
+This branch is a storefront built for a clothing store: editorial monochrome (white page, black ink, hairlines), wide-tracked uppercase labels and Syne headlines, a typographic hero beside large 3:4 photography, a numbered category index, a **two-axis picker with colour swatches and a size grid** (unavailable sizes/colours are struck through per selection), a stacked photo gallery on desktop, and a **size-guide table** generated from the product's facts field (rows like `M: Chest 102 cm · Length 70 cm`; other rows become composition & care). Sample data is a generic wardrobe (tees, denim, blazer, knitwear, trench, hoodie, chinos, linen shirt, puffer, dress, socks) with sizes × colours and garment illustrations. Colors, fonts, hero and sections remain editable in Admin → Appearance.
+
 ### Storefront
 Mobile-first and light on JS: server-rendered pages, scroll-snap swipe gallery, native `<dialog>` for sheets/drawers, GET-form filters, localized RTL-safe layout (logical CSS properties).
 Home (hero slides, announcement bar, categories, featured/best sellers, reviews, trust badges, footer with contacts + socials), catalog (search, category, price, in-stock filters, sort, pagination, skeletons), product page (gallery with swipe + zoom, variants with per-variant price/stock, quantity, reviews, related, sticky mobile buy bar, sold-out state, JSON-LD), guest cart (localStorage) with slide-over drawer + full page, free-shipping progress bar and coupons, single-page guest checkout, order confirmation, order tracking (order number + phone), static pages, sitemap, robots, OpenGraph, WhatsApp floating button.

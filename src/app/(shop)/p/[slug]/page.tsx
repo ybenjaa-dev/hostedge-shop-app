@@ -7,10 +7,12 @@ import { getT } from "@/lib/i18n";
 import { tr } from "@/lib/i18n-core";
 import { fileUrl } from "@/lib/storage";
 import { toMajorString } from "@/lib/money";
+import { whatsappLink } from "@/lib/phone";
+import { parseFacts } from "@/lib/facts";
 import { getProduct, listBundles, listCities, listProducts, listReviews, listCategories } from "@/features/catalog/queries";
 import { Gallery } from "@/features/catalog/components/gallery";
 import { ProductBuy } from "@/features/checkout/components/product-buy";
-import { ProductCard, ProductGrid } from "@/features/catalog/components/product-card";
+import { ProductCard } from "@/features/catalog/components/product-card";
 import { ReviewForm } from "@/features/catalog/components/review-form";
 import { ViewContent } from "@/features/catalog/components/view-content";
 
@@ -61,63 +63,59 @@ export default async function ProductPage({ params, searchParams }: Props) {
     ...(p.reviewCount ? { aggregateRating: { "@type": "AggregateRating", ratingValue: p.rating, reviewCount: p.reviewCount } } : {}),
   };
 
+  const wa = s.store.whatsapp ? whatsappLink(s.store.whatsapp, `${name} — ${s.store.name}`) : null;
+  const facts = parseFacts(tr(p.specs, lang));
+  const isSize = (l: string) => /^(XXS|XS|S|M|L|XL|XXL|XXXL|\d{2})$/i.test(l.trim());
+  const sizeRows = facts.filter((f) => isSize(f.label) && f.value).map((f) => ({ size: f.label, cells: f.value.split("·").map((c) => { const m = c.trim().match(/^(\D*?)\s*(\d.*)$/); return m ? { h: m[1]!.trim(), v: m[2]!.trim() } : { h: "", v: c.trim() }; }) }));
+  const careRows = facts.filter((f) => !isSize(f.label));
+  const acc = "group border-b border-line";
+  const sum = "label-s flex cursor-pointer list-none items-center justify-between py-4 [&::-webkit-details-marker]:hidden";
+  const plus = <><span aria-hidden className="text-lg group-open:hidden">+</span><span aria-hidden className="hidden text-lg group-open:block">−</span></>;
   return (
-    <article className="mx-auto max-w-7xl px-4 py-6 pb-28 md:py-10 md:pb-10">
+    <article className="mx-auto max-w-[88rem] px-4 py-4 pb-28 md:px-6 md:py-8 md:pb-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <ViewContent id={p.id} value={p.price} currency={s.store.currency} />
-      <nav aria-label="Breadcrumb" className="mb-4 text-sm text-muted">
-        <Link href="/" className="hover:text-ink">{t("nav.home")}</Link> / {cat && <><Link href={`/category/${cat.slug}`} className="hover:text-ink">{tr(cat.name, lang)}</Link> / </>}<span className="text-ink">{name}</span>
-      </nav>
-      <div className="grid gap-8 md:grid-cols-2 lg:gap-14">
+      <nav aria-label="Breadcrumb" className="label-s mb-5 text-muted"><Link href="/" className="hover:text-ink">{t("nav.home")}</Link> / {cat && <><Link href={`/category/${cat.slug}`} className="hover:text-ink">{tr(cat.name, lang)}</Link> / </>}<span className="text-ink">{name}</span></nav>
+      <div className="grid gap-8 md:grid-cols-[1.3fr_1fr] lg:gap-14">
         <Gallery images={p.images} alt={name} closeLabel={t("cod.close")} />
-        <div>
-          <h1 className="display text-3xl font-extrabold leading-tight sm:text-4xl">{name}</h1>
-          <p className="mt-2 flex items-center gap-2 text-sm text-muted">
-            {p.rating != null ? <><Star className="size-4 fill-accent text-accent" /><span className="num font-bold text-ink">{p.rating}</span> · {t("p.reviews", { n: p.reviewCount })}</> : t("p.noReviews")}
-            <span aria-hidden>·</span>
-            <span className={inStock ? "font-semibold text-ok" : "font-semibold text-danger"}>{inStock ? t("p.inStock") : t("p.soldOut")}</span>
+        <div className="md:sticky md:top-28 md:self-start">
+          <h1 className="display text-[clamp(2.2rem,5vw,3.6rem)]">{name}</h1>
+          <p className="label-s mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-muted">
+            {p.rating != null && <span className="text-ink">★ <span className="num">{p.rating}</span> ({p.reviewCount})</span>}
+            {p.sku && <span>SKU {p.sku}</span>}
+            <span className={inStock ? "text-ink" : "text-danger"}>{inStock ? t("p.inStock") : t("p.soldOut")}</span>
           </p>
           <p className="mt-4 leading-relaxed text-muted">{tr(p.shortDesc, lang)}</p>
-          <div className="mt-6 border-t border-line pt-6">
-            <ProductBuy
-              autoOpen={sp.order === "1"}
-              product={{ id: p.id, slug: p.slug, name: p.name, price: p.price, compareAt: p.compareAt, stock: p.stock, trackStock: p.trackStock, variants: p.variants, image: p.images[0]?.key ?? null }}
-              bundles={bundles}
-              cities={cities}
-            />
+          <div className="mt-6">
+            <ProductBuy autoOpen={sp.order === "1"} product={{ id: p.id, slug: p.slug, name: p.name, price: p.price, compareAt: p.compareAt, stock: p.stock, trackStock: p.trackStock, variants: p.variants, image: p.images[0]?.key ?? null }} bundles={bundles} cities={cities} />
+          </div>
+          <p className="label-s mt-4 border-y border-line py-3 text-center">{t("p.freeExchange")}</p>
+          <div className="mt-2">
+            {sizeRows.length > 0 && (
+              <details className={acc}><summary className={sum}>{t("p.sizeGuide")}{plus}</summary>
+                <div className="overflow-x-auto pb-5"><table className="size-table"><thead><tr><th />{sizeRows[0]!.cells.map((c, i) => <th key={i} className="label-s text-muted">{c.h}</th>)}</tr></thead><tbody>{sizeRows.map((r) => <tr key={r.size}><th>{r.size}</th>{r.cells.map((c, i) => <td key={i}>{c.v}</td>)}</tr>)}</tbody></table></div>
+              </details>
+            )}
+            <details className={acc} open><summary className={sum}>{t("p.composition")}{plus}</summary>
+              <div className="pb-5 text-sm text-muted"><p className="prose-lite">{tr(p.longDesc, lang)}</p>{careRows.length > 0 && <dl className="mt-3 space-y-1">{careRows.map((f, i) => <div key={i} className="flex gap-2"><dt className="font-semibold text-ink">{f.label}:</dt><dd>{f.value}</dd></div>)}</dl>}</div>
+            </details>
+            <details className={acc}><summary className={sum}>{t("p.delivery")}{plus}</summary><div className="pb-5 text-sm text-muted"><p>{t("p.deliveryText")}</p>{wa && <a href={wa} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm mt-3">{t("p.shareWa")}</a>}</div></details>
           </div>
         </div>
       </div>
 
-      {tr(p.longDesc, lang) && (
-        <section className="mt-14 max-w-3xl">
-          <h2 className="display mb-3 text-2xl font-extrabold">{t("p.description")}</h2>
-          <div className="prose-lite text-muted"><p>{tr(p.longDesc, lang)}</p></div>
-        </section>
-      )}
-
-      <section className="mt-14 grid gap-8 md:grid-cols-[1fr_22rem]" aria-labelledby="reviews-h">
+      <section className="mt-20 grid gap-10 border-t border-ink pt-8 md:grid-cols-[1fr_22rem]" aria-labelledby="reviews-h">
         <div>
-          <h2 id="reviews-h" className="display mb-4 text-2xl font-extrabold">{t("p.reviews", { n: p.reviewCount })}</h2>
+          <h2 id="reviews-h" className="display mb-6 text-3xl sm:text-5xl">{t("p.reviews", { n: p.reviewCount })}</h2>
           {reviews.length === 0 ? <p className="text-muted">{t("p.noReviews")}</p> : (
-            <ul className="space-y-4">
-              {reviews.map((r) => (
-                <li key={r.id} className="card p-4">
-                  <div className="flex items-center justify-between"><span className="font-bold">{r.name}{r.city && <span className="font-normal text-muted"> · {r.city}</span>}</span><span className="flex gap-0.5" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`size-4 ${i < r.rating ? "fill-accent text-accent" : "text-line"}`} />)}</span></div>
-                  <p className="mt-2 text-sm leading-relaxed">{r.body}</p>
-                </li>
-              ))}
-            </ul>
+            <ul className="divide-y divide-line border-y border-line">{reviews.map((r) => <li key={r.id} className="py-5"><p className="label-s flex flex-wrap gap-x-3">{r.name}{r.city && <span className="text-muted">{r.city}</span>}<span>{"★".repeat(r.rating)}<span className="text-line">{"★".repeat(5 - r.rating)}</span></span></p><p className="mt-2 leading-relaxed">{r.body}</p></li>)}</ul>
           )}
         </div>
-        <div className="card h-fit p-5"><h3 className="display mb-3 text-lg font-extrabold">{t("p.writeReview")}</h3><ReviewForm productId={p.id} /></div>
+        <div className="h-fit border border-ink p-5"><h3 className="label-s mb-4">{t("p.writeReview")}</h3><ReviewForm productId={p.id} /></div>
       </section>
 
       {related.items.length > 0 && (
-        <section className="mt-16">
-          <h2 className="display mb-6 text-2xl font-extrabold">{t("p.related")}</h2>
-          <ProductGrid>{related.items.map((r) => <ProductCard key={r.id} p={r} lang={lang} t={t} currency={s.store.currency} codMode={s.checkout.codMode} />)}</ProductGrid>
-        </section>
+        <section className="mt-20"><h2 className="display mb-8 text-3xl sm:text-5xl">{t("p.related")}</h2><div className="rail">{related.items.map((r) => <ProductCard key={r.id} p={r} lang={lang} t={t} currency={s.store.currency} codMode={s.checkout.codMode} />)}</div></section>
       )}
     </article>
   );

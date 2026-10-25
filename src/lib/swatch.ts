@@ -3,6 +3,7 @@ const KNOWN: Record<string, string> = {
   rose: "#d98a96", berry: "#8c2f4f", nude: "#d8a98f", coral: "#f07a68", brick: "#a8493a", red: "#b3202e", pink: "#f2a3b6", plum: "#6b2a4a", peach: "#f6b79a",
   ivory: "#f6e9d7", beige: "#e5c8a6", sand: "#d9b88d", caramel: "#b9824a", mocha: "#7a5238", chocolate: "#4e3023", black: "#1c1717", white: "#fbf7f2", clear: "#e9eef0",
   gold: "#c9a24b", silver: "#c3c6cc", "rose gold": "#d3a193", mauve: "#a4768a", burgundy: "#5e1a2c", wine: "#6a1f35", tan: "#c49a6c", honey: "#d5a35a", porcelain: "#f2dcc9", natural: "#e2bf98",
+  camel: "#b88a56", indigo: "#2f4468", olive: "#6b6f45", stone: "#bdb5a2", grey: "#9a9a9c", gray: "#9a9a9c", khaki: "#a89a72", navy: "#1f2c4a", "sky blue": "#9db9d6", champagne: "#dcc8a8", "washed black": "#3a3a3d", denim: "#3d5a80",
   noir: "#1c1717", blanc: "#fbf7f2", rouge: "#b3202e", rose_: "#d98a96", nu: "#d8a98f", بيج: "#e5c8a6", وردي: "#f2a3b6", أحمر: "#b3202e", عنابي: "#6a1f35", نود: "#d8a98f", أسود: "#1c1717",
 };
 
