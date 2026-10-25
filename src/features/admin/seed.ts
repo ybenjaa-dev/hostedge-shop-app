@@ -145,6 +145,8 @@ export async function seedSampleData(env: Env, currency: string) {
   products.forEach((p, i) => {
     if (!p.feat) return;
     for (const [q, f, pop] of [[2, 0.9, 1], [3, 0.82, 0]] as const) stmts.push(db.prepare("INSERT INTO bundles (id, product_id, min_qty, percent, price, label, popular, active) VALUES (?,?,?,0,?,NULL,?,1)").bind(newId(), pids[i]!, q, price(Math.round(p.p * q * f)), pop));
+    // show a few of the offer-card layouts: every product after the first uses the next template (the first keeps the store default)
+    if (i > 0) stmts.push(db.prepare("UPDATE products SET offer_template = ? WHERE id = ?").bind((["tiles", "photo", "pills", "highlight"] as const)[(i - 1) % 4], pids[i]!));
   });
   for (let i = 0; i < stmts.length; i += 40) await db.batch(stmts.slice(i, i + 40));
   await putSvg(env, "uploads/sample-hero.svg", `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1100"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6d9d0"/><stop offset="1" stop-color="#d9a597"/></linearGradient><filter id="b" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="55"/></filter></defs><rect width="900" height="1100" fill="url(#g)"/><circle cx="650" cy="280" r="230" fill="#fff" opacity=".5" filter="url(#b)"/><circle cx="200" cy="900" r="220" fill="#7a2e46" opacity=".25" filter="url(#b)"/><rect x="330" y="520" width="240" height="380" rx="46" fill="#fff" opacity=".9"/><rect x="390" y="440" width="120" height="100" rx="14" fill="#7a2e46"/><rect x="415" y="320" width="70" height="130" rx="35" fill="#7a2e46"/><rect x="365" y="640" width="170" height="14" rx="7" fill="#c98f78"/><rect x="390" y="672" width="120" height="10" rx="5" fill="#c98f78" opacity=".6"/></svg>`);
