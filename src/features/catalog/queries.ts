@@ -15,6 +15,8 @@ export type ProductCard = {
   reviewCount: number;
   categoryId: string | null;
   featured: boolean;
+  variantNames: string[];
+  variantCount: number;
 };
 
 const CARD_SELECT = `
@@ -23,6 +25,7 @@ const CARD_SELECT = `
   (SELECT COUNT(*) FROM product_variants v WHERE v.product_id = p.id) AS variantCount,
   (SELECT COALESCE(SUM(v.stock),0) FROM product_variants v WHERE v.product_id = p.id) AS variantStock,
   (SELECT MIN(COALESCE(v.price, p.price)) FROM product_variants v WHERE v.product_id = p.id) AS variantMin,
+  (SELECT GROUP_CONCAT(name, '|') FROM (SELECT name FROM product_variants WHERE product_id = p.id ORDER BY position LIMIT 6)) AS variantNames,
   p.stock AS stock, p.track_stock AS trackStock,
   (SELECT ROUND(AVG(r.rating),1) FROM reviews r WHERE r.product_id = p.id AND r.status='approved') AS rating,
   (SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id AND r.status='approved') AS reviewCount`;
@@ -45,6 +48,8 @@ function toCard(r: Row): ProductCard {
     reviewCount: (r.reviewCount as number) ?? 0,
     categoryId: (r.categoryId as string | null) ?? null,
     featured: !!r.featured,
+    variantNames: r.variantNames ? String(r.variantNames).split("|") : [],
+    variantCount: (r.variantCount as number) ?? 0,
   };
 }
 

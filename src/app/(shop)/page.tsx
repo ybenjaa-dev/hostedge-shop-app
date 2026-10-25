@@ -1,11 +1,13 @@
 import Link from "next/link";
-import { ArrowRight, Banknote, RotateCcw, Truck, ShieldCheck, Headset, Gem, Star } from "lucide-react";
-import { getSettings, type TrustBadge } from "@/lib/settings";
+import { ArrowRight, ArrowLeft, Banknote, RotateCcw, Truck, ShieldCheck, Headset, Gem, Star, Sparkles } from "lucide-react";
+import { getSettings, type Settings, type TrustBadge } from "@/lib/settings";
 import { getT } from "@/lib/i18n";
-import { tr } from "@/lib/i18n-core";
+import { tr, dirOf, type Lang } from "@/lib/i18n-core";
 import { fileUrl } from "@/lib/storage";
-import { listCategories, listProducts, listReviews } from "@/features/catalog/queries";
-import { ProductCard, ProductGrid } from "@/features/catalog/components/product-card";
+import type { TFn } from "@/lib/dict";
+import { listCategories, listProducts, listReviews, type ProductCard as PC } from "@/features/catalog/queries";
+import { ProductCard } from "@/features/catalog/components/product-card";
+import { Money } from "@/components/money";
 
 const ICONS: Record<TrustBadge["icon"], typeof Banknote> = { cod: Banknote, returns: RotateCcw, delivery: Truck, secure: ShieldCheck, support: Headset, quality: Gem };
 
@@ -19,22 +21,32 @@ export default async function Home() {
     listReviews({ limit: 6 }),
   ]);
   const cur = s.store.currency;
-  const sections = s.home.sections.filter((x) => x.visible);
+  const codMode = s.checkout.codMode;
+  const catName = new Map(cats.map((c) => [c.id, tr(c.name, lang)]));
+  const Arrow = dirOf(lang) === "rtl" ? ArrowLeft : ArrowRight;
+
+  const rail = (id: string, title: string, items: PC[], ranked = false) =>
+    items.length ? (
+      <section key={id} className="mx-auto max-w-7xl px-4 py-12 md:py-16">
+        <Heading title={title} href="/shop" more={t("home.viewAll")} Arrow={Arrow} />
+        <div className="rail">{items.slice(0, 8).map((p, i) => <ProductCard key={p.id} p={p} lang={lang} t={t} currency={cur} codMode={codMode} rank={ranked ? i + 1 : undefined} eyebrow={p.categoryId ? catName.get(p.categoryId) : undefined} />)}</div>
+      </section>
+    ) : null;
 
   const render = (id: string) => {
     switch (id) {
       case "hero":
-        return <Hero key={id} s={s} lang={lang} t={t} />;
+        return <Hero key={id} s={s} lang={lang} t={t} pick={featured.items.find((p) => p.inStock) ?? featured.items[0]} cur={cur} codMode={codMode} Arrow={Arrow} />;
       case "trust":
         return (
-          <section key={id} className="mx-auto max-w-7xl px-4 py-8">
-            <ul className="grid gap-3 sm:grid-cols-3">
+          <section key={id} className="mx-auto max-w-5xl px-4 pb-4 pt-2">
+            <ul className="grid gap-4 rounded-[2rem] border border-line bg-surface/70 p-5 sm:grid-cols-3 sm:p-6">
               {s.trust.map((b, i) => {
-                const Icon = ICONS[b.icon] ?? ShieldCheck;
+                const Icon = ICONS[b.icon] ?? Sparkles;
                 return (
-                  <li key={i} className="flex items-center gap-3 rounded-2xl border border-line bg-surface p-4">
-                    <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand"><Icon className="size-5" aria-hidden /></span>
-                    <span><span className="block font-bold">{tr(b.title, lang)}</span><span className="text-sm text-muted">{tr(b.text, lang)}</span></span>
+                  <li key={i} className="flex items-center gap-3.5">
+                    <span className="grid size-12 shrink-0 place-items-center rounded-full bg-brand-soft text-brand"><Icon className="size-5" strokeWidth={1.5} aria-hidden /></span>
+                    <span><span className="block font-semibold leading-tight">{tr(b.title, lang)}</span><span className="text-sm text-muted">{tr(b.text, lang)}</span></span>
                   </li>
                 );
               })}
@@ -44,48 +56,44 @@ export default async function Home() {
       case "categories":
         if (!cats.length) return null;
         return (
-          <section key={id} className="mx-auto max-w-7xl px-4 py-10">
-            <SectionTitle title={t("home.categories")} />
-            <div className="scroll-snap-x -mx-4 flex gap-3 px-4 [&>*]:!flex-none [&>*]:!basis-auto md:grid md:grid-cols-4 md:overflow-visible">
+          <section key={id} className="mx-auto max-w-7xl px-4 py-12 md:py-16">
+            <Heading title={t("home.concern")} />
+            <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-5">
               {cats.map((c) => (
-                <Link key={c.id} href={`/category/${c.slug}`} className="group relative block aspect-[4/3] w-44 overflow-hidden rounded-2xl bg-sunken md:w-auto">
-                  {c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image)} alt="" loading="lazy" className="size-full object-cover transition duration-500 group-hover:scale-105" />}
-                  <span className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                  <span className="display absolute inset-x-3 bottom-3 text-lg font-extrabold leading-tight text-white">{tr(c.name, lang)}</span>
+                <Link key={c.id} href={`/category/${c.slug}`} className="group relative block aspect-[3/4] overflow-hidden rounded-[1.75rem] bg-sunken">
+                  {c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image)} alt="" loading="lazy" className="size-full object-cover transition duration-[900ms] group-hover:scale-105" />}
+                  <span className="absolute inset-x-3 bottom-3 flex items-center justify-between rounded-full bg-surface/90 px-4 py-2.5 backdrop-blur"><span className="display text-lg leading-none">{tr(c.name, lang)}</span><span className="num text-xs text-muted">{c.count}</span></span>
                 </Link>
               ))}
             </div>
           </section>
         );
       case "featured":
-        return products(id, t("home.featured"), featured.items);
+        return rail(id, t("home.featured"), featured.items);
       case "bestsellers":
-        return products(id, t("home.bestsellers"), best.items);
+        return rail(id, t("home.bestsellers"), best.items, true);
       case "banner":
         if (!s.home.banner.image) return null;
         return (
           <section key={id} className="mx-auto max-w-7xl px-4 py-8">
-            <Link href={s.home.banner.href || "/shop"} className="relative block overflow-hidden rounded-3xl">
+            <Link href={s.home.banner.href || "/shop"} className="relative block overflow-hidden rounded-[2rem]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={fileUrl(s.home.banner.image)} alt={tr(s.home.banner.title, lang)} loading="lazy" className="aspect-[16/6] min-h-40 w-full object-cover" />
-              <span className="absolute inset-0 flex flex-col justify-center bg-gradient-to-r from-black/60 to-transparent p-6 text-white rtl:bg-gradient-to-l md:p-12">
-                <span className="display text-2xl font-extrabold md:text-4xl">{tr(s.home.banner.title, lang)}</span>
-                <span className="mt-1 max-w-md text-sm md:text-base">{tr(s.home.banner.sub, lang)}</span>
-              </span>
+              <img src={fileUrl(s.home.banner.image)} alt={tr(s.home.banner.title, lang)} loading="lazy" className="aspect-[16/7] min-h-44 w-full object-cover" />
+              <span className="absolute inset-0 flex flex-col items-center justify-center bg-[#2b1219]/35 p-6 text-center text-white"><span className="display text-3xl md:text-5xl">{tr(s.home.banner.title, lang)}</span><span className="mt-1 max-w-md text-sm md:text-base">{tr(s.home.banner.sub, lang)}</span></span>
             </Link>
           </section>
         );
       case "reviews":
         if (!reviews.length) return null;
         return (
-          <section key={id} className="mx-auto max-w-7xl px-4 py-10">
-            <SectionTitle title={t("home.reviews")} />
-            <div className="grid gap-4 md:grid-cols-3">
+          <section key={id} className="mx-auto max-w-7xl px-4 py-12 md:py-16">
+            <Heading title={t("home.reviews")} />
+            <div className="grid gap-5 md:grid-cols-3">
               {reviews.slice(0, 3).map((r) => (
-                <figure key={r.id} className="card p-5">
-                  <div className="flex gap-0.5" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`size-4 ${i < r.rating ? "fill-accent text-accent" : "text-line"}`} />)}</div>
-                  <blockquote className="mt-3 leading-relaxed">“{r.body}”</blockquote>
-                  <figcaption className="mt-3 text-sm font-semibold">{r.name}{r.city && <span className="font-normal text-muted"> · {r.city}</span>}</figcaption>
+                <figure key={r.id} className="card p-6">
+                  <div className="flex gap-0.5" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, k) => <Star key={k} className={`size-4 ${k < r.rating ? "fill-rose text-rose" : "text-line"}`} />)}</div>
+                  <blockquote className="display mt-3 text-[1.3rem] leading-snug">“{r.body}”</blockquote>
+                  <figcaption className="mt-4 flex items-center gap-3 text-sm"><span className="grid size-9 place-items-center rounded-full bg-brand-soft font-bold text-brand">{r.name.slice(0, 1)}</span><span><b>{r.name}</b>{r.city && <span className="block text-muted">{r.city}</span>}</span></figcaption>
                 </figure>
               ))}
             </div>
@@ -95,55 +103,74 @@ export default async function Home() {
     return null;
   };
 
-  function products(id: string, title: string, items: typeof featured.items) {
-    if (!items.length) return null;
-    return (
-      <section key={id} className="mx-auto max-w-7xl px-4 py-10">
-        <SectionTitle title={title} href="/shop" more={t("home.viewAll")} />
-        <ProductGrid>{items.map((p) => <ProductCard key={p.id} p={p} lang={lang} t={t} currency={cur} codMode={s.checkout.codMode} />)}</ProductGrid>
-      </section>
-    );
-  }
-
-  return <>{sections.map((x) => render(x.id))}</>;
+  const sections = s.home.sections.filter((x) => x.visible);
+  const heroIdx = sections.findIndex((x) => x.id === "hero");
+  const nodes = sections.map((x) => render(x.id));
+  nodes.splice(Math.max(0, heroIdx + 3), 0, <Ritual key="ritual" t={t} codMode={codMode} />);
+  return <>{nodes}</>;
 }
 
-function SectionTitle({ title, href, more }: { title: string; href?: string; more?: string }) {
+function Heading({ title, href, more, Arrow }: { title: string; href?: string; more?: string; Arrow?: typeof ArrowRight }) {
   return (
-    <div className="mb-6 flex items-end justify-between gap-4">
-      <h2 className="display text-2xl font-extrabold sm:text-3xl">{title}</h2>
-      {href && <Link href={href} className="inline-flex items-center gap-1 text-sm font-bold text-brand hover:underline">{more} <ArrowRight className="size-4 rtl:rotate-180" /></Link>}
+    <div className="mb-8 flex items-end justify-between gap-4 md:mb-10">
+      <h2 className="display text-[2rem] sm:text-5xl">{title}</h2>
+      {href && Arrow && <Link href={href} className="inline-flex shrink-0 items-center gap-1.5 border-b border-ink pb-0.5 text-sm font-semibold hover:border-brand hover:text-brand">{more}<Arrow className="size-4" /></Link>}
     </div>
   );
 }
 
-function Hero({ s, lang, t }: { s: Awaited<ReturnType<typeof getSettings>>; lang: "ar" | "fr" | "en"; t: ReturnType<typeof import("@/lib/dict").makeT> }) {
-  const slides = s.hero.slides;
-  if (!slides.length) {
-    return (
-      <section className="mx-auto max-w-7xl px-4 pt-4">
-        <div className="relative overflow-hidden rounded-3xl bg-brand px-6 py-16 text-brand-ink md:px-14 md:py-28">
-          <h1 className="display max-w-2xl text-4xl font-extrabold leading-[1.05] md:text-6xl">{s.store.name}</h1>
-          <p className="mt-4 max-w-md text-lg opacity-90">{tr(s.store.tagline, lang)}</p>
-          <Link href="/shop" className="btn btn-accent btn-lg mt-8">{t("home.shopNow")} <ArrowRight className="size-5 rtl:rotate-180" /></Link>
-        </div>
-      </section>
-    );
-  }
+function Ritual({ t, codMode }: { t: TFn; codMode: boolean }) {
+  if (!codMode) return null;
+  const steps = [[t("how.s1"), t("how.s1d")], [t("how.s2"), t("how.s2d")], [t("how.s3"), t("how.s3d")]];
   return (
-    <section className="mx-auto max-w-7xl px-0 pt-0 sm:px-4 sm:pt-4" aria-roledescription="carousel">
-      <div className="scroll-snap-x flex gap-0 sm:gap-3 sm:rounded-3xl">
+    <section className="mx-auto max-w-7xl px-4 py-12 md:py-16">
+      <div className="rounded-[2.5rem] bg-sunken px-6 py-12 md:px-14">
+        <p className="eyebrow text-center">{t("p.ritual")}</p>
+        <h2 className="display mt-2 text-center text-[2rem] sm:text-5xl">{t("how.title")}</h2>
+        <ol className="mt-10 grid gap-8 md:grid-cols-3">
+          {steps.map(([title, text], i) => (
+            <li key={i} className="text-center">
+              <span className="display num block text-6xl leading-none text-brand/30">{String(i + 1).padStart(2, "0")}</span>
+              <h3 className="display mt-3 text-2xl">{title}</h3>
+              <p className="mx-auto mt-1 max-w-xs text-muted">{text}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
+function Hero({ s, lang, t, pick, cur, codMode, Arrow }: { s: Settings; lang: Lang; t: TFn; pick?: PC; cur: string; codMode: boolean; Arrow: typeof ArrowRight }) {
+  const slides = s.hero.slides.length ? s.hero.slides : [{ image: "", title: { [lang]: s.store.name } as Record<string, string>, sub: s.store.tagline, cta: { [lang]: t("home.hero.cta") } as Record<string, string>, href: "/shop" }];
+  return (
+    <section className="relative overflow-hidden" aria-roledescription="carousel">
+      <span className="blob -start-24 top-10 size-72 bg-rose/35" aria-hidden /><span className="blob -end-16 bottom-0 size-80 bg-brand/15" aria-hidden />
+      <div className="scroll-snap-x relative flex">
         {slides.map((sl, i) => (
-          <div key={i} className="relative min-h-[26rem] overflow-hidden bg-secondary sm:rounded-3xl md:min-h-[34rem]" aria-roledescription="slide">
-            {sl.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(sl.image)} alt="" className="absolute inset-0 size-full object-cover" loading={i === 0 ? "eager" : "lazy"} fetchPriority={i === 0 ? "high" : "auto"} />}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/5 ltr:md:bg-gradient-to-r rtl:md:bg-gradient-to-l" />
-            <div className="relative flex min-h-[26rem] flex-col justify-end p-6 text-white md:min-h-[34rem] md:max-w-2xl md:justify-center md:p-14">
-              {i === 0 ? <h1 className="display text-4xl font-extrabold leading-[1.05] sm:text-5xl md:text-6xl">{tr(sl.title, lang)}</h1> : <h2 className="display text-4xl font-extrabold leading-[1.05] sm:text-5xl md:text-6xl">{tr(sl.title, lang)}</h2>}
-              <p className="mt-3 max-w-md text-base opacity-90 md:text-lg">{tr(sl.sub, lang)}</p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                {tr(sl.cta, lang) && <Link href={sl.href || "/shop"} className="btn btn-accent btn-lg">{tr(sl.cta, lang)} <ArrowRight className="size-5 rtl:rotate-180" /></Link>}
-                {sl.cta2 && tr(sl.cta2, lang) && <Link href={sl.href2 || "/shop"} className="btn btn-lg border-white/50 bg-white/10 text-white backdrop-blur hover:bg-white/20">{tr(sl.cta2, lang)}</Link>}
+          <div key={i} className="mx-auto grid max-w-7xl items-center gap-8 px-5 py-10 md:grid-cols-[1.05fr_1fr] md:gap-14 md:py-16" aria-roledescription="slide">
+            <div className="order-2 text-center md:order-1 md:text-start">
+              <p className="eyebrow inline-flex items-center gap-2"><Sparkles className="size-3.5 text-rose" aria-hidden />{t("cod.payOnDelivery")}</p>
+              {i === 0 ? <h1 className="display mt-4 text-balance text-[clamp(2.8rem,8.5vw,6rem)]">{tr(sl.title, lang)}</h1> : <h2 className="display mt-4 text-balance text-[clamp(2.8rem,8.5vw,6rem)]">{tr(sl.title, lang)}</h2>}
+              <p className="mx-auto mt-5 max-w-md text-lg text-muted md:mx-0">{tr(sl.sub, lang)}</p>
+              <div className="mt-7 flex flex-wrap justify-center gap-3 md:justify-start">
+                {tr(sl.cta, lang) && <Link href={sl.href || "/shop"} className="btn btn-primary btn-lg px-8">{tr(sl.cta, lang)}<Arrow className="size-5" /></Link>}
+                {"cta2" in sl && sl.cta2 && tr(sl.cta2, lang) && <Link href={sl.href2 || "/shop"} className="btn btn-outline btn-lg">{tr(sl.cta2, lang)}</Link>}
               </div>
+            </div>
+            <div className="relative order-1 mx-auto w-full max-w-sm md:order-2 md:max-w-md">
+              <div className="relative aspect-[4/5] overflow-hidden rounded-[2.5rem] bg-sunken shadow-[0_40px_70px_-40px_rgba(90,40,60,.6)]">
+                {sl.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={fileUrl(sl.image)} alt="" className="absolute inset-0 size-full object-cover" loading={i === 0 ? "eager" : "lazy"} fetchPriority={i === 0 ? "high" : "auto"} />
+                ) : <div className="absolute inset-0 bg-gradient-to-br from-rose/40 to-brand/30" />}
+              </div>
+              {i === 0 && pick && (
+                <Link href={`/p/${pick.slug}`} className="absolute -bottom-5 start-3 flex max-w-[16.5rem] items-center gap-3 rounded-[1.4rem] border border-line bg-surface/90 p-2.5 pe-4 shadow-xl backdrop-blur sm:-start-6">
+                  <span className="size-14 shrink-0 overflow-hidden rounded-2xl bg-sunken">{pick.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(pick.image)} alt="" className="size-full object-cover" />}</span>
+                  <span className="min-w-0"><span className="eyebrow block !text-[0.62rem]">{t("p.pickedFor")}</span><span className="display block truncate text-base leading-tight">{tr(pick.name, lang)}</span><Money amount={pick.minPrice} currency={cur} lang={lang} className="text-sm font-bold text-brand" />{codMode ? "" : ""}</span>
+                </Link>
+              )}
             </div>
           </div>
         ))}

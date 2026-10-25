@@ -41,11 +41,20 @@ export async function Catalog({ sp, categorySlug }: { sp: Record<string, string 
   };
   const base = categorySlug ? `/category/${categorySlug}` : "/shop";
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
-      <div className="mb-6">
-        <h1 className="display text-3xl font-extrabold sm:text-4xl">{cat ? tr(cat.name, lang) : sp.q ? `“${sp.q}”` : t("shop.title")}</h1>
-        <p className="mt-1 text-sm text-muted">{t("shop.results", { n: res.total })}</p>
+    <div className="mx-auto max-w-7xl px-4 py-8 md:py-12">
+      <div className="mb-8 text-center">
+        <p className="eyebrow">{t("nav.shop")}</p>
+        <h1 className="display mt-2 text-[clamp(2.4rem,7vw,4.5rem)]">{cat ? tr(cat.name, lang) : sp.q ? `“${sp.q}”` : t("shop.title")}</h1>
+        <p className="num mt-2 text-sm text-muted">{t("shop.results", { n: res.total })}</p>
       </div>
+      {cats.length > 0 && (
+        <nav aria-label={t("shop.category")} className="-mx-4 mb-9 flex gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:justify-center">
+          <Link href="/shop" aria-current={!cat ? "page" : undefined} className={`whitespace-nowrap rounded-full border px-5 py-2 text-sm font-semibold transition ${!cat ? "border-brand bg-brand text-brand-ink" : "border-line bg-surface hover:border-ink"}`}>{t("shop.all")}</Link>
+          {cats.map((c) => (
+            <Link key={c.id} href={`/category/${c.slug}`} aria-current={cat?.id === c.id ? "page" : undefined} className={`whitespace-nowrap rounded-full border px-5 py-2 text-sm font-semibold transition ${cat?.id === c.id ? "border-brand bg-brand text-brand-ink" : "border-line bg-surface hover:border-ink"}`}>{tr(c.name, lang)}</Link>
+          ))}
+        </nav>
+      )}
       <div className="grid gap-8 lg:grid-cols-[16rem_1fr]">
         <CatalogFilters
           action={base}
@@ -60,7 +69,7 @@ export async function Catalog({ sp, categorySlug }: { sp: Record<string, string 
               <Link href={base} className="btn btn-outline">{t("shop.clear")}</Link>
             </div>
           ) : (
-            <ProductGrid>{res.items.map((p, i) => <ProductCard key={p.id} p={p} lang={lang} t={t} currency={s.store.currency} codMode={s.checkout.codMode} priority={i < 4} />)}</ProductGrid>
+            <ProductGrid>{res.items.map((p, i) => <ProductCard key={p.id} p={p} lang={lang} t={t} currency={s.store.currency} codMode={s.checkout.codMode} priority={i < 4} eyebrow={cats.find((c) => c.id === p.categoryId) ? tr(cats.find((c) => c.id === p.categoryId)!.name, lang) : undefined} />)}</ProductGrid>
           )}
           {pages > 1 && (
             <nav className="mt-10 flex items-center justify-between gap-3" aria-label="Pagination">

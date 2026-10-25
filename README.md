@@ -56,7 +56,9 @@ Schema changes: edit `src/db/schema.ts`, run `npm run db:generate` (drizzle-kit 
 
 ## What's inside
 
-### Storefront
+### Storefront (design v5 — "Soft Luxe", beauty & cosmetics)
+This branch is a storefront built for a beauty / cosmetics store: blush-and-plum palette, editorial Playfair (Latin) / Amiri (Arabic) headings, big soft radii, portrait product photography with a hover "Order now", **shade swatches** for colour variants (sold-out shades are struck through; ordering requires picking one) and shade dots on cards, a floating "our pick" card in the hero, "shop by concern" category tiles, a soft "ritual" (How it works) section, an airy footer, and feminine Arabic copy. **Sample data is a beauty catalog** (skincare, makeup, hair, body, fragrance; serums, lipsticks and foundations with shades, perfume sizes) with generated product illustrations. Colors, fonts, hero and sections stay editable in Admin → Appearance; the admin and all logic are unchanged.
+
 Mobile-first and light on JS: server-rendered pages, scroll-snap swipe gallery, native `<dialog>` for sheets/drawers, GET-form filters, localized RTL-safe layout (logical CSS properties).
 Home (hero slides, announcement bar, categories, featured/best sellers, reviews, trust badges, footer with contacts + socials), catalog (search, category, price, in-stock filters, sort, pagination, skeletons), product page (gallery with swipe + zoom, variants with per-variant price/stock, quantity, reviews, related, sticky mobile buy bar, sold-out state, JSON-LD), guest cart (localStorage) with slide-over drawer + full page, free-shipping progress bar and coupons, single-page guest checkout, order confirmation, order tracking (order number + phone), static pages, sitemap, robots, OpenGraph, WhatsApp floating button.
 
