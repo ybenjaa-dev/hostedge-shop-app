@@ -63,8 +63,9 @@ export async function seedSampleData(env: Env, currency: string) {
     { id: newId(), slug: "beauty", name: i18n("Beauty & Care", "Beauté & Soins", "الجمال والعناية"), c: ["#be185d", "#f472b6"] },
     { id: newId(), slug: "gadgets", name: i18n("Gadgets", "Gadgets", "إلكترونيات"), c: ["#1d4ed8", "#60a5fa"] },
   ];
-  const products = [
-    { cat: 0, slug: "ceramic-pan-set", n: ["Ceramic non-stick pan set", "Set de poêles céramique", "طقم مقالي سيراميك"], s: ["Even heating, easy to clean.", "Chauffe uniforme, facile à nettoyer.", "تسخين متساوٍ وسهل التنظيف."], p: 249, cmp: 349, stock: 40, feat: 1, best: 1, v: [] as [string, number, number][] },
+  type PD = { cat: number; slug: string; n: [string, string, string]; s: [string, string, string]; p: number; cmp: number; stock: number; feat: number; best: number; v: [string, number, number][] };
+  const products: PD[] = [
+    { cat: 0, slug: "ceramic-pan-set", n: ["Ceramic non-stick pan set", "Set de poêles céramique", "طقم مقالي سيراميك"], s: ["Even heating, easy to clean.", "Chauffe uniforme, facile à nettoyer.", "تسخين متساوٍ وسهل التنظيف."], p: 249, cmp: 349, stock: 40, feat: 1, best: 1, v: [] },
     { cat: 0, slug: "electric-grinder", n: ["Rechargeable spice grinder", "Moulin électrique rechargeable", "مطحنة توابل قابلة للشحن"], s: ["USB-C, stainless blades.", "USB-C, lames inox.", "شحن USB-C وشفرات ستانلس."], p: 129, cmp: 179, stock: 25, feat: 1, best: 0, v: [] },
     { cat: 1, slug: "argan-hair-oil", n: ["Pure argan hair oil 100ml", "Huile d'argan cheveux 100ml", "زيت الأرغان للشعر 100مل"], s: ["Cold-pressed, nourishing.", "Pressée à froid, nourrissante.", "معصور على البارد ومغذٍّ."], p: 89, cmp: 119, stock: 80, feat: 1, best: 1, v: [] },
     { cat: 1, slug: "face-serum", n: ["Vitamin C face serum", "Sérum visage vitamine C", "سيروم فيتامين سي للوجه"], s: ["Brightens and evens skin tone.", "Éclat et teint uniforme.", "يمنح إشراقة ويوحّد لون البشرة."], p: 149, cmp: 0, stock: 0, feat: 0, best: 1, v: [["30 ml", 149, 30], ["50 ml", 219, 18]] },
@@ -91,7 +92,7 @@ export async function seedSampleData(env: Env, currency: string) {
     const totalStock = p.v.length ? 0 : p.stock;
     stmts.push(
       db.prepare("INSERT INTO products (id, slug, name, short_desc, long_desc, category_id, sku, price, compare_at, stock, track_stock, status, featured, bestseller, sold_count, seo_title, seo_desc, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,1,'published',?,?,?,'{}','{}',?,?)").bind(
-        id, p.slug, i18n(...p.n), i18n(...p.s),
+        id, p.slug, i18n(p.n[0], p.n[1], p.n[2]), i18n(p.s[0], p.s[1], p.s[2]),
         i18n(`${p.s[0]} Carefully selected for quality and value. Pay only when you receive it.`, `${p.s[1]} Sélectionné pour sa qualité. Vous ne payez qu'à la réception.`, `${p.s[2]} منتج مختار بعناية للجودة. لا تدفع إلا عند الاستلام.`),
         cat.id, `SKU-${1000 + i}`, price(p.p), p.cmp ? price(p.cmp) : null, totalStock, p.feat, p.best, p.best ? 10 + i : 0, now - i * 3600_000, now,
       ),

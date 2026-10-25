@@ -105,3 +105,4 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body), 
 .prose-lite h2 { font-weight: 800; font-size: 1.25rem; margin: 1.5em 0 .5em; }
 /* Hide number input arrows */
 input[type=number]::-webkit-inner-spin-button { display: none; }
+@keyframes wiggle { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
