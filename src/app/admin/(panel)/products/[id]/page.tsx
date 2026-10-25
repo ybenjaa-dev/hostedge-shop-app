@@ -21,6 +21,7 @@ export default async function EditProduct({ params }: { params: Promise<{ id: st
       <PageHeader title={tr(p.name as string, "en") || "Product"} actions={p.status === "published" ? <Link target="_blank" href={`/p/${p.slug}`} className="btn btn-outline btn-sm"><ExternalLink className="size-4" />View in store</Link> : undefined} />
       <ProductForm
         storeTemplate={s.offers.template}
+        currency={s.store.currency}
         categories={cats.map((c) => ({ id: c.id, label: tr(c.name, "en") }))}
         data={{
           id: p.id as string, slug: p.slug as string, name: parseI18n(p.name as string), shortDesc: parseI18n(p.short_desc as string), longDesc: parseI18n(p.long_desc as string), specs: parseI18n(p.specs as string), seoTitle: parseI18n(p.seo_title as string), seoDesc: parseI18n(p.seo_desc as string),

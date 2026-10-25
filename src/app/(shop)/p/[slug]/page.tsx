@@ -1,3 +1,4 @@
+import { RichText } from "@/components/rich-text";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -92,7 +93,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
       {tr(p.longDesc, lang) && (
         <section className="mt-14 max-w-3xl">
           <h2 className="display mb-3 text-2xl font-extrabold">{t("p.description")}</h2>
-          <div className="prose-lite text-muted"><p>{tr(p.longDesc, lang)}</p></div>
+          <RichText html={tr(p.longDesc, lang)} className="prose-lite text-muted" />
         </section>
       )}
 

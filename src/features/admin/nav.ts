@@ -7,7 +7,7 @@ export const NAV: NavItem[] = [
   { href: "/admin/products", label: "Products", icon: "Package", group: "Catalog" },
   { href: "/admin/media", label: "Media", icon: "ImagePlus", group: "Catalog" },
   { href: "/admin/categories", label: "Categories", icon: "Tags", group: "Catalog" },
-  { href: "/admin/coupons", label: "Coupons & bundles", icon: "Ticket", group: "Catalog" },
+  { href: "/admin/coupons", label: "Coupons", icon: "Ticket", group: "Catalog" },
   { href: "/admin/reviews", label: "Reviews", icon: "Star", group: "Catalog" },
   { href: "/admin/customers", label: "Customers", icon: "Users", group: "Customers" },
   { href: "/admin/appearance", label: "Appearance", icon: "Palette", group: "Store" },

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import * as Icons from "lucide-react";
 import { NAV, type NavItem } from "../nav";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { OrderNotifier } from "./order-notifier";
 
 type Ic = React.ComponentType<{ className?: string }>;
 const icon = (n: string) => ((Icons as unknown as Record<string, Ic>)[n] ?? Icons.Circle);
@@ -13,6 +14,7 @@ export function AdminChrome({ role, userName, storeName, logout, children }: { r
   const path = usePathname();
   const [open, setOpen] = useState(false);
   const [cmd, setCmd] = useState(false);
+  const [pending, setPending] = useState(0);
   const items = NAV.filter((n) => !n.owner || role === "owner");
   const groups = [...new Set(items.map((i) => i.group))];
   useEffect(() => setOpen(false), [path]);
@@ -33,7 +35,7 @@ export function AdminChrome({ role, userName, storeName, logout, children }: { r
             return (
               <Link key={n.href} href={n.href} aria-current={active(n) ? "page" : undefined}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold transition ${active(n) ? "bg-brand text-brand-ink" : "text-ink/80 hover:bg-sunken"}`}>
-                <I className="size-[1.1rem] shrink-0" />{n.label}
+                <I className="size-[1.1rem] shrink-0" />{n.label}{n.href === "/admin/orders" && pending > 0 && <span className={`num ms-auto rounded-full px-1.5 py-0.5 text-[11px] font-extrabold leading-none ${active(n) ? "bg-brand-ink/20" : "bg-brand text-brand-ink"}`}>{pending}</span>}
               </Link>
             );
           })}
@@ -63,19 +65,40 @@ export function AdminChrome({ role, userName, storeName, logout, children }: { r
           <button onClick={() => setCmd(true)} className="btn btn-outline btn-sm min-w-0 flex-1 justify-start gap-2 font-normal text-muted sm:max-w-xs sm:flex-none"><Icons.Search className="size-4" /><span className="truncate">Search…</span><kbd className="ms-auto hidden rounded border border-line px-1.5 text-[11px] sm:block">Ctrl K</kbd></button>
           <div className="ms-auto flex items-center gap-1">
             <Link href="/" target="_blank" className="btn btn-ghost btn-sm hidden sm:inline-flex"><Icons.ExternalLink className="size-4" />View store</Link>
+            <OrderNotifier onPending={setPending} />
             <ThemeToggle />
-            <details className="relative">
-              <summary className="btn btn-ghost btn-sm list-none gap-2 [&::-webkit-details-marker]:hidden"><span className="grid size-7 place-items-center rounded-full bg-brand text-xs font-extrabold text-brand-ink">{userName.slice(0, 1).toUpperCase()}</span><span className="hidden text-sm sm:block">{userName}</span></summary>
-              <div className="absolute end-0 top-full z-50 mt-1 w-48 rounded-xl border border-line bg-surface p-1 shadow-xl">
-                <p className="px-3 py-2 text-xs capitalize text-muted">{role}</p>
-                <form action={logout}><button className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-sunken"><Icons.LogOut className="size-4" />Sign out</button></form>
-              </div>
-            </details>
+            <ProfileMenu userName={userName} role={role} logout={logout} />
           </div>
         </header>
         <main className="mx-auto max-w-7xl p-4 sm:p-6">{children}</main>
       </div>
       {cmd && <CommandPalette items={items} onClose={() => setCmd(false)} />}
+    </div>
+  );
+}
+
+function ProfileMenu({ userName, role, logout }: { userName: string; role: string; logout: () => Promise<void> }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const down = (e: Event) => { if (!ref.current?.contains(e.target as Node)) setOpen(false); };
+    const key = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("pointerdown", down); document.addEventListener("keydown", key);
+    return () => { document.removeEventListener("pointerdown", down); document.removeEventListener("keydown", key); };
+  }, [open]);
+  return (
+    <div ref={ref} className="relative">
+      <button type="button" className="btn btn-ghost btn-sm gap-2" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+        <span className="grid size-7 place-items-center rounded-full bg-brand text-xs font-extrabold text-brand-ink">{userName.slice(0, 1).toUpperCase()}</span><span className="hidden sm:inline">{userName}</span>
+      </button>
+      {open && (
+        <div role="menu" className="absolute end-0 top-full z-50 mt-1 w-48 rounded-xl border border-line bg-surface p-1 shadow-xl">
+          <p className="px-3 py-2 text-xs capitalize text-muted">{role}</p>
+          <Link role="menuitem" href="/admin/team/account" onClick={() => setOpen(false)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-sunken"><Icons.UserCog className="size-4" />My account</Link>
+          <form action={logout}><button role="menuitem" className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-sunken"><Icons.LogOut className="size-4" />Sign out</button></form>
+        </div>
+      )}
     </div>
   );
 }

@@ -3,12 +3,13 @@ import { getSettings } from "@/lib/settings";
 import { PageHeader } from "@/features/admin/components/ui";
 import { Tabs } from "@/features/settings/components/tabs";
 import { StoreSection, SocialSection, CheckoutSection, AnalyticsSection, StatusesSection, TemplatesSection } from "@/features/settings/components/store-sections";
+import { OffersSection } from "@/features/settings/components/offers-section";
 import { CitiesSection } from "@/features/settings/components/cities-section";
 import { one } from "@/features/settings/lib";
 
 export const metadata = { title: "Settings" };
 const TABS = [
-  { id: "store", label: "Store" }, { id: "checkout", label: "Checkout" }, { id: "cities", label: "Cities" }, { id: "social", label: "Social links" },
+  { id: "store", label: "Store" }, { id: "checkout", label: "Checkout" }, { id: "offers", label: "Offers" }, { id: "cities", label: "Cities" }, { id: "social", label: "Social links" },
   { id: "analytics", label: "Analytics" }, { id: "statuses", label: "Order statuses" }, { id: "templates", label: "Messages" },
 ];
 
@@ -24,6 +25,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       <div className="space-y-5">
         {tab === "store" && <StoreSection s={s} />}
         {tab === "checkout" && <CheckoutSection s={s} />}
+        {tab === "offers" && <OffersSection s={s} />}
         {tab === "cities" && <CitiesSection s={s} sp={{ country: one(sp.country), q: one(sp.q), page: one(sp.page) }} />}
         {tab === "social" && <SocialSection s={s} />}
         {tab === "analytics" && <AnalyticsSection s={s} />}

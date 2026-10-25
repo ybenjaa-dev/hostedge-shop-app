@@ -11,7 +11,7 @@ export default async function NewProduct() {
   return (
     <>
       <PageHeader title="New product" />
-      <ProductForm storeTemplate={s.offers.template} categories={cats.map((c) => ({ id: c.id, label: tr(c.name, "en") }))} data={{ slug: "", name: {}, shortDesc: {}, longDesc: {}, specs: {}, seoTitle: {}, seoDesc: {}, categoryId: "", sku: "", price: "", compareAt: "", stock: 0, trackStock: true, status: "draft", featured: false, bestseller: false, images: [], variants: [], offers: [], offerTemplate: "" }} />
+      <ProductForm storeTemplate={s.offers.template} currency={s.store.currency} categories={cats.map((c) => ({ id: c.id, label: tr(c.name, "en") }))} data={{ slug: "", name: {}, shortDesc: {}, longDesc: {}, specs: {}, seoTitle: {}, seoDesc: {}, categoryId: "", sku: "", price: "", compareAt: "", stock: 0, trackStock: true, status: "draft", featured: false, bestseller: false, images: [], variants: [], offers: [], offerTemplate: "" }} />
     </>
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { OrderTimeline } from "@/features/orders/components/order-timeline";
 import { notFound } from "next/navigation";
 import { ArrowLeft, MessageCircle, Phone, Printer, FileText, AlertTriangle } from "lucide-react";
 import { getOrderFull } from "@/features/orders/queries";
@@ -84,21 +85,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
             {(o.attempts as number) > 0 && <p className="mt-3 text-sm font-semibold">No-answer attempts: <span className="num">{o.attempts as number}</span></p>}
           </Panel>
 
-          <Panel title="Timeline">
-            <ol className="relative space-y-4 border-s-2 border-line ps-5">
-              {history.map((h) => {
-                const i = statusInfo(s, h.to_status, "en");
-                return (
-                  <li key={h.id} className="relative">
-                    <span className="absolute -start-[1.65rem] top-1 size-3 rounded-full ring-4 ring-surface" style={{ background: i.color }} />
-                    <p className="text-sm"><b>{i.label}</b>{h.from_status && <span className="text-muted"> ← {labels[h.from_status]}</span>}</p>
-                    <p className="text-xs text-muted">{new Date(h.created_at).toLocaleString("en-GB")} · {h.user_name ?? "system"}</p>
-                    {h.note && <p className="mt-0.5 text-sm">“{h.note}”</p>}
-                  </li>
-                );
-              })}
-            </ol>
-          </Panel>
+          <Panel title="Timeline"><OrderTimeline history={history} current={status} s={s} /></Panel>
 
           <Panel title="Internal notes">
             <NoteForm id={o.id as string} />

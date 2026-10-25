@@ -17,7 +17,7 @@ function Mini({ id }: { id: OfferTemplate | "default" }) {
 }
 
 /** Radio cards for the offer-card layout. `allowDefault` adds "Use the store default" (per-product override). Submits `name`. */
-export function OfferTemplatePicker({ name, value, allowDefault, defaultLabel }: { name: string; value: string; allowDefault?: boolean; defaultLabel?: string }) {
+export function OfferTemplatePicker({ name, value, allowDefault, defaultLabel, onChange }: { name: string; value: string; allowDefault?: boolean; defaultLabel?: string; onChange?: (v: string) => void }) {
   const [v, setV] = useState(value);
   const items: { id: OfferTemplate | ""; name: string; hint: string }[] = [
     ...(allowDefault ? [{ id: "" as const, name: "Store default", hint: defaultLabel ? `Currently “${defaultLabel}”. Change it under Coupons & bundles.` : "Follows the store-wide choice." }] : []),
@@ -32,7 +32,7 @@ export function OfferTemplatePicker({ name, value, allowDefault, defaultLabel }:
           const on = v === it.id;
           return (
             <label key={it.id || "default"} className={`relative flex cursor-pointer flex-col gap-2 rounded-xl border-2 p-3 transition focus-within:outline focus-within:outline-2 focus-within:outline-brand ${on ? "border-brand bg-brand-soft" : "border-line hover:border-ink/30"}`}>
-              <input type="radio" className="sr-only" name={`${name}-ui`} checked={on} onChange={() => setV(it.id)} />
+              <input type="radio" className="sr-only" name={`${name}-ui`} checked={on} onChange={() => { setV(it.id); onChange?.(it.id); }} />
               <Mini id={it.id || "default"} />
               <span className="flex items-center justify-between gap-2 text-sm font-extrabold">{it.name}{on && <span className="grid size-5 place-items-center rounded-full bg-brand text-brand-ink"><Check className="size-3" strokeWidth={3.5} aria-hidden /></span>}</span>
               <span className="text-xs leading-snug text-muted">{it.hint}</span>
