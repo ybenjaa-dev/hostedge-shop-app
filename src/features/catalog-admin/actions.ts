@@ -7,6 +7,7 @@ import { newId, slugify } from "@/lib/id";
 import { run, audit, fd, fdI18n, type ActionState } from "@/features/admin/run";
 import { getSettings } from "@/lib/settings";
 import { toMinor } from "@/lib/money";
+import { isOfferTemplate } from "@/lib/offer-templates";
 import { parseCsv } from "@/lib/csv";
 import { deleteFile } from "@/lib/storage";
 
@@ -17,7 +18,7 @@ const variantSchema = z.array(z.object({
   sku: z.string().trim().max(60).optional().nullable(), price: z.string().max(20).optional().nullable(), stock: z.coerce.number().int().min(0).max(1_000_000),
 })).max(100);
 const offerSchema = z.array(z.object({
-  qty: z.coerce.number().int().min(2).max(1000), price: z.string().trim().min(1).max(20), label: z.string().trim().max(30).optional().nullable(), popular: z.boolean().optional(), image: z.string().regex(/^uploads\/[A-Za-z0-9._-]{4,120}$/).optional().nullable(),
+  qty: z.coerce.number().int().min(2).max(1000), price: z.string().trim().min(1).max(20), label: z.string().trim().max(30).optional().nullable(), popular: z.boolean().optional(), image: z.union([z.literal(""), z.string().regex(/^uploads\/[A-Za-z0-9._-]{4,120}$/)]).optional().nullable(),
 })).max(6);
 const imageSchema = z.array(z.object({ key: z.string().min(1).max(200), alt: z.string().max(200).optional().nullable() })).max(20);
 
@@ -41,10 +42,10 @@ export async function saveProductAction(_p: ActionState, form: FormData): Promis
     const now = Date.now();
     const status = fd(form, "status") === "published" ? "published" : "draft";
     const pid = id ?? newId();
-    const vals = [slug, JSON.stringify(name), JSON.stringify(fdI18n(form, "short")), JSON.stringify(fdI18n(form, "long")), fd(form, "categoryId") || null, fd(form, "sku") || null, price, cmp, Math.max(0, parseInt(fd(form, "stock") || "0", 10) || 0), form.get("trackStock") ? 1 : 0, status, form.get("featured") ? 1 : 0, form.get("bestseller") ? 1 : 0, JSON.stringify(fdI18n(form, "seoTitle")), JSON.stringify(fdI18n(form, "seoDesc")), JSON.stringify(fdI18n(form, "specs"))];
+    const vals = [slug, JSON.stringify(name), JSON.stringify(fdI18n(form, "short")), JSON.stringify(fdI18n(form, "long")), fd(form, "categoryId") || null, fd(form, "sku") || null, price, cmp, Math.max(0, parseInt(fd(form, "stock") || "0", 10) || 0), form.get("trackStock") ? 1 : 0, status, form.get("featured") ? 1 : 0, form.get("bestseller") ? 1 : 0, JSON.stringify(fdI18n(form, "seoTitle")), JSON.stringify(fdI18n(form, "seoDesc")), JSON.stringify(fdI18n(form, "specs")), isOfferTemplate(fd(form, "offerTemplate")) ? fd(form, "offerTemplate") : null];
     const stmts: D1PreparedStatement[] = [];
-    if (id) stmts.push(db.prepare("UPDATE products SET slug=?, name=?, short_desc=?, long_desc=?, category_id=?, sku=?, price=?, compare_at=?, stock=?, track_stock=?, status=?, featured=?, bestseller=?, seo_title=?, seo_desc=?, specs=?, updated_at=? WHERE id=?").bind(...vals, now, id));
-    else stmts.push(db.prepare("INSERT INTO products (slug, name, short_desc, long_desc, category_id, sku, price, compare_at, stock, track_stock, status, featured, bestseller, seo_title, seo_desc, specs, id, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(...vals, pid, now, now));
+    if (id) stmts.push(db.prepare("UPDATE products SET slug=?, name=?, short_desc=?, long_desc=?, category_id=?, sku=?, price=?, compare_at=?, stock=?, track_stock=?, status=?, featured=?, bestseller=?, seo_title=?, seo_desc=?, specs=?, offer_template=?, updated_at=? WHERE id=?").bind(...vals, now, id));
+    else stmts.push(db.prepare("INSERT INTO products (slug, name, short_desc, long_desc, category_id, sku, price, compare_at, stock, track_stock, status, featured, bestseller, seo_title, seo_desc, specs, offer_template, id, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(...vals, pid, now, now));
     // images: replace set preserving order
     stmts.push(db.prepare("DELETE FROM product_images WHERE product_id = ?").bind(pid));
     images.forEach((im, i) => stmts.push(db.prepare("INSERT INTO product_images (id, product_id, key, alt, position) VALUES (?,?,?,?,?)").bind(newId(), pid, im.key, im.alt ?? null, i)));
