@@ -29,7 +29,8 @@ const en = {
   "faq.q3": "Can I return a product?", "faq.a3": "Yes. Contact us within 7 days of delivery for unopened products and we will arrange the return.",
   "faq.q4": "Can I ask a question before ordering?", "faq.a4": "Of course — message us on WhatsApp and we will help you choose.",
   "p.disclaimer": "Food supplements are not a substitute for a varied and balanced diet. Do not exceed the recommended daily dose. Keep out of reach of children. If you are pregnant, breastfeeding, taking medication or have a medical condition, ask a health professional before use.",
-  "home.clear": "Clear labels, no guesswork", "home.clearD": "Every product page shows the serving size, the dose of each ingredient and how to take it.",
+  "home.clear": "Clear labels, no guesswork",
+  "offer.title": "Choose your pack", "offer.one": "1 item", "offer.many": "{n} items", "offer.popular": "Most popular", "offer.best": "Best value", "offer.save": "Save {pct}%", "offer.each": "{price} each", "offer.normal": "Regular price", "offer.youSave": "You save {amount}", "offer.same": "Every item has the options you chose above.", "offer.other": "Need another quantity?", "home.clearD": "Every product page shows the serving size, the dose of each ingredient and how to take it.",
 } as const;
 
 export type DictKey = keyof typeof en;
@@ -63,7 +64,8 @@ const fr: D = {
   "faq.q3": "Puis-je retourner un produit ?", "faq.a3": "Oui. Contactez-nous dans les 7 jours suivant la livraison pour les produits non ouverts, nous organisons le retour.",
   "faq.q4": "Puis-je poser une question avant de commander ?", "faq.a4": "Bien sûr — écrivez-nous sur WhatsApp, nous vous aidons à choisir.",
   "p.disclaimer": "Les compléments alimentaires ne se substituent pas à une alimentation variée et équilibrée. Ne pas dépasser la dose journalière recommandée. Tenir hors de portée des enfants. En cas de grossesse, d'allaitement, de traitement médical ou de pathologie, demandez l'avis d'un professionnel de santé avant utilisation.",
-  "home.clear": "Des étiquettes claires, sans devinettes", "home.clearD": "Chaque fiche produit indique la portion, la dose de chaque ingrédient et le mode d'emploi.",
+  "home.clear": "Des étiquettes claires, sans devinettes",
+  "offer.title": "Choisissez votre pack", "offer.one": "1 article", "offer.many": "{n} articles", "offer.popular": "Le plus populaire", "offer.best": "Meilleur prix", "offer.save": "Économisez {pct} %", "offer.each": "{price} l'unité", "offer.normal": "Prix normal", "offer.youSave": "Vous économisez {amount}", "offer.same": "Chaque article aura les options choisies ci-dessus.", "offer.other": "Besoin d'une autre quantité ?", "home.clearD": "Chaque fiche produit indique la portion, la dose de chaque ingrédient et le mode d'emploi.",
 };
 
 const ar: D = {
@@ -94,7 +96,8 @@ const ar: D = {
   "faq.q3": "هل يمكنني إرجاع منتج؟", "faq.a3": "نعم. تواصل معنا خلال 7 أيام من الاستلام للمنتجات غير المفتوحة وسنرتب الإرجاع.",
   "faq.q4": "هل يمكنني السؤال قبل الطلب؟", "faq.a4": "طبعاً — راسلنا على واتساب وسنساعدك في الاختيار.",
   "p.disclaimer": "المكملات الغذائية ليست بديلاً عن نظام غذائي متنوع ومتوازن. لا تتجاوز الجرعة اليومية الموصى بها. يحفظ بعيداً عن متناول الأطفال. في حالة الحمل أو الرضاعة أو تناول أدوية أو وجود مرض، استشر مختصاً في الصحة قبل الاستعمال.",
-  "home.clear": "ملصقات واضحة دون تخمين", "home.clearD": "تعرض كل صفحة منتج الحصة والجرعة لكل مكوّن وطريقة الاستعمال.",
+  "home.clear": "ملصقات واضحة دون تخمين",
+  "offer.title": "اختر باقتك", "offer.one": "قطعة واحدة", "offer.many": "{n} قطع", "offer.popular": "الأكثر طلباً", "offer.best": "أفضل قيمة", "offer.save": "وفّر {pct}٪", "offer.each": "{price} للقطعة", "offer.normal": "السعر العادي", "offer.youSave": "توفّر {amount}", "offer.same": "كل القطع بنفس الخيارات المختارة أعلاه.", "offer.other": "تحتاج كمية أخرى؟", "home.clearD": "تعرض كل صفحة منتج الحصة والجرعة لكل مكوّن وطريقة الاستعمال.",
 };
 
 export const DICT: Record<Lang, D> = { en: en as unknown as D, fr, ar };

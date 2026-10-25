@@ -1,6 +1,6 @@
 "use client";
-import { useState } from "react";
-import { ArrowLeft, ArrowRight, Loader2, Plus, Trash2, Upload, Wand2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowLeft, ArrowRight, Loader2, Plus, Sparkles, Star, Tag, Trash2, Upload, Wand2 } from "lucide-react";
 import { AdminForm } from "@/features/admin/components/admin-form";
 import { Field, I18nField, Toggle, uploadImage } from "@/features/admin/components/fields";
 import { saveProductAction } from "./actions";
@@ -8,12 +8,13 @@ import { fileUrl } from "@/lib/storage";
 import type { I18n } from "@/lib/i18n-core";
 
 type Img = { key: string; alt: string | null };
+type Offer = { qty: number; price: string; label: string; popular: boolean };
 type Var = { id?: string; name: string; options: Record<string, string>; sku: string; price: string; stock: number };
 
 export type ProductFormData = {
   id?: string; slug: string; name: I18n; shortDesc: I18n; longDesc: I18n; specs: I18n; seoTitle: I18n; seoDesc: I18n;
   categoryId: string; sku: string; price: string; compareAt: string; stock: number; trackStock: boolean; status: "draft" | "published"; featured: boolean; bestseller: boolean;
-  images: Img[]; variants: Var[];
+  images: Img[]; variants: Var[]; offers: Offer[];
 };
 
 const parseOptions = (s: string) => Object.fromEntries(s.split(/[;,]/).map((p) => p.split("=").map((x) => x.trim())).filter((p) => p[0] && p[1]) as [string, string][]);
@@ -26,6 +27,17 @@ export function ProductForm({ data, categories }: { data: ProductFormData; categ
   const [upErr, setUpErr] = useState("");
   const [drag, setDrag] = useState<number | null>(null);
   const [gen, setGen] = useState({ n1: "Size", v1: "", n2: "Color", v2: "" });
+  const [offers, setOffers] = useState<Offer[]>(data.offers ?? []);
+  const [base, setBase] = useState(parseFloat(data.price) || 0);
+  useEffect(() => {
+    const el = document.getElementById("pr") as HTMLInputElement | null;
+    if (!el) return;
+    const on = () => setBase(parseFloat(el.value.replace(",", ".")) || 0);
+    el.addEventListener("input", on);
+    return () => el.removeEventListener("input", on);
+  }, []);
+  const updOffer = (i: number, patch: Partial<Offer>) => setOffers((o) => o.map((x, k) => (k === i ? { ...x, ...patch } : patch.popular ? { ...x, popular: false } : x)));
+  const suggest = () => setOffers([2, 3].map((q, i) => ({ qty: q, price: String(Math.round(base * q * (i === 0 ? 0.9 : 0.82))), label: "", popular: i === 0 })));
 
   const move = (from: number, to: number) => {
     if (to < 0 || to >= images.length) return;
@@ -61,6 +73,7 @@ export function ProductForm({ data, categories }: { data: ProductFormData; categ
     <AdminForm action={saveProductAction} submitLabel={data.id ? "Save product" : "Create product"} className="space-y-5">
       {data.id && <input type="hidden" name="id" value={data.id} />}
       <input type="hidden" name="images" value={JSON.stringify(images)} />
+      <input type="hidden" name="offers" value={JSON.stringify(offers.filter((o) => o.qty >= 2 && o.price).map((o) => ({ qty: o.qty, price: o.price, label: o.label, popular: o.popular })))} />
       <input type="hidden" name="variants" value={JSON.stringify(variants.map((v) => ({ ...v, price: v.price || null, sku: v.sku || null })))} />
       <div className="grid gap-5 lg:grid-cols-[1fr_22rem]">
         <div className="space-y-5">
@@ -116,6 +129,32 @@ export function ProductForm({ data, categories }: { data: ProductFormData; categ
               ))}
             </div>
             <button type="button" className="btn btn-outline btn-sm mt-3" onClick={() => setVariants([...variants, { name: "", options: {}, sku: "", price: "", stock: 0 }])}><Plus className="size-4" />Add variant</button>
+          </section>
+
+          <section className="card p-5">
+            <div className="mb-1 flex flex-wrap items-center justify-between gap-2"><h2 className="display flex items-center gap-2 text-lg font-extrabold"><Tag className="size-5" aria-hidden />Quantity offers</h2>{offers.length === 0 && <button type="button" className="btn btn-outline btn-sm" onClick={suggest} disabled={base <= 0}><Sparkles className="size-4" />Suggest offers</button>}</div>
+            <p className="mb-4 text-sm text-muted">Sell more per order with a fixed price for a bigger quantity — e.g. <b>1 for {base ? base.toFixed(0) : "129"}</b>, <b>2 for {base ? Math.round(base * 1.8) : 229}</b>, <b>3 for {base ? Math.round(base * 2.5) : 319}</b>. The customer sees them as selectable cards on the product page; 1 unit always costs the normal price.</p>
+            <div className="space-y-2">
+              {offers.map((o, i) => {
+                const price = parseFloat(o.price.replace(",", ".")) || 0;
+                const full = base * o.qty;
+                const pct = full > 0 && price > 0 ? Math.round(((full - price) / full) * 100) : 0;
+                const bad = price >= full && full > 0;
+                return (
+                  <div key={i} className="rounded-xl border border-line p-3">
+                    <div className="grid items-end gap-2 sm:grid-cols-[6rem_1fr_1fr_auto_auto]">
+                      <Field label="Buy"><input className="field" type="number" min={2} max={1000} value={o.qty} onChange={(e) => updOffer(i, { qty: Math.max(2, parseInt(e.target.value || "2", 10) || 2) })} /></Field>
+                      <Field label="For (total price)"><input className="field" inputMode="decimal" value={o.price} onChange={(e) => updOffer(i, { price: e.target.value })} placeholder={base ? String(Math.round(base * o.qty * 0.9)) : ""} /></Field>
+                      <Field label="Badge (optional)"><input className="field" maxLength={30} value={o.label} onChange={(e) => updOffer(i, { label: e.target.value })} placeholder="Family pack" /></Field>
+                      <button type="button" aria-pressed={o.popular} className={`btn btn-sm ${o.popular ? "btn-primary" : "btn-outline"}`} onClick={() => updOffer(i, { popular: !o.popular })}><Star className="size-4" />Most popular</button>
+                      <button type="button" aria-label="Remove offer" className="btn btn-ghost btn-sm text-danger" onClick={() => setOffers(offers.filter((_, k) => k !== i))}><Trash2 className="size-4" /></button>
+                    </div>
+                    {price > 0 && base > 0 && <p className={`mt-2 text-xs font-semibold ${bad ? "text-danger" : "text-ok"}`}>{bad ? `Must cost less than ${o.qty} × ${base.toFixed(2)} = ${full.toFixed(2)}.` : `${(price / o.qty).toFixed(2)} per unit · customer saves ${pct}% (${(full - price).toFixed(2)})`}</p>}
+                  </div>
+                );
+              })}
+            </div>
+            {offers.length < 6 && <button type="button" className="btn btn-outline btn-sm mt-3" onClick={() => { const q = (offers.at(-1)?.qty ?? 1) + 1; setOffers([...offers, { qty: q, price: base ? String(Math.round(base * q * 0.9)) : "", label: "", popular: false }]); }}><Plus className="size-4" />Add offer</button>}
           </section>
 
           <section className="card space-y-4 p-5">
