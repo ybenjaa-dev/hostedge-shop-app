@@ -220,7 +220,7 @@ export function OrderForm({ lines, bundles, cities, header, source, clearCartOnS
         <Row k={t("cod.shipping")} v={totals.shipping === 0 ? t("cod.free") : fmt(totals.shipping)} />
         {totals.codFee > 0 && <Row k={t("cod.codFee")} v={fmt(totals.codFee)} />}
         {st.taxRateBp > 0 && !st.taxInclusive && <Row k={t("cod.tax")} v={fmt(totals.tax)} />}
-        <div className="flex items-baseline justify-between border-t border-line pt-2.5 text-base font-extrabold"><dt>{t("cod.total")}</dt><dd dir="ltr" className="text-xl text-brand">{fmt(totals.total)}</dd></div>
+        <div className="flex items-baseline justify-between border-t border-line pt-2.5 text-base font-extrabold"><dt className="min-w-0">{t("cod.total")}</dt><dd dir="ltr" className="shrink-0 whitespace-nowrap text-xl text-brand">{fmt(totals.total)}</dd></div>
       </dl>
 
       {formError && <p role="alert" className="rounded-lg bg-danger/10 p-3 text-sm font-medium text-danger">{formError}</p>}

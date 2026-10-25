@@ -71,6 +71,7 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body), 
 .skeleton { background: linear-gradient(90deg, var(--sunken) 25%, color-mix(in srgb, var(--sunken) 60%, var(--surface)) 50%, var(--sunken) 75%); background-size: 200% 100%; animation: var(--animate-shimmer); border-radius: 0.5rem; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
 
+@layer components {
 /* Buttons */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; font-weight: 700; border-radius: var(--btn-radius); padding: 0.75rem 1.25rem; min-height: 2.75rem; line-height: 1.1; transition: transform .12s ease, background-color .15s ease, box-shadow .15s ease, opacity .15s; cursor: pointer; border: 1px solid transparent; text-align: center; user-select: none; }
 .btn:active:not(:disabled) { transform: scale(0.97); }
@@ -98,6 +99,7 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body), 
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 1rem; }
 .spinner { width: 1.1em; height: 1.1em; border-radius: 9999px; border: 2px solid currentColor; border-right-color: transparent; animation: spin .7s linear infinite; display: inline-block; }
 @keyframes spin { to { transform: rotate(360deg); } }
+}
 .scroll-snap-x { scroll-snap-type: x mandatory; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
 .scroll-snap-x::-webkit-scrollbar { display: none; }
 .scroll-snap-x > * { scroll-snap-align: center; flex: 0 0 100%; }
