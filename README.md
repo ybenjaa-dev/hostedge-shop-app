@@ -59,6 +59,15 @@ Schema changes: edit `src/db/schema.ts`, run `npm run db:generate` (drizzle-kit 
 ### Storefront (design v4 — "Classic marketplace")
 This branch re-skins the customer-facing storefront as a rigid, dense, classic marketplace: three-tier header (utility bar · logo + wide category search · department nav with an "All categories" dropdown), department menu beside the hero banner, bordered service strip, titled shelf bars, a left filter sidebar with category counts, sort tabs and a grid/list toggle, breadcrumbs everywhere, a three-zone product page (gallery · details · delivery box) with anchor tabs, a spec table, variant stock table and rating distribution, and a dense multi-column footer. Square corners, thin visible borders, flat signal-orange on slate. Colors, fonts, hero and sections remain editable in Admin → Appearance; the admin and all logic are unchanged.
 
+### Quantity offers ("buy 1 for 129, 2 for 229, 3 for 319")
+Admin → Products → *Quantity offers*: add a fixed total price for 2, 3, … units of a product (optional badge, one "most popular"). The product page shows them as selectable cards with the per-unit price and the saving; picking a card sets the quantity, and the buy button, sticky bar, order form and the stored order all use the same total. Details:
+- The pricing engine (`src/lib/pricing.ts`) picks the **cheapest combination** of packs for any quantity (with "2 for 229" and "3 for 319", 5 units cost 229 + 319), never charges more than the plain price, and takes the better of a fixed offer and a store-wide percentage bundle.
+- For products with variants priced differently, the pack price scales with the variant's price.
+- All units in a pack share the options chosen above the cards (one variant per order line).
+- Fixed offers are stored in the existing `bundles` table (`price`, `label`, `popular`); they show up read-only under Coupons & bundles. Store-wide "buy 3, save 15%" percentage bundles still work and also appear as cards.
+- Sample data seeds offers on the featured products.
+
+### Storefront
 Mobile-first and light on JS: server-rendered pages, scroll-snap swipe gallery, native `<dialog>` for sheets/drawers, GET-form filters, localized RTL-safe layout (logical CSS properties).
 Home (hero slides, announcement bar, categories, featured/best sellers, reviews, trust badges, footer with contacts + socials), catalog (search, category, price, in-stock filters, sort, pagination, skeletons), product page (gallery with swipe + zoom, variants with per-variant price/stock, quantity, reviews, related, sticky mobile buy bar, sold-out state, JSON-LD), guest cart (localStorage) with slide-over drawer + full page, free-shipping progress bar and coupons, single-page guest checkout, order confirmation, order tracking (order number + phone), static pages, sitemap, robots, OpenGraph, WhatsApp floating button.
 
