@@ -70,6 +70,7 @@ export const products = sqliteTable(
     name: text("name").notNull(), // JSON i18n
     shortDesc: text("short_desc").notNull().default("{}"),
     longDesc: text("long_desc").notNull().default("{}"),
+    specs: text("specs").notNull().default("{}"), // JSON i18n; one "Label: value" per line (supplement facts, specs…)
     categoryId: text("category_id"),
     sku: text("sku"),
     price: integer("price").notNull(), // minor units

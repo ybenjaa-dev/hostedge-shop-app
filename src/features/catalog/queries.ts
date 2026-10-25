@@ -15,6 +15,8 @@ export type ProductCard = {
   reviewCount: number;
   categoryId: string | null;
   featured: boolean;
+  variantNames: string[];
+  variantCount: number;
 };
 
 const CARD_SELECT = `
@@ -23,6 +25,7 @@ const CARD_SELECT = `
   (SELECT COUNT(*) FROM product_variants v WHERE v.product_id = p.id) AS variantCount,
   (SELECT COALESCE(SUM(v.stock),0) FROM product_variants v WHERE v.product_id = p.id) AS variantStock,
   (SELECT MIN(COALESCE(v.price, p.price)) FROM product_variants v WHERE v.product_id = p.id) AS variantMin,
+  (SELECT GROUP_CONCAT(name, '|') FROM (SELECT name FROM product_variants WHERE product_id = p.id ORDER BY position LIMIT 6)) AS variantNames,
   p.stock AS stock, p.track_stock AS trackStock,
   (SELECT ROUND(AVG(r.rating),1) FROM reviews r WHERE r.product_id = p.id AND r.status='approved') AS rating,
   (SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id AND r.status='approved') AS reviewCount`;
@@ -45,6 +48,8 @@ function toCard(r: Row): ProductCard {
     reviewCount: (r.reviewCount as number) ?? 0,
     categoryId: (r.categoryId as string | null) ?? null,
     featured: !!r.featured,
+    variantNames: r.variantNames ? String(r.variantNames).split("|") : [],
+    variantCount: (r.variantCount as number) ?? 0,
   };
 }
 
@@ -69,9 +74,9 @@ export async function listProducts(p: ListParams = {}): Promise<{ items: Product
   const where: string[] = ["p.status = 'published'"];
   const args: unknown[] = [];
   if (p.q) {
-    where.push("(p.name LIKE ? ESCAPE '\\' OR p.sku LIKE ? ESCAPE '\\' OR p.short_desc LIKE ? ESCAPE '\\')");
+    where.push("(p.name LIKE ? ESCAPE '\\' OR p.sku LIKE ? ESCAPE '\\' OR p.short_desc LIKE ? ESCAPE '\\' OR p.specs LIKE ? ESCAPE '\\')");
     const like = `%${p.q.replace(/[\\%_]/g, (m) => "\\" + m)}%`;
-    args.push(like, like, like);
+    args.push(like, like, like, like);
   }
   if (p.categoryId) (where.push("p.category_id = ?"), args.push(p.categoryId));
   if (p.minPrice != null) (where.push("p.price >= ?"), args.push(p.minPrice));
@@ -115,6 +120,7 @@ export type ProductDetail = {
   name: string;
   shortDesc: string;
   longDesc: string;
+  specs: string;
   price: number;
   compareAt: number | null;
   stock: number;
@@ -146,6 +152,7 @@ export async function getProduct(slug: string): Promise<ProductDetail | null> {
     name: p.name as string,
     shortDesc: p.short_desc as string,
     longDesc: p.long_desc as string,
+    specs: (p.specs as string) ?? "{}",
     price: p.price as number,
     compareAt: (p.compare_at as number | null) ?? null,
     stock: p.stock as number,
