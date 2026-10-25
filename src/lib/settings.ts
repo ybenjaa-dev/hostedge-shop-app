@@ -65,7 +65,7 @@ export const DEFAULT_SETTINGS: Settings = {
   setupDone: false,
   store: {
     name: "My Store",
-    tagline: {},
+    tagline: { en: "Thoughtful things for every room.", fr: "Des objets pensés pour chaque pièce.", ar: "قطع مدروسة لكل غرفة." },
     country: "MA",
     currency: "MAD",
     defaultLang: "fr",
@@ -83,11 +83,11 @@ export const DEFAULT_SETTINGS: Settings = {
   branding: {
     logo: "",
     favicon: "",
-    primary: "#0f766e",
-    secondary: "#1f2937",
-    accent: "#f59e0b",
+    primary: "#b4532a",
+    secondary: "#2f3a2a",
+    accent: "#6b7f56",
     buttonStyle: "rounded",
-    fontLatin: "Manrope",
+    fontLatin: "DM Sans",
     fontArabic: "Cairo",
   },
   checkout: {
@@ -118,9 +118,9 @@ export const DEFAULT_SETTINGS: Settings = {
     banner: { image: "", title: {}, sub: {}, href: "" },
   },
   trust: [
-    { icon: "cod", title: { en: "Pay on delivery", fr: "Paiement à la livraison", ar: "الدفع عند الاستلام" }, text: { en: "Inspect first, then pay the courier", fr: "Vérifiez puis payez au livreur", ar: "افحص طلبك ثم ادفع للمندوب" } },
-    { icon: "delivery", title: { en: "Fast delivery", fr: "Livraison rapide", ar: "توصيل سريع" }, text: { en: "2–4 days across the country", fr: "2 à 4 jours partout", ar: "من 2 إلى 4 أيام لكل المدن" } },
-    { icon: "returns", title: { en: "Free returns", fr: "Retours gratuits", ar: "إرجاع مجاني" }, text: { en: "Not happy? Send it back", fr: "Pas satisfait ? Retournez-le", ar: "غير راضٍ؟ أرجعه لنا" } },
+    { icon: "delivery", title: { en: "Delivered to your door", fr: "Livré chez vous", ar: "يصلك إلى باب المنزل" }, text: { en: "Careful packing, 2–5 days", fr: "Emballage soigné, 2 à 5 jours", ar: "تغليف محكم خلال 2 إلى 5 أيام" } },
+    { icon: "cod", title: { en: "Check, then pay", fr: "Vérifiez, puis payez", ar: "افحص ثم ادفع" }, text: { en: "Cash on delivery, always", fr: "Paiement à la livraison", ar: "الدفع عند الاستلام دائماً" } },
+    { icon: "returns", title: { en: "Easy returns", fr: "Retours faciles", ar: "إرجاع سهل" }, text: { en: "Damaged on arrival? We replace it", fr: "Abîmé à l'arrivée ? On le remplace", ar: "وصل تالفاً؟ نستبدله" } },
   ],
   footer: { text: {} },
   analytics: { metaPixel: "", tiktokPixel: "", ga: "", snapPixel: "" },

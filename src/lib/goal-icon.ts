@@ -1,4 +1,4 @@
-import { Zap, ShieldCheck, Moon, Dumbbell, Leaf, Bone, Pill, Sparkles, Brain, Heart, type LucideIcon } from "lucide-react";
+import { ChefHat, Sofa, BedDouble, Bath, Archive, Zap, ShieldCheck, Moon, Dumbbell, Leaf, Bone, Pill, Sparkles, Brain, Heart, type LucideIcon } from "lucide-react";
 
 /** Pick an icon for a health goal from its slug/name keywords (any language). */
 export function goalIcon(key: string): LucideIcon {
@@ -14,4 +14,15 @@ export function goalIcon(key: string): LucideIcon {
   if (has("brain", "memo", "cerveau", "mind")) return Brain;
   if (has("heart", "coeur", "cœur", "omega", "قلب")) return Heart;
   return Pill;
+}
+
+/** Icon for a room category from its slug/name keywords (any language). */
+export function roomIcon(key: string): LucideIcon {
+  const k = key.toLowerCase();
+  const has = (...w: string[]) => w.some((x) => k.includes(x));
+  if (has("kitchen", "cuisine", "dining", "مطبخ")) return ChefHat;
+  if (has("living", "salon", "decor", "déco", "غرفة المعيشة", "ديكور")) return Sofa;
+  if (has("bed", "chambre", "sleep", "نوم")) return BedDouble;
+  if (has("bath", "bain", "حمام")) return Bath;
+  return Archive;
 }

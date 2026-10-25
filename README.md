@@ -56,6 +56,9 @@ Schema changes: edit `src/db/schema.ts`, run `npm run db:generate` (drizzle-kit 
 
 ## What's inside
 
+### Storefront (design v10 — "Hearth", home & kitchen)
+This branch is a storefront built for a homeware store: warm oat paper with terracotta and sage, soft Fraunces headlines, chunky rounded cards, a one-row header with room pills (bottom-sheet room tiles on mobile), a **bento "shop by room" grid** (category images with a room icon), a bundle band, and on the product page a **dimensions / material / weight strip** and a **materials & care card** — all read from the product's facts field (`Dimensions: 40 × 28 cm`, `Material: Bamboo`, `Weight: 900 g`, `Care: …`, in EN/FR/AR labels; other rows such as capacity or max load are listed under care). Sizes and colours are ordinary variants. Sample data is a generic homeware catalogue (dinner set, board, skillet, jars, cushion, throw, vase, bedding, pillow, towels, baskets, shelf) with flat illustrations. Colors, fonts, hero and sections remain editable in Admin → Appearance.
+
 ### Storefront
 Mobile-first and light on JS: server-rendered pages, scroll-snap swipe gallery, native `<dialog>` for sheets/drawers, GET-form filters, localized RTL-safe layout (logical CSS properties).
 Home (hero slides, announcement bar, categories, featured/best sellers, reviews, trust badges, footer with contacts + socials), catalog (search, category, price, in-stock filters, sort, pagination, skeletons), product page (gallery with swipe + zoom, variants with per-variant price/stock, quantity, reviews, related, sticky mobile buy bar, sold-out state, JSON-LD), guest cart (localStorage) with slide-over drawer + full page, free-shipping progress bar and coupons, single-page guest checkout, order confirmation, order tracking (order number + phone), static pages, sitemap, robots, OpenGraph, WhatsApp floating button.
