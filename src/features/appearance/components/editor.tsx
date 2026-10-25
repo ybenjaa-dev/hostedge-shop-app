@@ -10,6 +10,7 @@ import { ARABIC_FONTS, LATIN_FONTS } from "@/lib/fonts";
 import type { I18n, Lang } from "@/lib/i18n-core";
 import type { HeroSlide, HomeSection, Settings, TrustBadge } from "@/lib/settings";
 import { saveAppearance } from "../actions";
+import { FONT_PAIRS, PALETTES } from "../presets";
 import { StorePreview, PreviewControls, type AppearanceState } from "./preview";
 
 const TABS = [["branding", "Branding"], ["hero", "Hero"], ["home", "Homepage"], ["announcement", "Announcement"], ["footer", "Footer"], ["trust", "Trust badges"]] as const;
@@ -94,7 +95,7 @@ function move<T>(arr: T[], i: number, d: -1 | 1): T[] {
   const c = [...arr]; [c[i], c[j]] = [c[j]!, c[i]!]; return c;
 }
 
-export function AppearanceEditor({ initial, storeName, tagline, currency, defaultLang }: { initial: AppearanceState; storeName: string; tagline: Settings["store"]["tagline"]; currency: string; defaultLang: Lang }) {
+export function AppearanceEditor({ initial, original, storeName, tagline, currency, defaultLang }: { initial: AppearanceState; original: AppearanceState["branding"]; storeName: string; tagline: Settings["store"]["tagline"]; currency: string; defaultLang: Lang }) {
   const [v, setV] = useState<AppearanceState>(initial);
   const [tab, setTab] = useState<TabId>("branding");
   const [lang, setLang] = useState<Lang>(defaultLang);
@@ -149,6 +150,20 @@ export function AppearanceEditor({ initial, storeName, tagline, currency, defaul
           </div>
 
           {panel("branding", <>
+            <Panel title="Quick styles" actions={<button type="button" className="btn btn-ghost btn-sm" onClick={() => setBrand({ primary: original.primary, secondary: original.secondary, accent: original.accent, buttonStyle: original.buttonStyle, fontLatin: original.fontLatin, fontArabic: original.fontArabic })}><RotateCcw className="size-4" aria-hidden />Original look</button>}>
+              <p className="mb-3 text-sm text-muted">Pick a palette or font pairing, then fine-tune below. The preview updates instantly — nothing is saved until you press Save.</p>
+              <p className="label">Colour palettes</p>
+              <ul className="mb-4 flex flex-wrap gap-2">{PALETTES.map((p) => {
+                const on = v.branding.primary.toLowerCase() === p.primary && v.branding.secondary.toLowerCase() === p.secondary && v.branding.accent.toLowerCase() === p.accent;
+                return (<li key={p.name}><button type="button" aria-pressed={on} onClick={() => setBrand({ primary: p.primary, secondary: p.secondary, accent: p.accent, ...(p.buttonStyle ? { buttonStyle: p.buttonStyle } : {}) })} className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-bold ${on ? "border-brand bg-brand-soft text-brand" : "border-line hover:border-ink/40"}`}>
+                  <span className="flex -space-x-1.5 rtl:space-x-reverse" aria-hidden>{[p.primary, p.secondary, p.accent].map((c) => <span key={c} className="size-4 rounded-full border border-white/70" style={{ background: c }} />)}</span>{p.name}</button></li>);
+              })}</ul>
+              <p className="label">Font pairings</p>
+              <ul className="flex flex-wrap gap-2">{FONT_PAIRS.map((f) => {
+                const on = v.branding.fontLatin === f.latin && v.branding.fontArabic === f.arabic;
+                return (<li key={f.name}><button type="button" aria-pressed={on} onClick={() => setBrand({ fontLatin: f.latin, fontArabic: f.arabic })} className={`rounded-full border px-3 py-1.5 text-sm font-bold ${on ? "border-brand bg-brand-soft text-brand" : "border-line hover:border-ink/40"}`}>{f.name}<span className="ms-1.5 font-normal text-muted">{f.latin}</span></button></li>);
+              })}</ul>
+            </Panel>
             <Panel title="Logo & icon">
               <div className="grid gap-5 sm:grid-cols-2">
                 <ImageInput label="Logo" value={v.branding.logo} onChange={(k) => setBrand({ logo: k })} hint="Shown in the header. Transparent PNG/WebP works best." />
@@ -184,7 +199,7 @@ export function AppearanceEditor({ initial, storeName, tagline, currency, defaul
                 <IconBtn label="Move down" disabled={i === slides.length - 1} onClick={() => { setSlides(move(slides, i, 1)); setSlide(i + 1); }}><ArrowDown className="size-4" /></IconBtn>
                 <IconBtn label="Remove slide" danger onClick={() => { setSlides(slides.filter((_, k) => k !== i)); setSlide(0); }}><Trash2 className="size-4" /></IconBtn></div>}>
                 <div className="space-y-4" onFocusCapture={() => setSlide(i)}>
-                  <ImageInput label="Image" value={sl.image} onChange={(k) => patchSlide(i, { image: k })} hint="Wide, 1600×900 recommended." />
+                  <ImageInput label="Image" value={sl.image} onChange={(k) => patchSlide(i, { image: k })} hint="Wide, 1600×900 recommended — keep the subject near the centre, text sits on top. Most layouts crop to the container." />
                   <LangInputs label="Title" value={sl.title} onChange={(t) => patchSlide(i, { title: t })} max={160} />
                   <LangInputs label="Subtitle" value={sl.sub} onChange={(t) => patchSlide(i, { sub: t })} max={300} />
                   <div className="grid gap-4 md:grid-cols-2">
