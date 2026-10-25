@@ -56,7 +56,9 @@ Schema changes: edit `src/db/schema.ts`, run `npm run db:generate` (drizzle-kit 
 
 ## What's inside
 
-### Storefront
+### Storefront (design v2 — "loud print")
+This branch re-skins the whole customer-facing storefront: scrolling announcement ticker, bold uppercase display type, hard ink borders with offset shadows, a vermillion / yellow / black default palette, an app-style bottom tab bar on phones, a full-screen menu, a "How it works" COD strip, numbered category tiles, swipe rails, ranked best sellers, accordion product details and a price "tag". All colors, fonts, button style (square by default), hero and sections stay editable in Admin → Appearance. The admin keeps its own calmer look; all logic (orders, stock, carriers, i18n) is shared with the main branch.
+
 Mobile-first and light on JS: server-rendered pages, scroll-snap swipe gallery, native `<dialog>` for sheets/drawers, GET-form filters, localized RTL-safe layout (logical CSS properties).
 Home (hero slides, announcement bar, categories, featured/best sellers, reviews, trust badges, footer with contacts + socials), catalog (search, category, price, in-stock filters, sort, pagination, skeletons), product page (gallery with swipe + zoom, variants with per-variant price/stock, quantity, reviews, related, sticky mobile buy bar, sold-out state, JSON-LD), guest cart (localStorage) with slide-over drawer + full page, free-shipping progress bar and coupons, single-page guest checkout, order confirmation, order tracking (order number + phone), static pages, sitemap, robots, OpenGraph, WhatsApp floating button.
 

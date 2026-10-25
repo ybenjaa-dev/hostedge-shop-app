@@ -83,11 +83,11 @@ export const DEFAULT_SETTINGS: Settings = {
   branding: {
     logo: "",
     favicon: "",
-    primary: "#0f766e",
-    secondary: "#1f2937",
-    accent: "#f59e0b",
-    buttonStyle: "rounded",
-    fontLatin: "Manrope",
+    primary: "#ff4f1f",
+    secondary: "#111111",
+    accent: "#ffd93d",
+    buttonStyle: "square",
+    fontLatin: "Bricolage Grotesque",
     fontArabic: "Cairo",
   },
   checkout: {

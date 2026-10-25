@@ -47,7 +47,7 @@ export function CatalogFilters({ action, values, categories, labels }: Props) {
   return (
     <aside>
       <details className="lg:hidden [&[open]>summary]:mb-4">
-        <summary className="btn btn-outline w-full cursor-pointer list-none [&::-webkit-details-marker]:hidden"><SlidersHorizontal className="size-4" /> {labels.filters}</summary>
+        <summary className="btn btn-outline w-full cursor-pointer list-none uppercase [&::-webkit-details-marker]:hidden"><SlidersHorizontal className="size-4" /> {labels.filters}</summary>
         {form("m-")}
       </details>
       <div className="sticky top-24 hidden lg:block">{form("d-")}</div>

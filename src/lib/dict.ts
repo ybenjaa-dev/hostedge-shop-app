@@ -21,6 +21,8 @@ const en = {
   "track.title": "Track your order", "track.number": "Order number", "track.phone": "Phone number", "track.find": "Find my order", "track.notfound": "We couldn't find an order with these details.", "track.status": "Status", "track.carrier": "Carrier", "track.tracking": "Tracking number", "track.followCarrier": "Follow on carrier website", "track.history": "History", "track.placed": "Placed on {date}",
   "footer.contact": "Contact", "footer.pages": "Information", "footer.follow": "Follow us", "footer.rights": "All rights reserved.", "footer.hours": "Working hours",
   "common.loading": "Loading…", "common.error": "Something went wrong", "common.retry": "Try again", "common.back": "Back", "common.search": "Search", "common.save": "Save", "common.cancel": "Cancel", "common.whatsapp": "WhatsApp us", "common.call": "Call", "common.skip": "Skip to content", "common.notFound": "Page not found", "common.goHome": "Back to home",
+  "how.title": "How it works", "how.s1": "Pick it", "how.s1d": "Choose your product and tap Order now.", "how.s2": "We call you", "how.s2d": "A 20-second confirmation on WhatsApp or phone.", "how.s3": "Pay on delivery", "how.s3d": "Check your parcel, then pay the courier in cash.",
+  "p.delivery": "Delivery & payment", "p.deliveryText": "Pay the courier in cash when you receive your order. Delivery in 2–4 days. Not happy? Free returns.", "p.shareWa": "Ask on WhatsApp", "home.hero.cta": "Shop the drop", "shop.all": "All", "home.rank": "Top picks",
 } as const;
 
 export type DictKey = keyof typeof en;
@@ -47,6 +49,7 @@ const fr: D = {
   "track.title": "Suivre ma commande", "track.number": "Numéro de commande", "track.phone": "Numéro de téléphone", "track.find": "Trouver ma commande", "track.notfound": "Aucune commande trouvée avec ces informations.", "track.status": "Statut", "track.carrier": "Transporteur", "track.tracking": "Numéro de suivi", "track.followCarrier": "Suivre chez le transporteur", "track.history": "Historique", "track.placed": "Passée le {date}",
   "footer.contact": "Contact", "footer.pages": "Informations", "footer.follow": "Suivez-nous", "footer.rights": "Tous droits réservés.", "footer.hours": "Horaires",
   "common.loading": "Chargement…", "common.error": "Une erreur est survenue", "common.retry": "Réessayer", "common.back": "Retour", "common.search": "Rechercher", "common.save": "Enregistrer", "common.cancel": "Annuler", "common.whatsapp": "Écrivez-nous sur WhatsApp", "common.call": "Appeler", "common.skip": "Aller au contenu", "common.notFound": "Page introuvable", "common.goHome": "Retour à l'accueil",
+  "how.title": "Comment ça marche", "how.s1": "Choisissez", "how.s1d": "Choisissez votre produit et touchez Commander.", "how.s2": "On vous appelle", "how.s2d": "Confirmation en 20 secondes par WhatsApp ou téléphone.", "how.s3": "Payez à la livraison", "how.s3d": "Vérifiez votre colis puis payez le livreur en espèces.", "p.delivery": "Livraison & paiement", "p.deliveryText": "Payez le livreur en espèces à la réception. Livraison en 2 à 4 jours. Pas satisfait ? Retours gratuits.", "p.shareWa": "Poser une question sur WhatsApp", "home.hero.cta": "Voir la sélection", "shop.all": "Tout", "home.rank": "Les plus demandés",
 };
 
 const ar: D = {
@@ -70,6 +73,7 @@ const ar: D = {
   "track.title": "تتبع طلبك", "track.number": "رقم الطلب", "track.phone": "رقم الهاتف", "track.find": "ابحث عن طلبي", "track.notfound": "لم نجد طلباً بهذه المعلومات.", "track.status": "الحالة", "track.carrier": "شركة الشحن", "track.tracking": "رقم التتبع", "track.followCarrier": "تتبع على موقع الشركة", "track.history": "السجل", "track.placed": "تم الطلب في {date}",
   "footer.contact": "تواصل معنا", "footer.pages": "معلومات", "footer.follow": "تابعنا", "footer.rights": "جميع الحقوق محفوظة.", "footer.hours": "ساعات العمل",
   "common.loading": "جارٍ التحميل…", "common.error": "حدث خطأ", "common.retry": "إعادة المحاولة", "common.back": "رجوع", "common.search": "بحث", "common.save": "حفظ", "common.cancel": "إلغاء", "common.whatsapp": "راسلنا على واتساب", "common.call": "اتصل", "common.skip": "انتقل إلى المحتوى", "common.notFound": "الصفحة غير موجودة", "common.goHome": "العودة للرئيسية",
+  "how.title": "كيف نعمل", "how.s1": "اختر", "how.s1d": "اختر منتجك واضغط اطلب الآن.", "how.s2": "نتصل بك", "how.s2d": "تأكيد في 20 ثانية عبر واتساب أو الهاتف.", "how.s3": "ادفع عند الاستلام", "how.s3d": "افحص طردك ثم ادفع للمندوب نقداً.", "p.delivery": "التوصيل والدفع", "p.deliveryText": "ادفع نقداً للمندوب عند استلام طلبك. التوصيل خلال 2 إلى 4 أيام. غير راضٍ؟ إرجاع مجاني.", "p.shareWa": "اسأل عبر واتساب", "home.hero.cta": "تسوّق الآن", "shop.all": "الكل", "home.rank": "الأكثر طلباً",
 };
 
 export const DICT: Record<Lang, D> = { en: en as unknown as D, fr, ar };

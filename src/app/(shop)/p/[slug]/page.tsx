@@ -7,6 +7,7 @@ import { getT } from "@/lib/i18n";
 import { tr } from "@/lib/i18n-core";
 import { fileUrl } from "@/lib/storage";
 import { toMajorString } from "@/lib/money";
+import { whatsappLink } from "@/lib/phone";
 import { getProduct, listBundles, listCities, listProducts, listReviews, listCategories } from "@/features/catalog/queries";
 import { Gallery } from "@/features/catalog/components/gallery";
 import { ProductBuy } from "@/features/checkout/components/product-buy";
@@ -61,24 +62,26 @@ export default async function ProductPage({ params, searchParams }: Props) {
     ...(p.reviewCount ? { aggregateRating: { "@type": "AggregateRating", ratingValue: p.rating, reviewCount: p.reviewCount } } : {}),
   };
 
+  const wa = s.store.whatsapp ? whatsappLink(s.store.whatsapp, `${name} — ${s.store.name}`) : null;
+  const acc = "group border-2 border-ink bg-surface [&+&]:-mt-0.5";
+  const sum = "flex cursor-pointer list-none items-center justify-between px-4 py-3.5 font-extrabold uppercase tracking-wide [&::-webkit-details-marker]:hidden";
   return (
-    <article className="mx-auto max-w-7xl px-4 py-6 pb-28 md:py-10 md:pb-10">
+    <article className="mx-auto max-w-7xl px-4 py-4 pb-28 md:py-8 md:pb-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <ViewContent id={p.id} value={p.price} currency={s.store.currency} />
-      <nav aria-label="Breadcrumb" className="mb-4 text-sm text-muted">
+      <nav aria-label="Breadcrumb" className="mb-4 text-xs font-bold uppercase tracking-wider text-muted">
         <Link href="/" className="hover:text-ink">{t("nav.home")}</Link> / {cat && <><Link href={`/category/${cat.slug}`} className="hover:text-ink">{tr(cat.name, lang)}</Link> / </>}<span className="text-ink">{name}</span>
       </nav>
-      <div className="grid gap-8 md:grid-cols-2 lg:gap-14">
-        <Gallery images={p.images} alt={name} closeLabel={t("cod.close")} />
+      <div className="grid gap-6 md:grid-cols-[1.1fr_1fr] lg:gap-12">
+        <div className="md:sticky md:top-28 md:self-start"><Gallery images={p.images} alt={name} closeLabel={t("cod.close")} /></div>
         <div>
-          <h1 className="display text-3xl font-extrabold leading-tight sm:text-4xl">{name}</h1>
-          <p className="mt-2 flex items-center gap-2 text-sm text-muted">
-            {p.rating != null ? <><Star className="size-4 fill-accent text-accent" /><span className="num font-bold text-ink">{p.rating}</span> · {t("p.reviews", { n: p.reviewCount })}</> : t("p.noReviews")}
-            <span aria-hidden>·</span>
-            <span className={inStock ? "font-semibold text-ok" : "font-semibold text-danger"}>{inStock ? t("p.inStock") : t("p.soldOut")}</span>
+          <h1 className="display text-[clamp(2.2rem,6vw,3.6rem)] font-extrabold uppercase">{name}</h1>
+          <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm font-bold">
+            {p.rating != null ? <span className="inline-flex items-center gap-1"><Star className="size-4 fill-ink text-ink" /><span className="num">{p.rating}</span><span className="font-medium text-muted">({p.reviewCount})</span></span> : <span className="text-muted">{t("p.noReviews")}</span>}
+            <span className={`border-2 border-ink px-2 py-0.5 text-xs uppercase ${inStock ? "bg-accent text-accent-ink" : "bg-ink text-bg"}`}>{inStock ? t("p.inStock") : t("p.soldOut")}</span>
           </p>
-          <p className="mt-4 leading-relaxed text-muted">{tr(p.shortDesc, lang)}</p>
-          <div className="mt-6 border-t border-line pt-6">
+          <p className="mt-4 text-lg leading-relaxed">{tr(p.shortDesc, lang)}</p>
+          <div className="mt-6">
             <ProductBuy
               autoOpen={sp.order === "1"}
               product={{ id: p.id, slug: p.slug, name: p.name, price: p.price, compareAt: p.compareAt, stock: p.stock, trackStock: p.trackStock, variants: p.variants, image: p.images[0]?.key ?? null }}
@@ -86,36 +89,35 @@ export default async function ProductPage({ params, searchParams }: Props) {
               cities={cities}
             />
           </div>
+          <div className="mt-8">
+            {tr(p.longDesc, lang) && (
+              <details className={acc} open><summary className={sum}>{t("p.description")}<span aria-hidden className="text-2xl leading-none group-open:hidden">+</span><span aria-hidden className="hidden text-2xl leading-none group-open:block">−</span></summary><div className="prose-lite border-t-2 border-ink px-4 py-4 text-muted"><p>{tr(p.longDesc, lang)}</p></div></details>
+            )}
+            <details className={acc}><summary className={sum}>{t("p.delivery")}<span aria-hidden className="text-2xl leading-none group-open:hidden">+</span><span aria-hidden className="hidden text-2xl leading-none group-open:block">−</span></summary><div className="border-t-2 border-ink px-4 py-4 text-muted"><p>{t("p.deliveryText")}</p>{wa && <a href={wa} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm mt-3">{t("p.shareWa")}</a>}</div></details>
+          </div>
         </div>
       </div>
 
-      {tr(p.longDesc, lang) && (
-        <section className="mt-14 max-w-3xl">
-          <h2 className="display mb-3 text-2xl font-extrabold">{t("p.description")}</h2>
-          <div className="prose-lite text-muted"><p>{tr(p.longDesc, lang)}</p></div>
-        </section>
-      )}
-
       <section className="mt-14 grid gap-8 md:grid-cols-[1fr_22rem]" aria-labelledby="reviews-h">
         <div>
-          <h2 id="reviews-h" className="display mb-4 text-2xl font-extrabold">{t("p.reviews", { n: p.reviewCount })}</h2>
+          <h2 id="reviews-h" className="display mb-5 border-b-2 border-ink pb-3 text-3xl font-extrabold uppercase">{t("p.reviews", { n: p.reviewCount })}</h2>
           {reviews.length === 0 ? <p className="text-muted">{t("p.noReviews")}</p> : (
             <ul className="space-y-4">
               {reviews.map((r) => (
-                <li key={r.id} className="card p-4">
-                  <div className="flex items-center justify-between"><span className="font-bold">{r.name}{r.city && <span className="font-normal text-muted"> · {r.city}</span>}</span><span className="flex gap-0.5" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`size-4 ${i < r.rating ? "fill-accent text-accent" : "text-line"}`} />)}</span></div>
-                  <p className="mt-2 text-sm leading-relaxed">{r.body}</p>
+                <li key={r.id} className="border-2 border-ink bg-surface p-4 shadow-[4px_4px_0_var(--ink)]">
+                  <div className="flex items-center justify-between gap-2"><span className="font-extrabold uppercase">{r.name}{r.city && <span className="font-medium normal-case text-muted"> · {r.city}</span>}</span><span className="flex gap-0.5" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`size-4 ${i < r.rating ? "fill-ink text-ink" : "text-line"}`} />)}</span></div>
+                  <p className="mt-2 leading-relaxed">{r.body}</p>
                 </li>
               ))}
             </ul>
           )}
         </div>
-        <div className="card h-fit p-5"><h3 className="display mb-3 text-lg font-extrabold">{t("p.writeReview")}</h3><ReviewForm productId={p.id} /></div>
+        <div className="card h-fit p-5"><h3 className="display mb-3 text-xl font-extrabold uppercase">{t("p.writeReview")}</h3><ReviewForm productId={p.id} /></div>
       </section>
 
       {related.items.length > 0 && (
         <section className="mt-16">
-          <h2 className="display mb-6 text-2xl font-extrabold">{t("p.related")}</h2>
+          <h2 className="display mb-5 border-b-2 border-ink pb-3 text-3xl font-extrabold uppercase">{t("p.related")}</h2>
           <ProductGrid>{related.items.map((r) => <ProductCard key={r.id} p={r} lang={lang} t={t} currency={s.store.currency} codMode={s.checkout.codMode} />)}</ProductGrid>
         </section>
       )}

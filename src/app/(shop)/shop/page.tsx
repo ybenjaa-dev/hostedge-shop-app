@@ -41,11 +41,19 @@ export async function Catalog({ sp, categorySlug }: { sp: Record<string, string 
   };
   const base = categorySlug ? `/category/${categorySlug}` : "/shop";
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
-      <div className="mb-6">
-        <h1 className="display text-3xl font-extrabold sm:text-4xl">{cat ? tr(cat.name, lang) : sp.q ? `“${sp.q}”` : t("shop.title")}</h1>
-        <p className="mt-1 text-sm text-muted">{t("shop.results", { n: res.total })}</p>
+    <div className="mx-auto max-w-7xl px-4 py-6 md:py-10">
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-3 border-b-2 border-ink pb-4">
+        <h1 className="display text-[clamp(2.4rem,8vw,5rem)] font-extrabold uppercase">{cat ? tr(cat.name, lang) : sp.q ? `“${sp.q}”` : t("shop.title")}</h1>
+        <p className="num border-2 border-ink px-3 py-1 text-sm font-extrabold uppercase">{t("shop.results", { n: res.total })}</p>
       </div>
+      {cats.length > 0 && (
+        <nav aria-label={t("shop.category")} className="-mx-4 mb-6 flex gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none]">
+          <Link href="/shop" aria-current={!cat ? "page" : undefined} className={`whitespace-nowrap border-2 border-ink px-4 py-2 text-sm font-extrabold uppercase ${!cat ? "bg-ink text-bg" : "bg-surface hover:bg-sunken"}`}>{t("shop.all")}</Link>
+          {cats.map((c) => (
+            <Link key={c.id} href={`/category/${c.slug}`} aria-current={cat?.id === c.id ? "page" : undefined} className={`whitespace-nowrap border-2 border-ink px-4 py-2 text-sm font-extrabold uppercase ${cat?.id === c.id ? "bg-brand text-brand-ink" : "bg-surface hover:bg-sunken"}`}>{tr(c.name, lang)}</Link>
+          ))}
+        </nav>
+      )}
       <div className="grid gap-8 lg:grid-cols-[16rem_1fr]">
         <CatalogFilters
           action={base}
@@ -55,9 +63,9 @@ export async function Catalog({ sp, categorySlug }: { sp: Record<string, string 
         />
         <div>
           {res.items.length === 0 ? (
-            <div className="card grid place-items-center gap-3 p-12 text-center">
+            <div className="grid place-items-center gap-3 border-2 border-dashed border-ink p-12 text-center">
               <p className="text-lg font-semibold">{t("shop.empty")}</p>
-              <Link href={base} className="btn btn-outline">{t("shop.clear")}</Link>
+              <Link href={base} className="btn btn-primary">{t("shop.clear")}</Link>
             </div>
           ) : (
             <ProductGrid>{res.items.map((p, i) => <ProductCard key={p.id} p={p} lang={lang} t={t} currency={s.store.currency} codMode={s.checkout.codMode} priority={i < 4} />)}</ProductGrid>

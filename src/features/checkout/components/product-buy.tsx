@@ -109,7 +109,7 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
                   const out = tracked && v.stock <= 0;
                   return (
                     <button key={v.id} type="button" disabled={out} aria-pressed={variantId === v.id} onClick={() => setVariantId(v.id)}
-                      className={`rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${variantId === v.id ? "border-brand bg-brand-soft text-brand ring-2 ring-brand/30" : "border-line bg-surface hover:border-ink/40"} ${out ? "cursor-not-allowed line-through opacity-40" : ""}`}>
+                      className={`border-2 px-4 py-2.5 text-sm font-extrabold uppercase transition ${variantId === v.id ? "border-ink bg-ink text-bg shadow-[3px_3px_0_var(--brand)]" : "border-ink bg-surface hover:bg-sunken"} ${out ? "cursor-not-allowed line-through opacity-40" : ""}`}>
                       {v.name}
                       {v.price !== product.price && <span className="num ms-2 text-xs opacity-70">{fmt(v.price)}</span>}
                     </button>
@@ -126,7 +126,7 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
                     const possible = product.variants.some((v) => v.options[k] === val && groupKeys.every((g) => g === k || !sel[g] || v.options[g] === sel[g]) && (!tracked || v.stock > 0));
                     return (
                       <button key={val} type="button" disabled={!possible} aria-pressed={sel[k] === val} onClick={() => setSel((s) => ({ ...s, [k]: val }))}
-                        className={`rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${sel[k] === val ? "border-brand bg-brand-soft text-brand ring-2 ring-brand/30" : "border-line bg-surface hover:border-ink/40"} ${!possible ? "cursor-not-allowed line-through opacity-40" : ""}`}>{val}</button>
+                        className={`border-2 px-4 py-2.5 text-sm font-extrabold uppercase transition ${sel[k] === val ? "border-ink bg-ink text-bg shadow-[3px_3px_0_var(--brand)]" : "border-ink bg-surface hover:bg-sunken"} ${!possible ? "cursor-not-allowed line-through opacity-40" : ""}`}>{val}</button>
                     );
                   })}
                 </div>
@@ -138,10 +138,10 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
       <div>
         <span className="label" id="qty-l">{t("p.qty")}</span>
         <div className="flex items-center gap-3">
-          <div role="group" aria-labelledby="qty-l" className="inline-flex items-center rounded-xl border border-line bg-surface">
-            <button type="button" aria-label="−" className="grid size-11 place-items-center rounded-s-xl hover:bg-sunken disabled:opacity-40" onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={qty <= 1}><Minus className="size-4" /></button>
+          <div role="group" aria-labelledby="qty-l" className="inline-flex items-center border-2 border-ink bg-surface">
+            <button type="button" aria-label="−" className="grid size-11 place-items-center hover:bg-sunken disabled:opacity-40" onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={qty <= 1}><Minus className="size-4" /></button>
             <output className="num w-10 text-center font-bold" aria-live="polite">{qty}</output>
-            <button type="button" aria-label="+" className="grid size-11 place-items-center rounded-e-xl hover:bg-sunken disabled:opacity-40" onClick={() => setQty((q) => Math.min(maxQty, q + 1))} disabled={qty >= maxQty}><Plus className="size-4" /></button>
+            <button type="button" aria-label="+" className="grid size-11 place-items-center hover:bg-sunken disabled:opacity-40" onClick={() => setQty((q) => Math.min(maxQty, q + 1))} disabled={qty >= maxQty}><Plus className="size-4" /></button>
           </div>
           {tracked && available != null && available > 0 && available <= 5 && <span className="text-sm font-semibold text-danger">{t("p.onlyLeft", { n: available })}</span>}
         </div>
@@ -149,7 +149,7 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
       {st.bundlesInForm && bundleTiers.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {bundleTiers.map(([n, p]) => (
-            <button key={n} type="button" onClick={() => setQty(Math.min(maxQty, n))} className={`rounded-full border px-3 py-1.5 text-xs font-bold transition ${qty >= n ? "border-accent bg-accent/15 text-ink" : "border-dashed border-line text-muted hover:border-ink/40"}`}>
+            <button key={n} type="button" onClick={() => setQty(Math.min(maxQty, n))} className={`border-2 px-3 py-1.5 text-xs font-extrabold uppercase transition ${qty >= n ? "border-ink bg-accent text-accent-ink" : "border-dashed border-ink bg-surface hover:bg-sunken"}`}>
               🎁 {t("cod.bundle", { n, pct: p })}
             </button>
           ))}
@@ -175,9 +175,9 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
   return (
     <div>
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <span dir="ltr" className="num display text-3xl font-extrabold">{fmt(unit)}</span>
+        <span dir="ltr" className="num display border-2 border-ink bg-accent px-3 py-1 text-4xl font-extrabold text-accent-ink shadow-[4px_4px_0_var(--ink)]">{fmt(unit)}</span>
         {product.compareAt && product.compareAt > unit && <span dir="ltr" className="num text-lg text-muted line-through">{fmt(product.compareAt)}</span>}
-        {product.compareAt && product.compareAt > unit && <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-extrabold text-accent-ink">{t("p.save", { pct: Math.round(((product.compareAt - unit) / product.compareAt) * 100) })}</span>}
+        {product.compareAt && product.compareAt > unit && <span className="sticker border-2 border-ink bg-brand px-2.5 py-1 text-xs font-extrabold text-brand-ink">{t("p.save", { pct: Math.round(((product.compareAt - unit) / product.compareAt) * 100) })}</span>}
       </div>
       {pct > 0 && <p className="mt-1 text-sm font-semibold text-ok">🎁 {t("cod.bundle", { n: qty, pct })}</p>}
 
@@ -188,7 +188,7 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
 
       {/* inline placement */}
       {st.codMode && st.placement === "inline" && open && (
-        <section id="order" className="card mt-6 scroll-mt-24 animate-fade p-5" aria-label={t("cod.title")}>
+        <section id="order" className="card mt-6 scroll-mt-28 animate-fade p-5" aria-label={t("cod.title")}>
           <div className="mb-4 flex items-center justify-between">
             <h2 className="display text-xl font-extrabold">{t("cod.title")}</h2>
             <button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(false)} aria-label={t("cod.close")}><X className="size-4" /></button>
@@ -200,7 +200,7 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
       {/* popup placement: bottom sheet on mobile, modal on desktop */}
       {st.codMode && st.placement === "popup" && (
         <dialog ref={dialogRef} aria-label={t("cod.title")}
-          className="m-0 mt-auto max-h-[94dvh] w-full max-w-none overflow-y-auto overscroll-contain rounded-t-3xl bg-bg p-0 text-ink backdrop:bg-black/55 backdrop:backdrop-blur-[2px] open:animate-sheet-up md:m-auto md:max-w-lg md:rounded-3xl"
+          className="m-0 mt-auto max-h-[94dvh] w-full max-w-none overflow-y-auto overscroll-contain border-2 border-ink bg-bg p-0 text-ink backdrop:bg-black/55 backdrop:backdrop-blur-[2px] open:animate-sheet-up md:m-auto md:max-w-lg md:border-2"
           onClick={(e) => { if (e.target === dialogRef.current) dialogRef.current?.close(); }}>
           <div className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-bg/95 px-5 py-3 backdrop-blur">
             <div className="min-w-0"><h2 className="display text-lg font-extrabold">{t("cod.title")}</h2><p className="truncate text-xs text-muted">{productLabel}</p></div>
@@ -213,7 +213,7 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
       )}
 
       {/* sticky mobile bar */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-bg/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur md:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t-2 border-ink bg-bg p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:hidden">
         <div className="mx-auto flex max-w-lg items-center gap-3">
           <div className="min-w-0 leading-tight"><p className="truncate text-xs text-muted">{productLabel}</p><p dir="ltr" className="num text-lg font-extrabold">{fmt(unit * qty)}</p></div>
           {cta("btn-lg ms-auto flex-1 !text-base", true)}

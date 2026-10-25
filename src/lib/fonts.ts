@@ -1,4 +1,4 @@
-export const LATIN_FONTS = ["Manrope", "Inter", "Poppins", "DM Sans", "Outfit", "Sora", "Space Grotesk", "Playfair Display", "Lora"] as const;
+export const LATIN_FONTS = ["Bricolage Grotesque", "Archivo", "Manrope", "Inter", "Poppins", "DM Sans", "Outfit", "Sora", "Space Grotesk", "Playfair Display", "Lora"] as const;
 export const ARABIC_FONTS = ["Cairo", "Tajawal", "Almarai", "IBM Plex Sans Arabic", "Noto Kufi Arabic", "Readex Pro", "El Messiri"] as const;
 
 export function googleFontsUrl(latin: string, arabic: string): string {
