@@ -12,5 +12,5 @@ export default async function EditPage({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const page = await getDb().select().from(schema.pages).where(eq(schema.pages.id, id)).get();
   if (!page) notFound();
-  return <div className="max-w-3xl"><PageHeader title="Edit page" sub={`/page/${page.slug}`} /><PageForm page={page} /></div>;
+  return <div><PageHeader title="Edit page" sub={`/page/${page.slug}`} /><PageForm page={page} /></div>;
 }

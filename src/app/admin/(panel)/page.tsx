@@ -1,9 +1,10 @@
+import { DateRangeField } from "@/features/admin/components/date-picker";
 import Link from "next/link";
 import { getDashboard } from "@/features/admin/dashboard-queries";
 import { getSettings } from "@/lib/settings";
 import { formatMoney } from "@/lib/money";
 import { statusInfo } from "@/lib/status-labels";
-import { PageHeader, Panel, Stat, Badge } from "@/features/admin/components/ui";
+import { PageHeader, Panel, Stat, Badge, FilterBar, FbItem } from "@/features/admin/components/ui";
 import { BarChart } from "@/features/admin/components/bar-chart";
 import { tr } from "@/lib/i18n-core";
 import { getSetupChecklist } from "@/features/photos/queries";
@@ -33,7 +34,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       <PageHeader title="Dashboard" sub={`${new Date(from).toISOString().slice(0, 10)} → ${new Date(to - DAY).toISOString().slice(0, 10)} (UTC days)`} actions={<>{chip("today", "Today")}{chip("7", "7 days")}{chip("30", "30 days")}{chip("90", "90 days")}</>} />
       <SetupChecklist {...setup} />
       {sp.denied && <p role="alert" className="mb-4 rounded-lg bg-danger/10 p-3 text-sm font-medium text-danger">That section is for the store owner only.</p>}
-      <form className="mb-5 flex flex-wrap items-end gap-2"><label className="text-xs font-bold text-muted">From<input type="date" name="from" defaultValue={sp.from} className="field mt-1 !min-h-10" /></label><label className="text-xs font-bold text-muted">To<input type="date" name="to" defaultValue={sp.to} className="field mt-1 !min-h-10" /></label><button className="btn btn-outline btn-sm">Apply</button></form>
+      <FilterBar actions={<button className="btn btn-primary">Apply</button>}><FbItem wide><DateRangeField from={sp.from} to={sp.to} label="Date range" /></FbItem></FilterBar>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat label="Orders today" value={d.today} sub={`${d.pendingConfirm} waiting for confirmation`} />
         <Stat label="Orders (range)" value={d.orders} />

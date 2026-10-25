@@ -18,7 +18,7 @@ export function ProductCard({ p, lang, t, currency, codMode, priority, rank, eye
         <Link href={`/p/${p.slug}`} className="relative block aspect-[4/5] overflow-hidden rounded-[1.75rem] bg-sunken" aria-label={name}>
           {p.image ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={fileUrl(p.image)} alt={name} width={480} height={600} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={`size-full object-cover transition duration-[900ms] ease-out group-hover:scale-[1.05] ${p.inStock ? "" : "opacity-55 grayscale"}`} />
+            <img src={fileUrl(p.image, "md")} alt={name} width={480} height={600} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={`size-full object-cover transition duration-[900ms] ease-out group-hover:scale-[1.05] ${p.inStock ? "" : "opacity-55 grayscale"}`} />
           ) : (
             <div className="grid size-full place-items-center text-4xl text-muted">✿</div>
           )}

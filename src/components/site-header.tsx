@@ -32,7 +32,7 @@ export function SiteHeader({ s, lang, t, categories }: { s: Settings; lang: Lang
         <Link href="/" className="display flex items-center justify-center text-[1.7rem] italic sm:text-[2.1rem]" aria-label={s.store.name}>
           {logo ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={logo} alt={s.store.name} className="h-9 w-auto max-w-44 object-contain sm:h-11" height={44} />
+            <img src={logo} alt={s.store.name} className="brand-logo h-9 w-auto max-w-44 object-contain sm:h-11" height={44} />
           ) : (
             <span dir="auto" className="max-w-[11rem] truncate sm:max-w-xs">{s.store.name}</span>
           )}

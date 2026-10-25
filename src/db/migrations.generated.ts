@@ -83,5 +83,15 @@ export const MIGRATIONS: { name: string; statements: string[] }[] = [
     "statements": [
       "ALTER TABLE `products` ADD `offer_template` text;"
     ]
+  },
+  {
+    "name": "0005_media_library",
+    "statements": [
+      "CREATE TABLE `media` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`key` text NOT NULL,\n\t`name` text NOT NULL,\n\t`alt` text,\n\t`mime` text NOT NULL,\n\t`width` integer,\n\t`height` integer,\n\t`size` integer DEFAULT 0 NOT NULL,\n\t`hash` text,\n\t`source_hash` text,\n\t`variants` integer DEFAULT false NOT NULL,\n\t`created_by` text,\n\t`created_at` integer NOT NULL\n);",
+      "CREATE UNIQUE INDEX `media_key_idx` ON `media` (`key`);",
+      "CREATE INDEX `media_hash_idx` ON `media` (`hash`);",
+      "CREATE INDEX `media_source_hash_idx` ON `media` (`source_hash`);",
+      "CREATE INDEX `media_created_idx` ON `media` (`created_at`);"
+    ]
   }
 ];

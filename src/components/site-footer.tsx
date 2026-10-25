@@ -19,7 +19,7 @@ export function SiteFooter({ s, lang, t, pages }: { s: Settings; lang: Lang; t: 
     <footer className="mt-24 rounded-t-[2.5rem] bg-sunken pb-28 pt-14 md:pb-12">
       <div className="mx-auto max-w-7xl px-5">
         <div className="text-center">
-          <p className="display text-[2.6rem] italic sm:text-6xl">{logo ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={logo} alt={s.store.name} className="mx-auto h-14 w-auto" /> : s.store.name}</p>
+          <p className="display text-[2.6rem] italic sm:text-6xl">{logo ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={logo} alt={s.store.name} className="brand-logo mx-auto h-14 w-auto" /> : s.store.name}</p>
           {(tr(s.footer.text, lang) || tr(s.store.tagline, lang)) && <p className="mx-auto mt-3 max-w-md text-muted">{tr(s.footer.text, lang) || tr(s.store.tagline, lang)}</p>}
           <div className="mt-5 flex flex-wrap justify-center gap-2.5">
             {socials.filter(([u]) => u).map(([u, Icon, label]) => (

@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { BRAND } from "@/lib/brand";
 import { getDb, schema } from "@/db";
 import { ensureSchema } from "@/db/ensure-schema";
 import type { I18n, Lang } from "@/lib/i18n-core";
@@ -67,7 +68,7 @@ export type Settings = {
 export const DEFAULT_SETTINGS: Settings = {
   setupDone: false,
   store: {
-    name: "My Store",
+    name: BRAND.name,
     tagline: { en: "Clean, effective beauty — pay when it arrives.", fr: "Une beauté saine et efficace — payez à la livraison.", ar: "جمال نقي وفعّال — ادفعي عند الاستلام." },
     country: "MA",
     currency: "MAD",
@@ -84,8 +85,8 @@ export const DEFAULT_SETTINGS: Settings = {
   },
   social: { instagram: "", facebook: "", tiktok: "", snapchat: "", youtube: "", x: "", whatsappChannel: "" },
   branding: {
-    logo: "",
-    favicon: "",
+    logo: BRAND.logo,
+    favicon: BRAND.icon,
     primary: "#7a2e46",
     secondary: "#3a1f28",
     accent: "#c98f78",

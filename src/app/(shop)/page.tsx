@@ -61,7 +61,7 @@ export default async function Home() {
             <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-5">
               {cats.map((c) => (
                 <Link key={c.id} href={`/category/${c.slug}`} className="group relative block aspect-[3/4] overflow-hidden rounded-[1.75rem] bg-sunken">
-                  {c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image)} alt="" loading="lazy" className="size-full object-cover transition duration-[900ms] group-hover:scale-105" />}
+                  {c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image, "md")} alt="" loading="lazy" className="size-full object-cover transition duration-[900ms] group-hover:scale-105" />}
                   <span className="absolute inset-x-3 bottom-3 flex items-center justify-between rounded-full bg-surface/90 px-4 py-2.5 backdrop-blur"><span className="display text-lg leading-none">{tr(c.name, lang)}</span><span className="num text-xs text-muted">{c.count}</span></span>
                 </Link>
               ))}
