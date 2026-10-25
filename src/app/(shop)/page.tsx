@@ -53,7 +53,7 @@ export default async function Home() {
                 {cats.map((c, i) => (
                   <Link key={c.id} href={`/category/${c.slug}`} className={`group relative block overflow-hidden bg-sunken ${i < 2 ? "col-span-1 md:col-span-3" : "col-span-1 md:col-span-2"} ${i === 4 ? "col-span-2 md:col-span-2" : ""}`}>
                     <div className={`${i < 2 ? "aspect-[4/5] md:aspect-[4/3]" : i === 4 ? "aspect-[16/9] md:aspect-[4/3]" : "aspect-[4/5] md:aspect-[4/3]"}`}>
-                      {c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image)} alt="" loading="lazy" className="size-full object-cover transition duration-700 group-hover:scale-105" />}
+                      {c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image, "md")} alt="" loading="lazy" className="size-full object-cover transition duration-700 group-hover:scale-105" />}
                     </div>
                     <span className="absolute inset-x-0 bottom-0 flex flex-col items-center bg-gradient-to-t from-black/60 to-transparent px-3 pb-5 pt-14 text-white"><span className="heading text-xl sm:text-2xl">{tr(c.name, lang)}</span><span className="caps mt-1 border-b border-[var(--champagne)] pb-0.5 text-[0.65rem] opacity-90">{t("home.viewAll")}</span></span>
                   </Link>

@@ -23,7 +23,7 @@ export function SiteHeader({ s, lang, t, categories }: { s: Settings; lang: Lang
           <Link href="/" className="heading text-xl tracking-[0.22em] sm:text-[1.6rem]" aria-label={s.store.name}>
             {logo ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={logo} alt={s.store.name} className="h-8 w-auto max-w-44 object-contain sm:h-10" height={40} />
+              <img src={logo} alt={s.store.name} className="brand-logo h-8 w-auto max-w-44 object-contain sm:h-10" height={40} />
             ) : <span dir="auto" className="block max-w-[9.5rem] truncate uppercase sm:max-w-xs">{s.store.name}</span>}
           </Link>
         </div>
