@@ -58,6 +58,13 @@ Schema changes: edit `src/db/schema.ts`, run `npm run db:generate` (drizzle-kit 
 
 ### Storefront (design v13 — "Lumière", jewellery & watches)
 This branch is a storefront built for a jewellery and watch boutique: white gallery pages with black ink and champagne hairlines, Bodoni Moda headlines, square black buttons with wide-tracked caps, a dark spotlight hero with an offset gold frame, an asymmetric **collections grid**, a **shop-by-metal** row (gold / silver / steel / pearl swatches that link to search), and a buy box with **metallic gradient swatches** (variant option named `Metal`, `Color`, `Finish`… in EN/FR/AR) next to a size grid. Product pages add a hairline **details table** from the facts field (`Material: …`, `Stone: …`, `Dimensions: …`, `Care: …`), gift-box / try-on / resize reassurance, and an automatic **ring-size guide** (EU size → circumference and inner diameter) whenever a product has numeric `Size` options between 44 and 72. Sample data is a generic fine-jewellery catalogue (rings, pearl and chain necklaces, hoops, drops, studs, tennis bracelet, cuff, two watches, jewellery box) with metal × size / length variants and metallic illustrations. Colors, fonts, hero and sections remain editable in Admin → Appearance.
+### Quantity offers ("buy 1 for 129, 2 for 229, 3 for 319")
+Admin → Products → *Quantity offers*: add a fixed total price for 2, 3, … units of a product (optional badge, one "most popular"). The product page shows them as selectable cards with the per-unit price and the saving; picking a card sets the quantity, and the buy button, sticky bar, order form and the stored order all use the same total. Details:
+- The pricing engine (`src/lib/pricing.ts`) picks the **cheapest combination** of packs for any quantity (with "2 for 229" and "3 for 319", 5 units cost 229 + 319), never charges more than the plain price, and takes the better of a fixed offer and a store-wide percentage bundle.
+- For products with variants priced differently, the pack price scales with the variant's price.
+- All units in a pack share the options chosen above the cards (one variant per order line).
+- Fixed offers are stored in the existing `bundles` table (`price`, `label`, `popular`); they show up read-only under Coupons & bundles. Store-wide "buy 3, save 15%" percentage bundles still work and also appear as cards.
+- Sample data seeds offers on the featured products.
 
 ### Storefront
 Mobile-first and light on JS: server-rendered pages, scroll-snap swipe gallery, native `<dialog>` for sheets/drawers, GET-form filters, localized RTL-safe layout (logical CSS properties).

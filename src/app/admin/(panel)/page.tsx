@@ -6,6 +6,8 @@ import { statusInfo } from "@/lib/status-labels";
 import { PageHeader, Panel, Stat, Badge } from "@/features/admin/components/ui";
 import { BarChart } from "@/features/admin/components/bar-chart";
 import { tr } from "@/lib/i18n-core";
+import { getSetupChecklist } from "@/features/photos/queries";
+import { SetupChecklist } from "@/features/photos/setup-checklist";
 
 export const metadata = { title: "Dashboard" };
 const DAY = 86400_000;
@@ -21,7 +23,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
     from = Date.parse(`${sp.from}T00:00:00Z`);
     if (sp.to && Date.parse(sp.to)) to = Date.parse(`${sp.to}T00:00:00Z`) + DAY;
   } else from = endOfToday - (presets[sp.range ?? "30"] ?? 30) * DAY;
-  const d = await getDashboard(from, to);
+  const [d, setup] = await Promise.all([getDashboard(from, to), getSetupChecklist()]);
   const cur = s.store.currency;
   const f = (n: number) => formatMoney(n, cur, "en");
   const active = sp.from ? "custom" : sp.range ?? "30";
@@ -29,6 +31,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   return (
     <>
       <PageHeader title="Dashboard" sub={`${new Date(from).toISOString().slice(0, 10)} → ${new Date(to - DAY).toISOString().slice(0, 10)} (UTC days)`} actions={<>{chip("today", "Today")}{chip("7", "7 days")}{chip("30", "30 days")}{chip("90", "90 days")}</>} />
+      <SetupChecklist {...setup} />
       {sp.denied && <p role="alert" className="mb-4 rounded-lg bg-danger/10 p-3 text-sm font-medium text-danger">That section is for the store owner only.</p>}
       <form className="mb-5 flex flex-wrap items-end gap-2"><label className="text-xs font-bold text-muted">From<input type="date" name="from" defaultValue={sp.from} className="field mt-1 !min-h-10" /></label><label className="text-xs font-bold text-muted">To<input type="date" name="to" defaultValue={sp.to} className="field mt-1 !min-h-10" /></label><button className="btn btn-outline btn-sm">Apply</button></form>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
