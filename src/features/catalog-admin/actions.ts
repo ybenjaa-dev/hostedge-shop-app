@@ -16,6 +16,9 @@ const variantSchema = z.array(z.object({
   id: z.string().max(40).optional(), name: z.string().trim().min(1).max(80), options: z.record(z.string().max(40), z.string().max(40)).default({}),
   sku: z.string().trim().max(60).optional().nullable(), price: z.string().max(20).optional().nullable(), stock: z.coerce.number().int().min(0).max(1_000_000),
 })).max(100);
+const offerSchema = z.array(z.object({
+  qty: z.coerce.number().int().min(2).max(1000), price: z.string().trim().min(1).max(20), label: z.string().trim().max(30).optional().nullable(), popular: z.boolean().optional(),
+})).max(6);
 const imageSchema = z.array(z.object({ key: z.string().min(1).max(200), alt: z.string().max(200).optional().nullable() })).max(20);
 
 export async function saveProductAction(_p: ActionState, form: FormData): Promise<ActionState> {
@@ -32,6 +35,9 @@ export async function saveProductAction(_p: ActionState, form: FormData): Promis
     const cmp = fd(form, "compareAt") ? money(fd(form, "compareAt"), cur) : null;
     const variants = variantSchema.parse(JSON.parse(fd(form, "variants") || "[]"));
     const images = imageSchema.parse(JSON.parse(fd(form, "images") || "[]"));
+    const offers = offerSchema.parse(JSON.parse(fd(form, "offers") || "[]"));
+    if (new Set(offers.map((o) => o.qty)).size !== offers.length) return { ok: false, error: "Each quantity offer needs a different quantity." };
+    for (const o of offers) if (money(o.price, cur) >= price * o.qty) return { ok: false, error: `The ${o.qty}-unit offer must cost less than ${o.qty} × the normal price.` };
     const now = Date.now();
     const status = fd(form, "status") === "published" ? "published" : "draft";
     const pid = id ?? newId();
@@ -50,6 +56,9 @@ export async function saveProductAction(_p: ActionState, form: FormData): Promis
       if (v.id) stmts.push(db.prepare("UPDATE product_variants SET name=?, options=?, sku=?, price=?, stock=?, position=? WHERE id=? AND product_id=?").bind(v.name, JSON.stringify(v.options), v.sku || null, vp, v.stock, i, v.id, pid));
       else stmts.push(db.prepare("INSERT INTO product_variants (id, product_id, name, options, sku, price, stock, position) VALUES (?,?,?,?,?,?,?,?)").bind(newId(), pid, v.name, JSON.stringify(v.options), v.sku || null, vp, v.stock, i));
     });
+    // quantity offers: replace this product's fixed-price bundles
+    stmts.push(db.prepare("DELETE FROM bundles WHERE product_id = ? AND price IS NOT NULL").bind(pid));
+    offers.forEach((o) => stmts.push(db.prepare("INSERT INTO bundles (id, product_id, min_qty, percent, price, label, popular, active) VALUES (?,?,?,?,?,?,?,1)").bind(newId(), pid, o.qty, 0, money(o.price, cur), o.label || null, o.popular ? 1 : 0)));
     await db.batch(stmts);
     await audit(user, id ? "product.update" : "product.create", "product", pid);
     revalidatePath("/", "layout");
