@@ -159,6 +159,9 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body), 
 .offers-grid.t-highlight .offer-card.is-hl .offer-price { font-size: 1.45rem; }
 .offers-grid.t-highlight .offer-card.is-hl .offer-save { background: color-mix(in srgb, var(--brand-ink) 18%, transparent); color: var(--brand-ink); }
 .offers-grid.t-highlight .offer-card.is-hl .text-muted { color: color-mix(in srgb, var(--brand-ink) 78%, transparent); }
+/* tiles / photo cards / pills: badges straddle the card edge, and long theme headings must stay inside narrow cards */
+.offers-grid:is(.t-tiles, .t-photo, .t-pills) .offer-card { clip-path: none; }
+.offers-grid.t-photo .offer-card .offer-count { font-size: 0.85rem; letter-spacing: 0; text-transform: none; overflow-wrap: anywhere; }
 /* Hide number input arrows */
 input[type=number]::-webkit-inner-spin-button { display: none; }
 @keyframes wiggle { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
