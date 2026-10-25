@@ -158,3 +158,5 @@ input[type=number]::-webkit-inner-spin-button { display: none; }
 .v10 .offer-card { border-radius: 1.5rem; padding: 0.95rem 1.15rem; }
 .v10 .offer-card.is-on { box-shadow: 0 14px 24px -18px var(--brand); }
 .v10 .offer-count, .v10 .offer-price { font-family: var(--font-heading), serif; font-weight: 600; letter-spacing: -0.01em; }
+
+.v10 .offer-thumb { border-radius: 1.1rem; }
