@@ -64,7 +64,7 @@ export default async function Home() {
                   const Icon = kidIcon(`${c.slug} ${tr(c.name, lang)}`);
                   return (
                     <Link key={c.id} href={`/category/${c.slug}`} className="soft group relative block aspect-[4/5] overflow-hidden rounded-[2rem] bg-sunken">
-                      {c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image)} alt="" loading="lazy" className="size-full object-cover transition duration-500 group-hover:scale-105" />}
+                      {c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image, "md")} alt="" loading="lazy" className="size-full object-cover transition duration-500 group-hover:scale-105" />}
                       <span className="heading absolute inset-x-2.5 bottom-2.5 flex items-center gap-2 rounded-full bg-white p-1.5 pe-4 text-base text-[#1e2a4a] sm:text-lg"><span className="grid size-9 shrink-0 place-items-center rounded-full bg-[var(--brand)] text-brand-ink"><Icon className="size-4.5" /></span><span className="min-w-0 truncate">{tr(c.name, lang)}</span></span>
                     </Link>
                   );

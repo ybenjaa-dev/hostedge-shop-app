@@ -1,11 +1,10 @@
 "use client";
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
-import { ArrowDown, ArrowUp, Eye, EyeOff, Loader2, Plus, Trash2, Upload, X, AlertTriangle, CheckCircle2, RotateCcw } from "lucide-react";
+import { ArrowDown, ArrowUp, Eye, EyeOff, Plus, Trash2, X, AlertTriangle, CheckCircle2, RotateCcw } from "lucide-react";
 import { AdminForm } from "@/features/admin/components/admin-form";
-import { uploadImage } from "@/features/admin/components/fields";
+import { MediaImageInput } from "@/features/media/image-input";
 import { Panel } from "@/features/admin/components/ui";
 import { contrastRatio, isHex, onColor } from "@/lib/color";
-import { fileUrl } from "@/lib/storage";
 import { ARABIC_FONTS, LATIN_FONTS } from "@/lib/fonts";
 import type { I18n, Lang } from "@/lib/i18n-core";
 import type { HeroSlide, HomeSection, Settings, TrustBadge } from "@/lib/settings";
@@ -34,34 +33,7 @@ function LangInputs({ label, value, onChange, textarea, rows = 2, max }: { label
 }
 
 function ImageInput({ label, value, onChange, hint }: { label: string; value: string; onChange: (k: string) => void; hint?: string }) {
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState("");
-  const id = useId();
-  return (
-    <div>
-      <span className="label">{label}</span>
-      <div className="flex items-center gap-3">
-        <div className="grid size-20 shrink-0 place-items-center overflow-hidden rounded-xl border border-dashed border-line bg-sunken">
-          {value ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(value)} alt="" className="size-full object-contain" /> : <Upload className="size-5 text-muted" aria-hidden />}
-        </div>
-        <div className="space-y-1.5">
-          <label htmlFor={id} className={`btn btn-outline btn-sm cursor-pointer ${busy ? "pointer-events-none opacity-60" : ""}`}>{busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Upload className="size-4" aria-hidden />}{busy ? "Uploading…" : value ? "Replace" : "Upload"}</label>
-          <input id={id} type="file" accept="image/jpeg,image/png,image/webp,image/avif" className="sr-only" disabled={busy}
-            onChange={async (e) => {
-              const f = e.target.files?.[0]; e.target.value = "";
-              if (!f) return;
-              setBusy(true); setErr("");
-              const r = await uploadImage(f);
-              setBusy(false);
-              if (r.ok) onChange(r.key); else setErr(r.error);
-            }} />
-          {value && <button type="button" className="btn btn-ghost btn-sm text-danger" onClick={() => onChange("")}><X className="size-4" aria-hidden />Remove</button>}
-        </div>
-      </div>
-      {err && <p role="alert" className="err">{err}</p>}
-      {hint && <p className="mt-1 text-xs text-muted">{hint}</p>}
-    </div>
-  );
+  return <MediaImageInput label={label} value={value} onChange={onChange} hint={hint} />;
 }
 
 function ColorInput({ label, value, onChange, against, hint }: { label: string; value: string; onChange: (v: string) => void; against: "text-on" | "white-on"; hint?: string }) {
@@ -142,7 +114,7 @@ export function AppearanceEditor({ initial, original, storeName, tagline, curren
       <input type="hidden" name="payload" value={JSON.stringify(v)} />
       <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="min-w-0">
-          <div role="tablist" aria-label="Appearance sections" onKeyDown={onTabKey} className="-mx-4 mb-5 flex gap-1 overflow-x-auto border-b border-line px-4 sm:mx-0 sm:px-0">
+          <div role="tablist" aria-label="Appearance sections" onKeyDown={onTabKey} className="no-scrollbar -mx-4 mb-5 flex gap-1 overflow-x-auto border-b border-line px-4 sm:mx-0 sm:px-0">
             {TABS.map(([id, label]) => (
               <button key={id} type="button" role="tab" id={`tab-${id}`} aria-selected={tab === id} aria-controls={`panel-${id}`} tabIndex={tab === id ? 0 : -1} onClick={() => setTab(id)}
                 className={`-mb-px whitespace-nowrap border-b-2 px-3 py-2.5 text-sm font-bold ${tab === id ? "border-brand text-brand" : "border-transparent text-muted hover:text-ink"}`}>{label}</button>

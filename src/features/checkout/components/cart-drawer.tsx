@@ -46,7 +46,7 @@ export function CartDrawer({ currency, lang, threshold, labels }: { currency: st
               {lines.map((l) => (
                 <li key={l.key} className="flex gap-3 py-4">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  {l.image ? <img src={fileUrl(l.image)} alt="" className="size-20 shrink-0 rounded-xl object-cover" /> : <div className="size-20 shrink-0 rounded-xl bg-sunken" />}
+                  {l.image ? <img src={fileUrl(l.image, "thumb")} alt="" className="size-20 shrink-0 rounded-xl object-cover" /> : <div className="size-20 shrink-0 rounded-xl bg-sunken" />}
                   <div className="min-w-0 flex-1">
                     <Link href={`/p/${l.slug}`} onClick={() => setDrawer(false)} className="line-clamp-2 font-semibold hover:text-brand">{tr(l.name, lang)}</Link>
                     {l.variantName && <p className="text-sm text-muted">{l.variantName}</p>}

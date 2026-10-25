@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Tabs } from "@/features/settings/components/tabs";
 import { desc, eq, sql } from "drizzle-orm";
 import { Check, EyeOff, Star, Trash2 } from "lucide-react";
 import { requireUser } from "@/lib/auth";
@@ -31,14 +31,9 @@ export default async function ReviewsPage({ searchParams }: { searchParams: Prom
   ]);
   const cnt = Object.fromEntries(counts.map((c) => [c.s, c.n]));
   return (
-    <div className="max-w-4xl">
+    <div>
       <PageHeader title="Reviews" sub="Moderate customer reviews before they appear in the store." />
-      <nav className="-mx-4 mb-5 flex gap-1 overflow-x-auto border-b border-line px-4 sm:mx-0 sm:px-0" aria-label="Filter reviews">
-        {FILTERS.map(([id, label]) => (
-          <Link key={id} href={`/admin/reviews?status=${id}`} aria-current={status === id ? "page" : undefined} className={`-mb-px whitespace-nowrap border-b-2 px-3 py-2.5 text-sm font-bold ${status === id ? "border-brand text-brand" : "border-transparent text-muted hover:text-ink"}`}>
-            {label}{id !== "all" && <span className="num ms-1.5 rounded-full bg-sunken px-1.5 text-xs">{cnt[id] ?? 0}</span>}</Link>
-        ))}
-      </nav>
+      <Tabs base="/admin/reviews" label="Filter reviews" current={status} items={FILTERS.map(([id, label]) => ({ id, href: `/admin/reviews?status=${id}`, label: <>{label}{id !== "all" && <span className="num ms-1.5 rounded-full bg-sunken px-1.5 text-xs">{cnt[id] ?? 0}</span>}</> }))} />
       <Panel className="mb-6">
         <details>
           <summary className="flex min-h-11 cursor-pointer items-center gap-2 font-bold"><Star className="size-4" aria-hidden />Add a review manually</summary>
