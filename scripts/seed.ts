@@ -18,7 +18,7 @@ async function main() {
   const country = arg("country", "MA").toUpperCase();
   const currency = arg("currency", "MAD").toUpperCase();
   if (!(currency in CURRENCIES)) throw new Error(`Unsupported currency ${currency}`);
-  const { env, dispose } = await getPlatformProxy<{ DB: D1Database; FILES: R2Bucket }>({ configPath: "wrangler.jsonc" });
+  const { env, dispose } = await getPlatformProxy<{ DB: D1Database; FILES: R2Bucket }>({ configPath: "wrangler.jsonc", persist: process.argv.includes("--persist") ? { path: arg("persist", ".wrangler/state") } : true });
   try {
     await env.DB.exec("CREATE TABLE IF NOT EXISTS _migrations (name TEXT PRIMARY KEY, applied_at INTEGER NOT NULL)");
     for (const m of MIGRATIONS) {
