@@ -12,7 +12,7 @@ describe("fetchWithRetry", () => {
     const r = await fetchWithRetry("https://x.test", {}, { fetchImpl: f, sleep, baseMs: 100 });
     expect(r.status).toBe(200);
     expect(f).toHaveBeenCalledTimes(3);
-    expect(sleep.mock.calls.map((c) => c[0])).toEqual([100, 200]);
+    expect(sleep.mock.calls.map((c: unknown[]) => c[0])).toEqual([100, 200]);
   });
   it("retries network errors / timeouts, then throws a retryable error", async () => {
     const f = vi.fn().mockRejectedValue(new TypeError("fetch failed"));
