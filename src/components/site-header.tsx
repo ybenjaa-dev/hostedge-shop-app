@@ -36,7 +36,7 @@ export function SiteHeader({ s, lang, t, categories }: { s: Settings; lang: Lang
           <Link href="/shop#m-search" aria-label={t("nav.search")} className="btn btn-ghost btn-sm !px-2 xl:hidden"><Search className="size-5" strokeWidth={2.5} /></Link>
           <Link href="/track" aria-label={t("nav.track")} className="btn btn-ghost btn-sm hidden !px-2 sm:inline-flex"><PackageSearch className="size-5" strokeWidth={2.5} /></Link>
           <LangSwitcher current={lang} langs={s.store.langs} label={t("nav.language")} />
-          <ThemeToggle />
+          <ThemeToggle className="btn btn-ghost btn-sm hidden !px-2 sm:inline-flex" />
           {!s.checkout.codMode && <CartButton label={t("nav.cart")} />}
         </div>
       </div>
