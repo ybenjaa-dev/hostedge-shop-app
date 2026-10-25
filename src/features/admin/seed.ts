@@ -168,6 +168,11 @@ export async function seedSampleData(env: Env, currency: string) {
     db.prepare("INSERT INTO bundles (id, product_id, min_qty, percent, active) VALUES (?,NULL,2,10,1)").bind(newId()),
     db.prepare("INSERT INTO bundles (id, product_id, min_qty, percent, active) VALUES (?,NULL,3,15,1)").bind(newId()),
   );
+  // quantity offers on the featured products: buy 1 at the normal price, 2 or 3 at a fixed (lower) total
+  products.forEach((p, i) => {
+    if (!p.feat) return;
+    for (const [q, f, pop] of [[2, 0.9, 1], [3, 0.82, 0]] as const) stmts.push(db.prepare("INSERT INTO bundles (id, product_id, min_qty, percent, price, label, popular, active) VALUES (?,?,?,0,?,NULL,?,1)").bind(newId(), pids[i]!, q, price(Math.round(p.p * q * f)), pop));
+  });
   for (let i = 0; i < stmts.length; i += 40) await db.batch(stmts.slice(i, i + 40));
   await putSvg(env, "uploads/sample-hero.svg", svg("round", PAL.rose));
 }
