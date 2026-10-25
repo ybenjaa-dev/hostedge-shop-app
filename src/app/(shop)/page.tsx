@@ -21,7 +21,7 @@ export default async function Home() {
   const rail = (id: string, title: string, items: PC[], ranked = false) =>
     items.length ? (
       <section key={id} className="mx-auto max-w-[88rem] px-4 py-12 md:px-6 md:py-16">
-        <div className="mb-7 flex items-end justify-between gap-4"><h2 className="display text-[2.2rem] sm:text-6xl">{title}</h2><Link href="/shop" className="label-s link-arrow shrink-0">{t("home.viewAll")}<Arrow className="size-4" /></Link></div>
+        <div className="mb-7 flex items-end justify-between gap-4"><h2 className="display min-w-0 text-[2rem] sm:text-6xl">{title}</h2><Link href="/shop" className="label-s link-arrow shrink-0">{t("home.viewAll")}<Arrow className="size-4" /></Link></div>
         <div className="rail">{items.slice(0, 8).map((p, i) => <ProductCard key={p.id} p={p} lang={lang} t={t} currency={cur} codMode={codMode} rank={ranked ? i + 1 : undefined} />)}</div>
       </section>
     ) : null;
