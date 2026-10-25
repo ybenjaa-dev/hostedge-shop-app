@@ -21,7 +21,7 @@ export function SiteFooter({ s, lang, t, pages }: { s: Settings; lang: Lang; t: 
         <p className="display mx-auto max-w-7xl select-none break-words text-[clamp(3rem,13vw,10rem)] font-extrabold uppercase leading-[0.85] text-brand">
           {logo ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={logo} alt={s.store.name} className="h-20 w-auto sm:h-32" />
+            <img src={logo} alt={s.store.name} className="brand-logo h-20 w-auto sm:h-32" />
           ) : (
             s.store.name
           )}

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Truck, Download, Send, Ban, ShieldCheck } from "lucide-react";
 import { AdminForm } from "@/features/admin/components/admin-form";
 import { Field } from "@/features/admin/components/fields";
+import { DateField } from "@/features/admin/components/date-picker";
 import { addNoteAction, updateStatusAction, editOrderAction, setCarrierFeeAction, blockPhoneAction, unblockPhoneAction } from "../admin-actions";
 import { sendOneAction, manualTrackingAction } from "../carrier-bridge";
 import { useToast } from "@/components/toast";
@@ -22,7 +23,7 @@ export function StatusPanel({ id, allowed, labels, current }: { id: string; allo
           </label>
         ))}
       </div>
-      {to === "postponed" && <Field label="Postpone until" htmlFor="pp"><input id="pp" type="datetime-local" name="postponeUntil" required className="field" /></Field>}
+      {to === "postponed" && <DateField name="postponeUntil" label="Postpone until" placeholder="Pick date & time" withTime clearable={false} min={new Date().toISOString().slice(0, 10)} />}
       <Field label="Note (optional)" htmlFor="sn"><input id="sn" name="note" className="field" maxLength={500} placeholder={to === "no_answer" ? "e.g. phone off, will retry" : ""} /></Field>
     </AdminForm>
   );

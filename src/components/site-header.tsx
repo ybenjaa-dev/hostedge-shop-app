@@ -35,7 +35,7 @@ export function SiteHeader({ s, lang, t, categories }: { s: Settings; lang: Lang
           <Link href="/" className="display flex items-center gap-2 text-[1.35rem] font-extrabold uppercase sm:text-2xl" aria-label={s.store.name}>
             {logo ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={logo} alt={s.store.name} className="h-8 w-auto max-w-40 object-contain sm:h-9" height={36} />
+              <img src={logo} alt={s.store.name} className="brand-logo h-8 w-auto max-w-40 object-contain sm:h-9" height={36} />
             ) : (
               <>
                 <span aria-hidden className="grid size-8 place-items-center border-2 border-ink bg-brand text-sm text-brand-ink shadow-[2px_2px_0_var(--ink)]">{s.store.name.slice(0, 1)}</span>

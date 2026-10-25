@@ -66,7 +66,7 @@ export default async function Home() {
                     <span><span className="display block text-2xl font-extrabold uppercase leading-none">{tr(c.name, lang)}</span><span className="mt-1 inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider">{c.count} <ArrowUpRight className="size-4 transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 rtl:-scale-x-100" /></span></span>
                   </span>
                   <span className="relative border-s-2 border-ink bg-sunken">
-                    {c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image)} alt="" loading="lazy" className="absolute inset-0 size-full object-cover" />}
+                    {c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image, "md")} alt="" loading="lazy" className="absolute inset-0 size-full object-cover" />}
                   </span>
                 </Link>
               ))}
