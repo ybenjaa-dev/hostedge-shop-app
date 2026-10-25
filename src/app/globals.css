@@ -145,14 +145,16 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body), 
   .offer-card.t-pills .offer-price { font-size: 0.95rem; }
   .offer-dot { position: absolute; top: -0.5rem; inset-inline-end: 0.5rem; display: grid; place-items: center; width: 1.2rem; height: 1.2rem; border-radius: 9999px; background: var(--brand); color: var(--brand-ink); }
   .offer-card.t-highlight { padding: 0.6rem 1rem; }
-  .offer-card.t-highlight.is-hl { padding: 1.15rem 1.1rem; border-color: transparent; background: linear-gradient(135deg, var(--brand), color-mix(in srgb, var(--brand) 68%, #000)); color: var(--brand-ink); box-shadow: 0 14px 28px -16px var(--brand); }
-  .offer-card.t-highlight.is-hl .offer-radio { border-color: color-mix(in srgb, var(--brand-ink) 60%, transparent); background: transparent; color: var(--brand); }
-  .offer-card.t-highlight.is-hl.is-on { outline: 3px solid color-mix(in srgb, var(--brand) 40%, transparent); outline-offset: 2px; }
-  .offer-card.t-highlight.is-hl.is-on .offer-radio { background: var(--brand-ink); border-color: var(--brand-ink); }
-  .offer-card.t-highlight.is-hl .offer-flag { background: var(--brand-ink); color: var(--brand); }
-  .offer-card.t-highlight.is-hl .offer-price { font-size: 1.45rem; }
-  .offer-card.t-highlight.is-hl .offer-save { background: color-mix(in srgb, var(--brand-ink) 18%, transparent); color: var(--brand-ink); }
 }
+/* highlight card sits outside the layer (+ extra specificity) so each theme's .offer-card / .is-on skin can't wash it out */
+.offers-grid.t-highlight .offer-card.is-hl { padding: 1.15rem 1.1rem; border-color: transparent; background: linear-gradient(135deg, var(--brand), color-mix(in srgb, var(--brand) 68%, #000)); color: var(--brand-ink); box-shadow: 0 14px 28px -16px var(--brand); }
+.offers-grid.t-highlight .offer-card.is-hl .offer-radio { border-color: color-mix(in srgb, var(--brand-ink) 60%, transparent); background: transparent; color: var(--brand); }
+.offers-grid.t-highlight .offer-card.is-hl.is-on { outline: 3px solid color-mix(in srgb, var(--brand) 40%, transparent); outline-offset: 2px; }
+.offers-grid.t-highlight .offer-card.is-hl.is-on .offer-radio { background: var(--brand-ink); border-color: var(--brand-ink); }
+.offers-grid.t-highlight .offer-card.is-hl .offer-flag { background: var(--brand-ink); color: var(--brand); }
+.offers-grid.t-highlight .offer-card.is-hl .offer-price { font-size: 1.45rem; }
+.offers-grid.t-highlight .offer-card.is-hl .offer-save { background: color-mix(in srgb, var(--brand-ink) 18%, transparent); color: var(--brand-ink); }
+.offers-grid.t-highlight .offer-card.is-hl .text-muted { color: color-mix(in srgb, var(--brand-ink) 78%, transparent); }
 /* Hide number input arrows */
 input[type=number]::-webkit-inner-spin-button { display: none; }
 @keyframes wiggle { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
