@@ -1,3 +1,4 @@
+import type { BundleRule } from "@/lib/pricing";
 import { getEnv } from "@/lib/env";
 import { ensureSchema } from "@/db/ensure-schema";
 
@@ -186,13 +187,17 @@ export async function listReviews(opts: { productId?: string; limit?: number }):
   return (await q.all<ReviewRow>()).results;
 }
 
-export async function listBundles(productId?: string) {
+type BundleRow = { productId: string | null; minQty: number; percent: number; price: number | null; label: string | null; popular: number; basePrice: number | null };
+
+/** Active bundle rules (percentage tiers and fixed-price offers), shaped as pricing-engine rules. */
+export async function listBundles(productId?: string): Promise<BundleRule[]> {
   await ensureSchema();
   const db = getEnv().DB;
+  const sel = "SELECT b.product_id AS productId, b.min_qty AS minQty, b.percent, b.price, b.label, b.popular, p.price AS basePrice FROM bundles b LEFT JOIN products p ON p.id = b.product_id WHERE b.active = 1";
   const r = productId
-    ? await db.prepare("SELECT product_id AS productId, min_qty AS minQty, percent FROM bundles WHERE active=1 AND (product_id IS NULL OR product_id = ?) ORDER BY min_qty").bind(productId).all<{ productId: string | null; minQty: number; percent: number }>()
-    : await db.prepare("SELECT product_id AS productId, min_qty AS minQty, percent FROM bundles WHERE active=1 ORDER BY min_qty").all<{ productId: string | null; minQty: number; percent: number }>();
-  return r.results;
+    ? await db.prepare(`${sel} AND (b.product_id IS NULL OR b.product_id = ?) ORDER BY b.min_qty`).bind(productId).all<BundleRow>()
+    : await db.prepare(`${sel} ORDER BY b.min_qty`).all<BundleRow>();
+  return r.results.map((x) => ({ productId: x.productId, minQty: x.minQty, percent: x.percent, price: x.price, basePrice: x.basePrice, label: x.label, popular: !!x.popular }));
 }
 
 export type CityOpt = { id: string; name: string; nameAr: string | null; region: string | null; fee: number | null; freeAbove: number | null; codAvailable: boolean; country: string };
