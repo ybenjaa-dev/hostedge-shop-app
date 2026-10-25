@@ -65,7 +65,7 @@ export const DEFAULT_SETTINGS: Settings = {
   setupDone: false,
   store: {
     name: "My Store",
-    tagline: {},
+    tagline: { en: "Shoes and bags built to move.", fr: "Chaussures et sacs faits pour bouger.", ar: "أحذية وحقائب صُنعت للحركة." },
     country: "MA",
     currency: "MAD",
     defaultLang: "fr",
@@ -83,11 +83,11 @@ export const DEFAULT_SETTINGS: Settings = {
   branding: {
     logo: "",
     favicon: "",
-    primary: "#0f766e",
-    secondary: "#1f2937",
-    accent: "#f59e0b",
+    primary: "#0d0d0d",
+    secondary: "#0d0d0d",
+    accent: "#c6ff3d",
     buttonStyle: "rounded",
-    fontLatin: "Manrope",
+    fontLatin: "Archivo",
     fontArabic: "Cairo",
   },
   checkout: {
@@ -118,9 +118,9 @@ export const DEFAULT_SETTINGS: Settings = {
     banner: { image: "", title: {}, sub: {}, href: "" },
   },
   trust: [
-    { icon: "cod", title: { en: "Pay on delivery", fr: "Paiement à la livraison", ar: "الدفع عند الاستلام" }, text: { en: "Inspect first, then pay the courier", fr: "Vérifiez puis payez au livreur", ar: "افحص طلبك ثم ادفع للمندوب" } },
-    { icon: "delivery", title: { en: "Fast delivery", fr: "Livraison rapide", ar: "توصيل سريع" }, text: { en: "2–4 days across the country", fr: "2 à 4 jours partout", ar: "من 2 إلى 4 أيام لكل المدن" } },
-    { icon: "returns", title: { en: "Free returns", fr: "Retours gratuits", ar: "إرجاع مجاني" }, text: { en: "Not happy? Send it back", fr: "Pas satisfait ? Retournez-le", ar: "غير راضٍ؟ أرجعه لنا" } },
+    { icon: "returns", title: { en: "Free size exchange", fr: "Échange de taille gratuit", ar: "تبديل المقاس مجاناً" }, text: { en: "Wrong fit? We swap it", fr: "Pas la bonne taille ? On l'échange", ar: "المقاس غير مناسب؟ نبدّله" } },
+    { icon: "cod", title: { en: "Try, then pay", fr: "Essayez, puis payez", ar: "جرّب ثم ادفع" }, text: { en: "Pay the courier on delivery", fr: "Payez le livreur à la livraison", ar: "ادفع للمندوب عند الاستلام" } },
+    { icon: "delivery", title: { en: "Ships in 24 h", fr: "Expédié sous 24 h", ar: "شحن خلال 24 ساعة" }, text: { en: "2–4 days across the country", fr: "2 à 4 jours partout", ar: "من 2 إلى 4 أيام لكل المدن" } },
   ],
   footer: { text: {} },
   analytics: { metaPixel: "", tiktokPixel: "", ga: "", snapPixel: "" },

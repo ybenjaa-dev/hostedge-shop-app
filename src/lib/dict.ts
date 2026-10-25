@@ -31,6 +31,7 @@ const en = {
   "p.disclaimer": "Food supplements are not a substitute for a varied and balanced diet. Do not exceed the recommended daily dose. Keep out of reach of children. If you are pregnant, breastfeeding, taking medication or have a medical condition, ask a health professional before use.",
   "home.clear": "Clear labels, no guesswork", "home.clearD": "Every product page shows the serving size, the dose of each ingredient and how to take it.",
   "p.shade": "Shade", "p.shades": "{n} shades", "p.pickShade": "Choose your shade", "p.ritual": "The ritual", "p.pickedFor": "Our pick", "home.concern": "Shop by concern",
+  "p.from": "From", "home.types": "Shop by type", "p.fit": "Fit", "p.fitSmall": "Runs small", "p.fitTrue": "True to size", "p.fitLarge": "Runs large", "p.sizeChart": "Size chart", "p.sizeChartD": "Stand on a sheet of paper, mark your heel and longest toe, measure in cm. Between sizes? Take the larger.", "p.footCm": "Foot length", "p.eu": "EU size", "p.specs": "Specs", "p.freeSwap": "Free size exchange on delivery", "p.tryPay": "Try them on with the courier and pay only if they fit", "p.colours": "Colours", "home.ticker": "Free size exchange · Pay on delivery · Ships in 24 h",
 } as const;
 
 export type DictKey = keyof typeof en;
@@ -66,6 +67,7 @@ const fr: D = {
   "p.disclaimer": "Les compléments alimentaires ne se substituent pas à une alimentation variée et équilibrée. Ne pas dépasser la dose journalière recommandée. Tenir hors de portée des enfants. En cas de grossesse, d'allaitement, de traitement médical ou de pathologie, demandez l'avis d'un professionnel de santé avant utilisation.",
   "home.clear": "Des étiquettes claires, sans devinettes", "home.clearD": "Chaque fiche produit indique la portion, la dose de chaque ingrédient et le mode d'emploi.",
   "p.shade": "Teinte", "p.shades": "{n} teintes", "p.pickShade": "Choisissez votre teinte", "p.ritual": "Le rituel", "p.pickedFor": "Notre coup de cœur", "home.concern": "Acheter par besoin",
+  "p.from": "Dès", "home.types": "Acheter par type", "p.fit": "Chaussant", "p.fitSmall": "Taille petit", "p.fitTrue": "Taille normalement", "p.fitLarge": "Taille grand", "p.sizeChart": "Guide des pointures", "p.sizeChartD": "Posez le pied sur une feuille, repérez talon et orteil le plus long, mesurez en cm. Entre deux tailles ? Prenez la plus grande.", "p.footCm": "Longueur du pied", "p.eu": "Pointure EU", "p.specs": "Caractéristiques", "p.freeSwap": "Échange de taille gratuit à la livraison", "p.tryPay": "Essayez-les devant le livreur et ne payez que si elles vous vont", "p.colours": "Couleurs", "home.ticker": "Échange de taille gratuit · Paiement à la livraison · Expédié sous 24 h",
 };
 
 const ar: D = {
@@ -98,6 +100,7 @@ const ar: D = {
   "p.disclaimer": "المكملات الغذائية ليست بديلاً عن نظام غذائي متنوع ومتوازن. لا تتجاوز الجرعة اليومية الموصى بها. يحفظ بعيداً عن متناول الأطفال. في حالة الحمل أو الرضاعة أو تناول أدوية أو وجود مرض، استشر مختصاً في الصحة قبل الاستعمال.",
   "home.clear": "ملصقات واضحة دون تخمين", "home.clearD": "تعرض كل صفحة منتج الحصة والجرعة لكل مكوّن وطريقة الاستعمال.",
   "p.shade": "اللون", "p.shades": "{n} ألوان", "p.pickShade": "اختاري لونك", "p.ritual": "الروتين", "p.pickedFor": "اختيارنا لكِ", "home.concern": "تسوّقي حسب احتياجك",
+  "p.from": "ابتداءً من", "home.types": "تسوّق حسب النوع", "p.fit": "القياس", "p.fitSmall": "يأتي صغيراً", "p.fitTrue": "مقاسه مضبوط", "p.fitLarge": "يأتي واسعاً", "p.sizeChart": "جدول المقاسات", "p.sizeChartD": "قف على ورقة وحدّد الكعب وأطول إصبع وقس بالسم. بين مقاسين؟ اختر الأكبر.", "p.footCm": "طول القدم", "p.eu": "المقاس الأوروبي", "p.specs": "المواصفات", "p.freeSwap": "تبديل مجاني للمقاس عند التسليم", "p.tryPay": "جرّبه أمام المندوب وادفع فقط إن ناسبك", "p.colours": "الألوان", "home.ticker": "تبديل مجاني للمقاس · الدفع عند الاستلام · شحن خلال 24 ساعة",
 };
 
 export const DICT: Record<Lang, D> = { en: en as unknown as D, fr, ar };
