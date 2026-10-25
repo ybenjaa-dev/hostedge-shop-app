@@ -1,0 +1,162 @@
+import { AdminForm } from "@/features/admin/components/admin-form";
+import { Field, I18nField, Toggle } from "@/features/admin/components/fields";
+import { Panel } from "@/features/admin/components/ui";
+import type { Settings } from "@/lib/settings";
+import { CURRENCIES, toMajorString } from "@/lib/money";
+import { COUNTRIES } from "@/lib/phone";
+import { LANGS, LANG_LABEL } from "@/lib/i18n-core";
+import { DEFAULT_STATUS_DEFS, ORDER_STATUSES } from "@/lib/order-status";
+import { saveStore, saveSocial, saveCheckout, saveAnalytics, saveStatuses, saveTemplates } from "../actions/save";
+
+export function StoreSection({ s }: { s: Settings }) {
+  const st = s.store;
+  return (
+    <AdminForm action={saveStore} submitLabel="Save store settings">
+      <Panel title="Identity">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Store name" htmlFor="name"><input id="name" name="name" defaultValue={st.name} required maxLength={80} className="field" /></Field>
+          <Field label="Email" htmlFor="email"><input id="email" name="email" type="email" defaultValue={st.email} className="field" autoComplete="off" /></Field>
+        </div>
+        <div className="mt-4"><I18nField label="Tagline" name="tagline" value={st.tagline} /></div>
+      </Panel>
+      <Panel title="Region & currency">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Home country" htmlFor="country">
+            <select id="country" name="country" defaultValue={st.country} className="field">{COUNTRIES.map((c) => <option key={c.code} value={c.code}>{c.flag} {c.name.en}</option>)}</select>
+          </Field>
+          <Field label="Currency" htmlFor="currency" hint="Changing currency does not convert existing prices.">
+            <select id="currency" name="currency" defaultValue={st.currency} className="field">{Object.entries(CURRENCIES).map(([k, v]) => <option key={k} value={k}>{k} — {v.name}</option>)}</select>
+          </Field>
+          <Field label="Default language" htmlFor="defaultLang">
+            <select id="defaultLang" name="defaultLang" defaultValue={st.defaultLang} className="field">{LANGS.map((l) => <option key={l} value={l}>{LANG_LABEL[l]}</option>)}</select>
+          </Field>
+          <fieldset>
+            <legend className="label">Enabled languages</legend>
+            <div className="flex flex-wrap gap-3">{LANGS.map((l) => (
+              <label key={l} className="flex min-h-11 items-center gap-2 rounded-lg border border-line px-3 text-sm font-semibold"><input type="checkbox" name="langs" value={l} defaultChecked={st.langs.includes(l)} className="size-4 accent-[var(--brand)]" />{LANG_LABEL[l]}</label>
+            ))}</div>
+          </fieldset>
+        </div>
+        <fieldset className="mt-4">
+          <legend className="label">Countries served</legend>
+          <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2 md:grid-cols-3">{COUNTRIES.map((c) => (
+            <label key={c.code} className="flex min-h-11 items-center gap-2 rounded-lg border border-line px-3 text-sm"><input type="checkbox" name="countries" value={c.code} defaultChecked={st.countries.includes(c.code)} className="size-4 accent-[var(--brand)]" /><span aria-hidden>{c.flag}</span>{c.name.en}</label>
+          ))}</div>
+        </fieldset>
+      </Panel>
+      <Panel title="Contact">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="WhatsApp number" htmlFor="whatsapp" hint="With country code, e.g. +212612345678"><input id="whatsapp" name="whatsapp" defaultValue={st.whatsapp} inputMode="tel" dir="ltr" className="field" /></Field>
+          <Field label="Phone numbers (one per line)" htmlFor="phones"><textarea id="phones" name="phones" rows={3} defaultValue={st.phones.join("\n")} dir="ltr" className="field" /></Field>
+        </div>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <I18nField label="Address" name="address" value={st.address} textarea rows={2} />
+          <I18nField label="Opening hours" name="hours" value={st.hours} textarea rows={2} />
+        </div>
+      </Panel>
+      <Panel title="Tax">
+        <div className="grid items-start gap-4 sm:grid-cols-2">
+          <Field label="Tax rate (%)" htmlFor="tax" hint="0 to disable. Stored as basis points."><input id="tax" name="tax" inputMode="decimal" defaultValue={String(st.taxRateBp / 100)} className="field num" /></Field>
+          <Toggle name="taxInclusive" label="Prices include tax" hint="Off: tax is added on top at checkout." defaultChecked={st.taxInclusive} />
+        </div>
+      </Panel>
+    </AdminForm>
+  );
+}
+
+const SOCIAL: [keyof Settings["social"], string][] = [["instagram", "Instagram"], ["facebook", "Facebook"], ["tiktok", "TikTok"], ["snapchat", "Snapchat"], ["youtube", "YouTube"], ["x", "X (Twitter)"], ["whatsappChannel", "WhatsApp channel"]];
+export function SocialSection({ s }: { s: Settings }) {
+  return (
+    <AdminForm action={saveSocial} submitLabel="Save social links">
+      <Panel title="Social links" ><p className="mb-4 text-sm text-muted">Shown in the storefront footer. Leave empty to hide.</p>
+        <div className="grid gap-4 sm:grid-cols-2">{SOCIAL.map(([k, label]) => (
+          <Field key={k} label={label} htmlFor={`soc-${k}`}><input id={`soc-${k}`} name={k} type="url" inputMode="url" placeholder="https://" defaultValue={s.social[k]} dir="ltr" className="field" /></Field>
+        ))}</div>
+      </Panel>
+    </AdminForm>
+  );
+}
+
+export function CheckoutSection({ s }: { s: Settings }) {
+  const c = s.checkout, cur = s.store.currency;
+  const m = (n: number) => toMajorString(n, cur);
+  return (
+    <AdminForm action={saveCheckout} submitLabel="Save checkout settings">
+      <Panel title="Cash on Delivery mode">
+        <Toggle name="codMode" label="Cash on Delivery mode" defaultChecked={c.codMode}
+          hint="ON: one-click COD order form on every product, no cart. OFF: classic cart and checkout." />
+      </Panel>
+      <Panel title={`Fees & shipping (${cur})`}>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Field label="COD fee" htmlFor="codFee" hint="Added to each COD order. 0 = none."><input id="codFee" name="codFee" inputMode="decimal" defaultValue={m(c.codFee)} className="field num" /></Field>
+          <Field label="Free-shipping threshold" htmlFor="fst" hint="0 = never free."><input id="fst" name="freeShippingThreshold" inputMode="decimal" defaultValue={m(c.freeShippingThreshold)} className="field num" /></Field>
+          <Field label="Default shipping fee" htmlFor="dsf" hint="Used when a city has no fee."><input id="dsf" name="defaultShippingFee" inputMode="decimal" defaultValue={m(c.defaultShippingFee)} className="field num" /></Field>
+        </div>
+      </Panel>
+      <Panel title="Order form">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Form placement" htmlFor="fp"><select id="fp" name="formPlacement" defaultValue={c.formPlacement} className="field">
+            <option value="inline">Inline on the product page</option><option value="popup">Popup</option><option value="page">Separate page</option></select></Field>
+          <Field label="Duplicate-order window (minutes)" htmlFor="dw" hint="Same phone + same items within this window is treated as a duplicate. 0 = off."><input id="dw" name="duplicateWindowMin" type="number" min={0} max={1440} defaultValue={c.duplicateWindowMin} className="field num" /></Field>
+          <Field label="Max orders per hour per IP" htmlFor="rip"><input id="rip" name="ratePerHourPerIp" type="number" min={1} max={1000} defaultValue={c.ratePerHourPerIp} className="field num" /></Field>
+          <Field label="Max orders per day per phone" htmlFor="rph"><input id="rph" name="ratePerDayPerPhone" type="number" min={1} max={1000} defaultValue={c.ratePerDayPerPhone} className="field num" /></Field>
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <Toggle name="confirmationStep" label="Confirmation step" hint="Show a review screen before sending the order." defaultChecked={c.confirmationStep} />
+          <Toggle name="bundlesInForm" label="Quantity bundles in the form" hint="Offer “buy N, save P%” in the order form." defaultChecked={c.bundlesInForm} />
+          <Toggle name="reviewsAutoApprove" label="Auto-approve reviews" hint="Off: reviews wait in the moderation queue." defaultChecked={c.reviewsAutoApprove} />
+        </div>
+      </Panel>
+    </AdminForm>
+  );
+}
+
+export function AnalyticsSection({ s }: { s: Settings }) {
+  const a = s.analytics;
+  const F = ({ k, label, ph }: { k: keyof Settings["analytics"]; label: string; ph: string }) => (
+    <Field label={label} htmlFor={`an-${k}`}><input id={`an-${k}`} name={k} defaultValue={a[k]} placeholder={ph} pattern="[A-Za-z0-9_\-]{3,40}" maxLength={40} dir="ltr" className="field" autoComplete="off" /></Field>
+  );
+  return (
+    <AdminForm action={saveAnalytics} submitLabel="Save analytics IDs">
+      <Panel title="Tracking IDs"><p className="mb-4 text-sm text-muted">Only the ID, not the full script. Letters, numbers, - and _ (3–40 chars).</p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <F k="metaPixel" label="Meta (Facebook) Pixel ID" ph="1234567890" /><F k="tiktokPixel" label="TikTok Pixel ID" ph="C1ABCDEF" />
+          <F k="ga" label="Google Analytics ID" ph="G-XXXXXXXX" /><F k="snapPixel" label="Snapchat Pixel ID" ph="a1b2c3d4-…" />
+        </div>
+      </Panel>
+    </AdminForm>
+  );
+}
+
+export function StatusesSection({ s }: { s: Settings }) {
+  return (
+    <AdminForm action={saveStatuses} submitLabel="Save order statuses">
+      <p className="text-sm text-muted">Override the label and color of each order status. Leave a label empty to keep the default.</p>
+      <div className="grid gap-4 lg:grid-cols-2">
+        {ORDER_STATUSES.map((st) => {
+          const def = DEFAULT_STATUS_DEFS[st], ov = s.statuses[st];
+          return (
+            <div key={st} className="card space-y-3 p-4">
+              <div className="flex items-center justify-between gap-2"><code className="text-xs font-bold text-muted">{st}</code>
+                <label className="flex items-center gap-2 text-xs font-semibold">Color <input type="color" name={`st.${st}.color`} defaultValue={ov?.color ?? def.color} aria-label={`${st} color`} className="size-9 cursor-pointer rounded border border-line bg-transparent p-0.5" /></label></div>
+              {LANGS.map((l) => (
+                <div key={l} className="flex items-center gap-2"><span className="w-7 text-center text-[11px] font-extrabold uppercase text-muted">{l}</span>
+                  <input name={`st.${st}.label.${l}`} defaultValue={ov?.label?.[l] ?? def.label[l]} dir={l === "ar" ? "rtl" : "ltr"} maxLength={60} className="field" aria-label={`${st} label (${l})`} /></div>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+    </AdminForm>
+  );
+}
+
+const TPL: [keyof Settings["templates"], string][] = [["confirm", "Order confirmation"], ["shipped", "Shipped"], ["delivered", "Delivered"], ["followup", "Abandoned-cart follow-up"]];
+export function TemplatesSection({ s }: { s: Settings }) {
+  return (
+    <AdminForm action={saveTemplates} submitLabel="Save message templates">
+      <p className="text-sm text-muted">WhatsApp messages. Placeholders: <code>{"{name}"}</code> <code>{"{store}"}</code> <code>{"{order}"}</code> <code>{"{total}"}</code> <code>{"{tracking}"}</code></p>
+      {TPL.map(([k, label]) => <Panel key={k} title={label}><I18nField label={label} name={k} value={s.templates[k]} textarea rows={3} /></Panel>)}
+    </AdminForm>
+  );
+}
