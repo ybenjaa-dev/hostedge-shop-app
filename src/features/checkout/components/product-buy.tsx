@@ -4,11 +4,12 @@ import Link from "next/link";
 import { Minus, Plus, ShoppingBag, X, Zap } from "lucide-react";
 import type { ProductDetail } from "@/features/catalog/queries";
 import type { BundleRule } from "@/lib/pricing";
-import { bestBundlePercent } from "@/lib/pricing";
+import { bestBundlePercent, bundleLineTotal, offersFor } from "@/lib/pricing";
 import { formatMoney } from "@/lib/money";
 import { tr } from "@/lib/i18n-core";
 import { useStore, useT, type CityOpt } from "../store-context";
 import { OrderForm } from "./order-form";
+import { OfferCards } from "./offer-cards";
 import { cart, setDrawer } from "../cart-store";
 import { useToast } from "@/components/toast";
 import { track } from "@/lib/track";
@@ -61,6 +62,10 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
     return [...tiers.entries()].sort((a, b) => a[0] - b[0]);
   }, [bundles, product.id]);
   const pct = bestBundlePercent(product.id, qty, bundles);
+  const offers = useMemo(() => offersFor(product.id, unit, bundles), [product.id, unit, bundles]);
+  const hasOffers = offers.length > 1;
+  const lineTotal = bundleLineTotal(product.id, unit, qty, bundles);
+  const [customQty, setCustomQty] = useState(false);
 
   function requireChoice(): boolean {
     if (!needsChoice) return true;
@@ -135,7 +140,8 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
           )}
         </div>
       )}
-      <div>
+      {hasOffers && <OfferCards offers={offers} qty={qty} setQty={setQty} maxQty={maxQty} fmt={fmt} customQty={customQty} setCustomQty={setCustomQty} />}
+      {(!hasOffers || customQty || !offers.some((o) => o.qty === qty)) && <div>
         <span className="label" id="qty-l">{t("p.qty")}</span>
         <div className="flex items-center gap-3">
           <div role="group" aria-labelledby="qty-l" className="inline-flex items-center rounded-xl border border-line bg-surface">
@@ -145,8 +151,8 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
           </div>
           {tracked && available != null && available > 0 && available <= 5 && <span className="text-sm font-semibold text-danger">{t("p.onlyLeft", { n: available })}</span>}
         </div>
-      </div>
-      {st.bundlesInForm && bundleTiers.length > 0 && (
+      </div>}
+      {st.bundlesInForm && !hasOffers && bundleTiers.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {bundleTiers.map(([n, p]) => (
             <button key={n} type="button" onClick={() => setQty(Math.min(maxQty, n))} className={`rounded-full border px-3 py-1.5 text-xs font-bold transition ${qty >= n ? "border-accent bg-accent/15 text-ink" : "border-dashed border-line text-muted hover:border-ink/40"}`}>
@@ -179,7 +185,7 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
         {product.compareAt && product.compareAt > unit && <span dir="ltr" className="num text-lg text-muted line-through">{fmt(product.compareAt)}</span>}
         {product.compareAt && product.compareAt > unit && <span className="rounded-full bg-accent px-2.5 py-1 text-xs font-extrabold text-accent-ink">{t("p.save", { pct: Math.round(((product.compareAt - unit) / product.compareAt) * 100) })}</span>}
       </div>
-      {pct > 0 && <p className="mt-1 text-sm font-semibold text-ok">🎁 {t("cod.bundle", { n: qty, pct })}</p>}
+      {pct > 0 && !hasOffers && <p className="mt-1 text-sm font-semibold text-ok">🎁 {t("cod.bundle", { n: qty, pct })}</p>}
 
       <div className="mt-6">{picker}</div>
 
@@ -215,7 +221,7 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
       {/* sticky mobile bar */}
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-bg/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur md:hidden">
         <div className="mx-auto flex max-w-lg items-center gap-3">
-          <div className="min-w-0 leading-tight"><p className="truncate text-xs text-muted">{productLabel}</p><p dir="ltr" className="num text-lg font-extrabold">{fmt(unit * qty)}</p></div>
+          <div className="min-w-0 leading-tight"><p className="truncate text-xs text-muted">{productLabel}</p><p dir="ltr" className="num text-lg font-extrabold">{fmt(lineTotal)}</p></div>
           {cta("btn-lg ms-auto flex-1 !text-base", true)}
         </div>
       </div>
