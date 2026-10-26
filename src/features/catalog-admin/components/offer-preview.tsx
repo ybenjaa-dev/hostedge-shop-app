@@ -4,6 +4,7 @@ import { OfferCards } from "@/features/checkout/components/offer-cards";
 import { StoreProvider, type ClientStore } from "@/features/checkout/store-context";
 import { offersFor, type BundleRule } from "@/lib/pricing";
 import { BRAND } from "@/lib/brand";
+import { DICT } from "@/lib/dict";
 import type { Lang } from "@/lib/i18n-core";
 
 type Row = { qty: number; price: string; label: string; popular: boolean; image: string };
@@ -14,7 +15,7 @@ export function OfferPreview({ offers, base, currency, template, image }: { offe
   const [lang, setLang] = useState<Lang>("fr");
   const [qty, setQty] = useState(1);
   const [custom, setCustom] = useState(false);
-  const store = useMemo(() => ({ lang, currency, codMode: true, placement: "inline", codFee: 0, defaultShippingFee: 0, freeThreshold: 0, taxRateBp: 0, taxInclusive: true, country: "MA", countries: ["MA"], whatsapp: "", bundlesInForm: false, dict: {} }) as unknown as ClientStore, [lang, currency]);
+  const store = useMemo(() => ({ lang, currency, codMode: true, placement: "inline", codFee: 0, defaultShippingFee: 0, freeThreshold: 0, taxRateBp: 0, taxInclusive: true, country: "MA", countries: ["MA"], whatsapp: "", bundlesInForm: false, dict: DICT[lang] ?? DICT.en }) as unknown as ClientStore, [lang, currency]);
   const unit = Math.round(base * 100);
   const rules: BundleRule[] = useMemo(() => offers.filter((o) => o.qty >= 2 && num(o.price) > 0).map((o) => ({ productId: "preview", minQty: o.qty, percent: 0, price: Math.round(num(o.price) * 100), label: o.label || null, popular: o.popular, image: o.image || null })), [offers]);
   const cards = useMemo(() => offersFor("preview", unit, rules), [unit, rules]);

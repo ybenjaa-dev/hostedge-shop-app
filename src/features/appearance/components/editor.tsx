@@ -1,17 +1,20 @@
 "use client";
 import { useDirOf } from "@/components/lang-context";
 import { createContext, useContext, useEffect, useId, useRef, useState, type ReactNode } from "react";
-import { ArrowDown, ArrowUp, Eye, EyeOff, Monitor, MousePointerClick, Plus, Smartphone, Tablet, Trash2, X, AlertTriangle, CheckCircle2, RotateCcw } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowUp, Eye, EyeOff, Monitor, MousePointerClick, Plus, Smartphone, Tablet, Trash2, AlertTriangle, CheckCircle2, RotateCcw } from "lucide-react";
 import { AdminForm } from "@/features/admin/components/admin-form";
 import { MediaImageInput } from "@/features/media/image-input";
 import { Panel } from "@/features/admin/components/ui";
 import { contrastRatio, isHex, onColor } from "@/lib/color";
-import { ARABIC_FONTS, LATIN_FONTS } from "@/lib/fonts";
+import { ALL_LATIN_FONTS, ARABIC_FONTS } from "@/lib/fonts";
+import { BACKGROUND, CASE, DEFAULT_EXTRA, ROUNDNESS, TEXT_SIZE, WIDTH, type Extra } from "@/lib/appearance-extra";
+import { FontPicker } from "./font-picker";
+import Link from "next/link";
 import type { I18n, Lang } from "@/lib/i18n-core";
 import type { HeroSlide, HomeSection, Settings, TrustBadge } from "@/lib/settings";
 import { saveAppearance } from "../actions";
 import { FONT_PAIRS, PALETTES } from "../presets";
-import { StorePreview, type AppearanceState } from "./preview";
+import { StorePreview, type AppearanceState, type Device } from "./preview";
 import { SubmitButton } from "@/components/ui/submit";
 import { useAdminLangs, LangTabs } from "@/features/admin/components/lang-tabs";
 
@@ -48,19 +51,50 @@ function ColorInput({ label, value, onChange, against, hint }: { label: string; 
   const ratio = !valid ? 0 : against === "text-on" ? contrastRatio(value, onColor(value)) : contrastRatio(value, "#ffffff");
   const pass = ratio >= 4.5;
   return (
-    <div>
+    <div className="rounded-2xl border border-line bg-surface p-3">
       <label className="label" htmlFor={id}>{label}</label>
       <div className="flex items-center gap-2">
         <input type="color" aria-label={`${label} picker`} value={valid ? value : "#000000"} onChange={(e) => onChange(e.target.value)} className="size-11 shrink-0 cursor-pointer rounded-lg border border-line bg-transparent p-1" />
-        <input id={id} value={value} onChange={(e) => onChange(e.target.value)} aria-invalid={!valid} maxLength={7} dir="ltr" className="field num uppercase" />
+        <input id={id} value={value} onChange={(e) => onChange(e.target.value)} aria-invalid={!valid} maxLength={7} dir="ltr" className="field num min-w-0 flex-1 uppercase" />
       </div>
       {!valid ? <p className="err">Use a hex color like #0F766E</p> : (
-        <p className={`mt-1.5 flex items-center gap-1.5 text-xs font-semibold ${pass ? "text-ok" : "text-danger"}`}>
+        <p className={`mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs font-semibold ${pass ? "text-ok" : "text-danger"}`}>
           {pass ? <CheckCircle2 className="size-3.5" aria-hidden /> : <AlertTriangle className="size-3.5" aria-hidden />}
-          {against === "text-on" ? "Button text contrast" : "White text contrast"}: <span className="num">{ratio.toFixed(1)}:1</span> {pass ? "(AA pass)" : "(low — hard to read)"}
+          <span>{against === "text-on" ? "Button text" : "White text"} contrast <span className="num">{ratio.toFixed(1)}:1</span> — {pass ? "readable" : "too low, hard to read"}</span>
         </p>
       )}
       {hint && <p className="mt-1 text-xs text-muted">{hint}</p>}
+    </div>
+  );
+}
+
+/** A row of exclusive choices as buttons. */
+function Choice<T extends string>({ label, value, onChange, options, names }: { label: string; value: T; onChange: (v: T) => void; options: readonly T[]; names: Record<T, string> }) {
+  return (
+    <fieldset><legend className="label">{label}</legend>
+      <div className="flex flex-wrap gap-1.5">{options.map((o) => (
+        <button key={o} type="button" aria-pressed={value === o} onClick={() => onChange(o)} className={`rounded-xl border px-3 py-1.5 text-sm font-bold transition ${value === o ? "border-brand bg-brand-soft text-brand" : "border-line bg-surface hover:border-ink/40"}`}>{names[o]}</button>
+      ))}</div>
+    </fieldset>
+  );
+}
+
+/** Draws the page at the real width of the chosen device and shrinks it to fit the space, so desktop looks like desktop. */
+function FitFrame({ width, children, onBackground }: { width: number; children: ReactNode; onBackground: () => void }) {
+  const box = useRef<HTMLDivElement>(null);
+  const [avail, setAvail] = useState(0);
+  useEffect(() => {
+    const el = box.current; if (!el) return;
+    const ro = new ResizeObserver(([e]) => setAvail(e!.contentRect.width));
+    ro.observe(el); setAvail(el.clientWidth);
+    return () => ro.disconnect();
+  }, []);
+  const scale = avail ? Math.min(1, (avail - 32) / width) : 1;
+  return (
+    <div ref={box} className="min-h-0 flex-1 overflow-auto p-4" onClick={onBackground}>
+      <div className="mx-auto" style={{ width: width * scale }}>
+        <div style={{ width, zoom: scale }}>{children}</div>
+      </div>
     </div>
   );
 }
@@ -78,8 +112,7 @@ export function AppearanceEditor({ initial, original, storeName, tagline, curren
   const [tab, setTab] = useState<TabId>("branding");
   const [lang, setLang] = useState<Lang>(defaultLang);
   const [slide, setSlide] = useState(0);
-  const [full, setFull] = useState(false);
-  const [device, setDevice] = useState<"mobile" | "tablet" | "desktop">("mobile");
+  const [device, setDevice] = useState<Device>("desktop");
   const [region, setRegion] = useState("");
   const dirty = JSON.stringify(v) !== JSON.stringify(initial);
   const initialRef = useRef(initial);
@@ -91,27 +124,21 @@ export function AppearanceEditor({ initial, original, storeName, tagline, curren
   const setSlides = (s: HeroSlide[]) => set("hero", { slides: s });
   const patchSlide = (i: number, p: Partial<HeroSlide>) => setSlides(slides.map((x, k) => (k === i ? { ...x, ...p } : x)));
 
-  useEffect(() => {
-    if (!full) return;
-    const h = (e: globalThis.KeyboardEvent) => { if (e.key === "Escape") setFull(false); };
-    window.addEventListener("keydown", h);
-    document.body.style.overflow = "hidden";
-    return () => { window.removeEventListener("keydown", h); document.body.style.overflow = ""; };
-  }, [full]);
-
   const REGION_TAB: Record<string, TabId> = { branding: "branding", hero: "hero", trust: "trust", footer: "footer", announcement: "announcement", banner: "home", categories: "home", featured: "home", bestsellers: "home", reviews: "home" };
   const pick = (id: string) => { setRegion(id); const t = REGION_TAB[id]; if (t) setTab(t); if (id === "banner") requestAnimationFrame(() => document.getElementById("banner-panel")?.scrollIntoView({ block: "start", behavior: "smooth" })); };
-  const preview = <StorePreview v={v} storeName={storeName} tagline={tagline} currency={currency} lang={lang} slide={slide} />;
-  const canvas = <StorePreview v={v} storeName={storeName} tagline={tagline} currency={currency} lang={lang} slide={slide} edit={{ selected: region, select: pick, change: setV }} />;
+  const canvas = <StorePreview v={v} storeName={storeName} tagline={tagline} currency={currency} lang={lang} slide={slide} device={device} edit={{ selected: region, select: pick, change: setV }} />;
   const panel = (id: TabId, children: ReactNode) => <div role="tabpanel" id={`panel-${id}`} aria-labelledby={`tab-${id}`} hidden={tab !== id} className="space-y-5">{children}</div>;
-  const frame = device === "mobile" ? "max-w-[390px]" : device === "tablet" ? "max-w-[768px]" : "max-w-[1100px]";
+  const frameW = device === "mobile" ? 390 : device === "tablet" ? 820 : 1280;
+  const setExtra = (p: Partial<Extra>) => set("extra", { ...v.extra, ...p });
 
   return (
     <LangCtx.Provider value={{ lang, setLang }}>
-    <AdminForm action={saveAppearance} hideSubmit className="space-y-4">
+    <AdminForm action={saveAppearance} hideSubmit className="flex h-dvh flex-col">
       <input type="hidden" name="payload" value={JSON.stringify(v)} />
       {/* studio bar */}
-      <div className="card sticky top-16 z-20 flex flex-wrap items-center gap-x-4 gap-y-2 p-3">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-line bg-surface px-4 py-2.5">
+        <Link href="/admin" className="btn btn-ghost btn-sm -ms-2 gap-1.5" aria-label="Back to admin"><ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />Admin</Link>
+        <b className="display hidden text-base sm:block">Appearance</b>
         <div className="flex items-center gap-2">
           <LangTabs active={lang} onChange={setLang} filled={{ fr: true, ar: true, en: true }} idPrefix="studio" />
         </div>
@@ -123,13 +150,13 @@ export function AppearanceEditor({ initial, original, storeName, tagline, curren
         {slides.length > 1 && <div className="flex items-center gap-1 text-xs"><span className="font-bold text-muted">Slide</span>{slides.map((_, i) => <button key={i} type="button" onClick={() => { setSlide(i); pick("hero"); }} aria-pressed={slide === i} aria-label={`Slide ${i + 1}`} className={`size-7 rounded-full border text-xs font-bold ${slide === i ? "border-brand bg-brand text-brand-ink" : "border-line"}`}>{i + 1}</button>)}</div>}
         <div className="ms-auto flex flex-wrap items-center gap-2">
           {dirty && <><span className="text-sm font-semibold text-danger" role="status">Unsaved changes</span><button type="button" className="btn btn-ghost btn-sm" onClick={() => { setV(initialRef.current); setSlide(0); }}><RotateCcw className="size-4" aria-hidden />Discard</button></>}
-          <button type="button" className="btn btn-outline btn-sm" onClick={() => setFull(true)}><Eye className="size-4" aria-hidden />Full preview</button>
+          <a className="btn btn-outline btn-sm" href="/" target="_blank" rel="noopener noreferrer"><Eye className="size-4" aria-hidden />View store</a>
           <SubmitButton pendingText="Saving…">Save appearance</SubmitButton>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,25rem)_minmax(0,1fr)]">
-        <div className="min-w-0 lg:sticky lg:top-36 lg:max-h-[calc(100dvh-10rem)] lg:overflow-y-auto lg:pe-1">
+      <div className="grid min-h-0 flex-1 grid-cols-1 overflow-y-auto lg:grid-cols-[26rem_minmax(0,1fr)] lg:overflow-hidden">
+        <div className="min-w-0 space-y-4 border-line bg-bg p-4 lg:min-h-0 lg:overflow-y-auto lg:border-e lg:p-5">
           <div role="tablist" aria-label="Appearance sections" className="tabnav w-full flex-wrap !overflow-visible">
             {TABS.map(([id, label]) => (
               <button key={id} type="button" role="tab" id={`tab-${id}`} aria-selected={tab === id} aria-controls={`panel-${id}`} tabIndex={tab === id ? 0 : -1} onClick={() => { setTab(id); setRegion(id === "home" ? "" : id); }}>{label}</button>
@@ -152,13 +179,13 @@ export function AppearanceEditor({ initial, original, storeName, tagline, curren
               })}</ul>
             </Panel>
             <Panel title="Logo & icon">
-              <div className="grid gap-5 sm:grid-cols-2">
+              <div className="space-y-5">
                 <ImageInput label="Logo" value={v.branding.logo} onChange={(k) => setBrand({ logo: k })} hint="Shown in the header. Transparent PNG/WebP works best." />
                 <ImageInput label="Favicon" value={v.branding.favicon} onChange={(k) => setBrand({ favicon: k })} hint="Square image, at least 64×64." />
               </div>
             </Panel>
             <Panel title="Colors">
-              <div className="grid gap-5 sm:grid-cols-3">
+              <div className="grid gap-3">
                 <ColorInput label="Primary" value={v.branding.primary} onChange={(c) => setBrand({ primary: c })} against="text-on" hint="Buttons, links, highlights." />
                 <ColorInput label="Secondary" value={v.branding.secondary} onChange={(c) => setBrand({ secondary: c })} against="white-on" hint="Announcement bar & footer (white text)." />
                 <ColorInput label="Accent" value={v.branding.accent} onChange={(c) => setBrand({ accent: c })} against="text-on" hint="Call-to-action buttons." />
@@ -170,10 +197,25 @@ export function AppearanceEditor({ initial, original, storeName, tagline, curren
                   <label key={s} className={`flex min-h-11 cursor-pointer items-center gap-2 border px-4 text-sm font-bold capitalize focus-within:outline focus-within:outline-2 focus-within:outline-brand ${v.branding.buttonStyle === s ? "border-brand bg-brand-soft" : "border-line"} ${s === "pill" ? "rounded-full" : s === "square" ? "rounded" : "rounded-xl"}`}>
                     <input type="radio" name="buttonStyle-ui" className="sr-only" checked={v.branding.buttonStyle === s} onChange={() => setBrand({ buttonStyle: s })} />{s}</label>
                 ))}</div></fieldset>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <div><label className="label" htmlFor="font-latin">Latin font</label><select id="font-latin" className="field" value={v.branding.fontLatin} onChange={(e) => setBrand({ fontLatin: e.target.value })}>{LATIN_FONTS.map((f) => <option key={f}>{f}</option>)}</select></div>
-                <div><label className="label" htmlFor="font-ar">Arabic font</label><select id="font-ar" className="field" value={v.branding.fontArabic} onChange={(e) => setBrand({ fontArabic: e.target.value })}>{ARABIC_FONTS.map((f) => <option key={f}>{f}</option>)}</select></div>
+              <div className="mt-5 space-y-5">
+                <FontPicker label="Latin font (FR / EN)" value={v.branding.fontLatin} fonts={ALL_LATIN_FONTS} onChange={(f) => setBrand({ fontLatin: f })} />
+                <FontPicker label="Arabic font" value={v.branding.fontArabic} fonts={ARABIC_FONTS} onChange={(f) => setBrand({ fontArabic: f })} sample="أهلاً بكم — توصيل سريع والدفع عند الاستلام" />
               </div>
+            </Panel>
+            <Panel title="Look & feel">
+              <p className="mb-4 text-sm text-muted">Fine-tune the whole storefront. “Theme default” keeps the design as your theme ships it.</p>
+              <div className="space-y-5">
+                <Choice label="Corner roundness" value={v.extra.roundness} onChange={(x) => setExtra({ roundness: x })} options={ROUNDNESS} names={{ theme: "Theme default", sharp: "Sharp", soft: "Soft", round: "Very round" }} />
+                <Choice label="Text size" value={v.extra.textSize} onChange={(x) => setExtra({ textSize: x })} options={TEXT_SIZE} names={{ theme: "Default", small: "Smaller", large: "Larger" }} />
+                <Choice label="Page width" value={v.extra.width} onChange={(x) => setExtra({ width: x })} options={WIDTH} names={{ theme: "Default", narrow: "Narrow", wide: "Wide" }} />
+                <div>
+                  <Choice label="Page background" value={v.extra.background} onChange={(x) => setExtra({ background: x })} options={BACKGROUND} names={{ theme: "Theme default", white: "White", warm: "Warm", cool: "Cool", custom: "Custom" }} />
+                  {v.extra.background === "custom" && <div className="mt-2"><ColorInput label="Background colour" value={v.extra.bgCustom} onChange={(c) => setExtra({ bgCustom: c })} against="white-on" /></div>}
+                </div>
+                <Choice label="Headings" value={v.extra.headingCase} onChange={(x) => setExtra({ headingCase: x })} options={CASE} names={{ theme: "Theme default", normal: "Normal", upper: "UPPERCASE" }} />
+                <Choice label="Buttons" value={v.extra.buttonCase} onChange={(x) => setExtra({ buttonCase: x })} options={CASE} names={{ theme: "Theme default", normal: "Normal", upper: "UPPERCASE" }} />
+              </div>
+              <button type="button" className="btn btn-ghost btn-sm mt-4" onClick={() => set("extra", DEFAULT_EXTRA)}><RotateCcw className="size-4" aria-hidden />Reset look & feel</button>
             </Panel>
           </>)}
 
@@ -249,27 +291,13 @@ export function AppearanceEditor({ initial, original, storeName, tagline, curren
           </>)}
         </div>
 
-        <section aria-label="Live preview" className="min-w-0 lg:sticky lg:top-36">
-          <div className="overflow-hidden rounded-2xl border border-line bg-sunken">
-            <p className="flex items-center gap-2 border-b border-line bg-surface px-3 py-2 text-xs text-muted"><MousePointerClick className="size-4 shrink-0" aria-hidden /><span>Click any part of the preview to edit it — and type straight onto texts. Nothing is public until you save.</span></p>
-            <div className="max-h-[calc(100dvh-14rem)] overflow-y-auto p-3 sm:p-5" onClick={() => setRegion("")}><div className={`mx-auto transition-[max-width] duration-300 ${frame}`}>{canvas}</div></div>
+        <section aria-label="Live preview" className="min-h-[70dvh] min-w-0 bg-sunken lg:min-h-0 lg:overflow-hidden">
+          <div className="flex h-full flex-col">
+            <p className="flex items-center gap-2 border-b border-line bg-surface px-3 py-2 text-xs text-muted"><MousePointerClick className="size-4 shrink-0" aria-hidden /><span>Click any part of the page to edit it — and type straight onto text.</span></p>
+            <FitFrame width={frameW} onBackground={() => setRegion("")}>{canvas}</FitFrame>
           </div>
         </section>
       </div>
-
-      {full && (
-        <div className="fixed inset-0 z-[80] flex flex-col bg-bg" role="dialog" aria-modal="true" aria-label="Store preview">
-          <div className="flex flex-wrap items-center gap-3 border-b border-line bg-surface px-4 py-2">
-            <b className="display">Preview — not saved</b>
-            <LangTabs active={lang} onChange={setLang} filled={{ fr: true, ar: true, en: true }} idPrefix="full" />
-            <div className="ms-auto flex items-center gap-2">
-              {(["mobile", "tablet", "desktop"] as const).map((d) => <button key={d} type="button" aria-pressed={device === d} onClick={() => setDevice(d)} className={`btn btn-sm ${device === d ? "btn-primary" : "btn-outline"}`}>{d === "mobile" ? "Phone" : d === "tablet" ? "Tablet" : "Desktop"}</button>)}
-              <button type="button" autoFocus className="btn btn-outline btn-sm" onClick={() => setFull(false)}><X className="size-4" aria-hidden />Close</button>
-            </div>
-          </div>
-          <div className="flex-1 overflow-auto bg-sunken p-4"><div className={`mx-auto ${frame}`}>{preview}</div></div>
-        </div>
-      )}
     </AdminForm>
     </LangCtx.Provider>
   );

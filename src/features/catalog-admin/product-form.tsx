@@ -175,7 +175,7 @@ export function ProductForm({ data, categories, storeTemplate = "list", currency
             <div className="mt-5"><OfferPreview offers={offers} base={base} currency={currency} template={tpl || storeTemplate} image={images[0]?.key} /></div>
             <div className="mt-5 border-t border-line pt-4">
               <p className="label mb-2">Offer card layout</p>
-              <OfferTemplatePicker name="offerTemplate" value={data.offerTemplate ?? ""} onChange={setTpl} allowDefault defaultLabel={OFFER_TEMPLATES.find((t) => t.id === storeTemplate)?.name} />
+              <OfferTemplatePicker name="offerTemplate" value={data.offerTemplate ?? ""} onChange={setTpl} allowDefault currency={currency} image={images[0]?.key} defaultLabel={OFFER_TEMPLATES.find((t) => t.id === storeTemplate)?.name} />
             </div>
             {offers.length < 6 && <button type="button" className="btn btn-outline btn-sm mt-3" onClick={() => { const q = (offers.at(-1)?.qty ?? 1) + 1; setOffers([...offers, { qty: q, price: base ? String(Math.round(base * q * 0.9)) : "", label: "", popular: false, image: "" }]); }}><Plus className="size-4" />Add offer</button>}
           </section>

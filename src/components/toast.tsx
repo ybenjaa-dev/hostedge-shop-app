@@ -2,6 +2,7 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 import { CheckCircle2, AlertCircle, X } from "lucide-react";
 import { ClientBoot } from "@/components/boot/client-boot";
+import { ConfirmProvider } from "@/components/confirm";
 
 type Toast = { id: number; kind: "success" | "error"; text: string };
 const Ctx = createContext<(kind: Toast["kind"], text: string) => void>(() => {});
@@ -16,7 +17,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, []);
   return (
     <Ctx.Provider value={push}>
-      {children}
+      <ConfirmProvider>{children}</ConfirmProvider>
       <ClientBoot />
       <div className="pointer-events-none fixed inset-x-0 bottom-20 z-[100] flex flex-col items-center gap-2 px-4 md:bottom-6" role="status" aria-live="polite">
         {items.map((t) => (

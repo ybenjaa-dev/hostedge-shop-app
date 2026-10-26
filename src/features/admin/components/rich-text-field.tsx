@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { Bold, Eraser, Heading2, Heading3, Italic, Link2, List, ListOrdered, Quote, Redo2, Underline, Undo2 } from "lucide-react";
 import type { Lang } from "@/lib/i18n-core";
 import { plainToHtml, sanitizeHtml, stripHtml } from "@/lib/rich-text";
+import { usePrompt } from "@/components/confirm";
 import { useAdminLangs, LangTabs } from "./lang-tabs";
 import { useDirOf } from "@/components/lang-context";
 
@@ -32,10 +33,14 @@ export function RichTextField({ label, name, value = {}, hint, minHeight = "11re
   const [refs] = useState<Partial<Record<Lang, HTMLDivElement | null>>>(() => ({}));
   const exec = (cmd: string, arg?: string) => { refs[active]?.focus(); document.execCommand(cmd, false, arg); setVals((v) => ({ ...v, [active]: refs[active]?.innerHTML ?? "" })); };
   const block = (tag: string) => exec("formatBlock", tag);
-  const link = () => {
+  const ask = usePrompt();
+  const link = async () => {
     const sel = window.getSelection();
-    const url = window.prompt("Link address (https://…)", "https://");
+    const saved = sel && sel.rangeCount ? sel.getRangeAt(0).cloneRange() : null; // the dialog takes focus, so remember what was selected
+    const url = await ask({ title: "Add a link", label: "Link address", placeholder: "https://…", initial: "https://", confirmLabel: "Add link" });
     if (!url) return;
+    refs[active]?.focus();
+    if (saved) { sel?.removeAllRanges(); sel?.addRange(saved); }
     if (sel && sel.isCollapsed) exec("insertHTML", `<a href="${url.replace(/"/g, "&quot;")}">${url.replace(/</g, "&lt;")}</a>`); else exec("createLink", url);
   };
   const tools: { icon: typeof Bold; title: string; run: () => void; gap?: boolean }[] = [

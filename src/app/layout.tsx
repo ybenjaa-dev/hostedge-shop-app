@@ -6,6 +6,8 @@ import { getSettings } from "@/lib/settings";
 import { getLang } from "@/lib/i18n";
 import { allLangMetas, dirOf, isLang } from "@/lib/i18n-core";
 import { getLangUi } from "@/lib/languages";
+import { extraCss } from "@/lib/appearance-extra";
+import { getExtra } from "@/lib/appearance-extra-server";
 import { LangMetaProvider } from "@/components/lang-context";
 import { googleFontsUrl } from "@/lib/fonts";
 import { fileUrl } from "@/lib/storage";
@@ -53,6 +55,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const s = await getSettings();
   const lang = await getLang();
   const ui = await getLangUi();
+  const extra = extraCss(await getExtra());
   const prefix = (await headers()).get("x-seo-lang");
   if (prefix && !isLang(prefix)) notFound(); // /zz/… for a language the store doesn't have
   const rtl = dirOf(lang) === "rtl";
@@ -72,6 +75,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <script dangerouslySetInnerHTML={{ __html: FONT_SWAP }} />
         <style dangerouslySetInnerHTML={{ __html: css }} />
         <style dangerouslySetInnerHTML={{ __html: HIDE_CSS }} />
+        {extra && <style dangerouslySetInnerHTML={{ __html: extra }} />}
         <script dangerouslySetInnerHTML={{ __html: themeInit(ui.themeToggle.default, !ui.themeToggle.show) }} />
       </head>
       <body className="min-h-dvh antialiased">
