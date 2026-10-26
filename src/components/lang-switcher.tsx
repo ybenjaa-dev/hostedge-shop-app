@@ -18,8 +18,8 @@ export function LangSwitcher({ current, langs, label }: { current: Lang; langs: 
     if (!open) return;
     const down = (e: Event) => { if (!root.current?.contains(e.target as Node)) setOpen(false); };
     const key = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
-    document.addEventListener("pointerdown", down); document.addEventListener("keydown", key); window.addEventListener("scroll", () => setOpen(false), { passive: true, once: true });
-    return () => { document.removeEventListener("pointerdown", down); document.removeEventListener("keydown", key); };
+    document.addEventListener("pointerdown", down, true); document.addEventListener("touchstart", down, true); document.addEventListener("keydown", key); window.addEventListener("scroll", () => setOpen(false), { passive: true, once: true });
+    return () => { document.removeEventListener("pointerdown", down, true); document.removeEventListener("touchstart", down, true); document.removeEventListener("keydown", key); };
   }, [open]);
   if (langs.length < 2) return null;
   return (
