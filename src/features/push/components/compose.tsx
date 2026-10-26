@@ -3,11 +3,13 @@ import { useEffect, useRef, useState } from "react";
 import { Users } from "lucide-react";
 import { AdminForm } from "@/features/admin/components/admin-form";
 import { Field, ImageField } from "@/features/admin/components/fields";
+import { useLangMetas } from "@/components/lang-context";
 import { sendPushAction, countAudienceAction } from "../actions";
 
 /** Compose a message, pick who gets it, see how many devices that is, and send. */
 export function PushCompose({ total, countries, cities, brand }: { total: number; countries: string[]; cities: string[]; brand: { name: string; icon: string } }) {
   const form = useRef<HTMLDivElement>(null);
+  const metas = useLangMetas();
   const [title, setTitle] = useState(""); const [body, setBody] = useState("");
   const [n, setN] = useState(total);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -33,7 +35,7 @@ export function PushCompose({ total, countries, cities, brand }: { total: number
         <fieldset className="rounded-2xl border border-line p-4">
           <legend className="label !px-1">Who receives it</legend>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Language" htmlFor="pl"><select id="pl" name="lang" className="field" defaultValue=""><option value="">All</option><option value="ar">العربية</option><option value="fr">Français</option><option value="en">English</option></select></Field>
+            <Field label="Language" htmlFor="pl"><select id="pl" name="lang" className="field" defaultValue=""><option value="">All</option>{metas.map((m) => <option key={m.code} value={m.code}>{m.native}</option>)}</select></Field>
             <Field label="Customers" htmlFor="po"><select id="po" name="ordered" className="field" defaultValue=""><option value="">Everyone</option><option value="yes">Already ordered</option><option value="no">Never ordered</option></select></Field>
             <Field label="Country" htmlFor="pc"><select id="pc" name="country" className="field" defaultValue=""><option value="">All</option>{countries.map((c) => <option key={c} value={c}>{c}</option>)}</select></Field>
             <Field label="City" htmlFor="pci"><select id="pci" name="city" className="field" defaultValue=""><option value="">All</option>{cities.map((c) => <option key={c} value={c}>{c}</option>)}</select></Field>

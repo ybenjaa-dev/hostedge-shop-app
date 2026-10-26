@@ -1,3 +1,4 @@
+import { dirOf } from "./i18n-core";
 export type CurrencyCode = string;
 
 /** ISO-4217 minor-unit exponents for supported currencies. Money is always stored as integer minor units. */
@@ -49,7 +50,12 @@ export function toMajorString(minor: number, currency: CurrencyCode): string {
   return `${neg ? "-" : ""}${whole}.${frac}`;
 }
 
-const localeFor = (lang: string) => (lang === "ar" ? "ar-MA-u-nu-latn" : lang === "fr" ? "fr-FR" : "en-US");
+const localeFor = (lang: string) => {
+  if (lang === "ar") return "ar-MA-u-nu-latn";
+  if (lang === "fr") return "fr-FR";
+  if (lang === "en") return "en-US";
+  try { return new Intl.NumberFormat(`${lang}-u-nu-latn`).resolvedOptions().locale; } catch { return "en-US"; } // languages added by the owner
+};
 
 /** Display price with the store currency, correct decimals (0/2/3), and localized symbol. */
 export function formatMoney(minor: number, currency: CurrencyCode, lang = "en"): string {
@@ -60,6 +66,6 @@ export function formatMoney(minor: number, currency: CurrencyCode, lang = "en"):
   }).format(minor / 10 ** d);
   const sym = (CURRENCIES[currency]?.symbol as Record<string, string> | undefined)?.[lang] ?? currency;
   const prefix = sym === "$" || sym === "€" || sym === "₦" || sym === "R" || sym === "GH₵" || sym === "KSh";
-  if (lang === "ar") return `\u2067${num} ${sym}\u2069`; // RLI…PDI: keep "299 د.م." in correct visual order inside LTR containers
+  if (dirOf(lang) === "rtl") return `\u2067${num} ${sym}\u2069`; // RLI…PDI: keep "299 د.م." in correct visual order inside LTR containers
   return prefix ? `${sym}${num}` : `${num} ${sym}`;
 }

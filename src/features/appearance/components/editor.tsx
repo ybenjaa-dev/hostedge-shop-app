@@ -1,4 +1,5 @@
 "use client";
+import { useDirOf } from "@/components/lang-context";
 import { createContext, useContext, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { ArrowDown, ArrowUp, Eye, EyeOff, Monitor, MousePointerClick, Plus, Smartphone, Tablet, Trash2, X, AlertTriangle, CheckCircle2, RotateCcw } from "lucide-react";
 import { AdminForm } from "@/features/admin/components/admin-form";
@@ -12,7 +13,7 @@ import { saveAppearance } from "../actions";
 import { FONT_PAIRS, PALETTES } from "../presets";
 import { StorePreview, type AppearanceState } from "./preview";
 import { SubmitButton } from "@/components/ui/submit";
-import { ADMIN_LANGS, LangTabs } from "@/features/admin/components/lang-tabs";
+import { useAdminLangs, LangTabs } from "@/features/admin/components/lang-tabs";
 
 const TABS = [["branding", "Branding"], ["hero", "Hero"], ["home", "Homepage"], ["announcement", "Announcement"], ["footer", "Footer"], ["trust", "Trust badges"]] as const;
 type TabId = (typeof TABS)[number][0];
@@ -25,8 +26,10 @@ const LangCtx = createContext<{ lang: Lang; setLang: (l: Lang) => void }>({ lang
 function LangInputs({ label, value, onChange, textarea, rows = 2, max }: { label: string; value: I18n; onChange: (v: I18n) => void; textarea?: boolean; rows?: number; max?: number }) {
   const { lang, setLang } = useContext(LangCtx);
   const id = useId();
+  const ADMIN_LANGS = useAdminLangs();
+  const dir = useDirOf(lang);
   const filled = Object.fromEntries(ADMIN_LANGS.map((l) => [l.id, !!value[l.id]?.trim()])) as Record<Lang, boolean>;
-  const props = { value: value[lang] ?? "", maxLength: max, dir: lang === "ar" ? "rtl" : "ltr", lang, className: "field", "aria-label": `${label} (${lang})`, onChange: (e: { target: { value: string } }) => onChange({ ...value, [lang]: e.target.value }) };
+  const props = { value: value[lang] ?? "", maxLength: max, dir, lang, className: "field", "aria-label": `${label} (${lang})`, onChange: (e: { target: { value: string } }) => onChange({ ...value, [lang]: e.target.value }) };
   return (
     <fieldset>
       <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2"><legend className="label !mb-0">{label}</legend><LangTabs active={lang} onChange={setLang} filled={filled} idPrefix={id} /></div>

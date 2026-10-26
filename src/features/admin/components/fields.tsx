@@ -3,7 +3,8 @@ import { useId, useState, type ReactNode } from "react";
 import { contrastRatio, onColor, isHex } from "@/lib/color";
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import type { Lang } from "@/lib/i18n-core";
-import { ADMIN_LANGS, LangTabs } from "./lang-tabs";
+import { useAdminLangs, LangTabs } from "./lang-tabs";
+import { useLangMetas } from "@/components/lang-context";
 import { uploadMedia } from "@/lib/media-client";
 import { MediaImageInput } from "@/features/media/image-input";
 
@@ -18,8 +19,10 @@ export function Field({ label, hint, children, htmlFor }: { label: string; hint?
 }
 
 /** One input per language (FR / AR / EN) behind a language tab bar, submitted as name.ar / name.fr / name.en. All three stay in the form, only one is shown. */
-export function I18nField({ label, name, value = {}, textarea, rows = 3, hint }: { label: string; name: string; value?: Partial<Record<"ar" | "fr" | "en", string>>; textarea?: boolean; rows?: number; hint?: string }) {
+export function I18nField({ label, name, value = {}, textarea, rows = 3, hint }: { label: string; name: string; value?: Partial<Record<string, string>>; textarea?: boolean; rows?: number; hint?: string }) {
   const id = useId();
+  const ADMIN_LANGS = useAdminLangs();
+  const dirs = Object.fromEntries(useLangMetas().map((m) => [m.code, m.dir]));
   const [active, setActive] = useState<Lang>(() => ADMIN_LANGS.find((l) => value[l.id]?.trim())?.id ?? "fr");
   const [vals, setVals] = useState<Partial<Record<Lang, string>>>(value);
   const filled = Object.fromEntries(ADMIN_LANGS.map((l) => [l.id, !!vals[l.id]?.trim()])) as Record<Lang, boolean>;
@@ -29,9 +32,9 @@ export function I18nField({ label, name, value = {}, textarea, rows = 3, hint }:
       {ADMIN_LANGS.map((l) => (
         <div key={l.id} role="tabpanel" id={`${id}-panel-${l.id}`} aria-labelledby={`${id}-tab-${l.id}`} hidden={active !== l.id}>
           {textarea ? (
-            <textarea id={`${id}-${l.id}`} name={`${name}.${l.id}`} defaultValue={value[l.id] ?? ""} rows={rows} dir={l.id === "ar" ? "rtl" : "ltr"} className="field" aria-label={`${label} (${l.label})`} onChange={(e) => setVals((v) => ({ ...v, [l.id]: e.target.value }))} />
+            <textarea id={`${id}-${l.id}`} name={`${name}.${l.id}`} defaultValue={value[l.id] ?? ""} rows={rows} dir={dirs[l.id] ?? "ltr"} className="field" aria-label={`${label} (${l.label})`} onChange={(e) => setVals((v) => ({ ...v, [l.id]: e.target.value }))} />
           ) : (
-            <input id={`${id}-${l.id}`} name={`${name}.${l.id}`} defaultValue={value[l.id] ?? ""} dir={l.id === "ar" ? "rtl" : "ltr"} className="field" aria-label={`${label} (${l.label})`} onChange={(e) => setVals((v) => ({ ...v, [l.id]: e.target.value }))} />
+            <input id={`${id}-${l.id}`} name={`${name}.${l.id}`} defaultValue={value[l.id] ?? ""} dir={dirs[l.id] ?? "ltr"} className="field" aria-label={`${label} (${l.label})`} onChange={(e) => setVals((v) => ({ ...v, [l.id]: e.target.value }))} />
           )}
         </div>
       ))}

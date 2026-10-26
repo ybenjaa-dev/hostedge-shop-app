@@ -1,11 +1,16 @@
 "use client";
 import type { Lang } from "@/lib/i18n-core";
 import { Flag } from "@/components/flags";
+import { useLangMetas } from "@/components/lang-context";
 
-export const ADMIN_LANGS: { id: Lang; label: string }[] = [{ id: "fr", label: "Français" }, { id: "ar", label: "العربية" }, { id: "en", label: "English" }];
+/** Languages offered when editing translated content: the three built-in ones plus any the owner added. */
+export function useAdminLangs(): { id: Lang; label: string }[] {
+  return useLangMetas().map((m) => ({ id: m.code, label: m.native }));
+}
 
 /** Segmented language switcher for translated fields. A dot shows which languages already have content. */
 export function LangTabs({ active, onChange, filled, idPrefix }: { active: Lang; onChange: (l: Lang) => void; filled: Partial<Record<Lang, boolean>>; idPrefix: string }) {
+  const ADMIN_LANGS = useAdminLangs();
   return (
     <div role="tablist" aria-label="Language" className="inline-flex gap-0.5 rounded-xl border border-line bg-sunken p-0.5">
       {ADMIN_LANGS.map((l) => (

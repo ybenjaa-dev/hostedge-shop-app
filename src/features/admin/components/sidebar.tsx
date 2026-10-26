@@ -67,7 +67,7 @@ export function AdminChrome({ role, userName, storeName, logout, children }: { r
           <div className="ms-auto flex items-center gap-1">
             <Link href="/" target="_blank" className="btn btn-ghost btn-sm hidden sm:inline-flex"><Icons.ExternalLink className="size-4" />View store</Link>
             {can(role, "orders.view") && <OrderNotifier onPending={setPending} />}
-            <ThemeToggle />
+            <ThemeToggle admin />
             <ProfileMenu userName={userName} role={role} logout={logout} />
           </div>
         </header>

@@ -5,6 +5,7 @@ import { Tabs } from "@/features/settings/components/tabs";
 import { StoreSection, SocialSection, CheckoutSection, AnalyticsSection, StatusesSection, TemplatesSection, EngageSection } from "@/features/settings/components/store-sections";
 import { OffersSection } from "@/features/settings/components/offers-section";
 import { CitiesSection } from "@/features/settings/components/cities-section";
+import { ensureLangs } from "@/lib/languages";
 import { one } from "@/features/settings/lib";
 
 export const metadata = { title: "Settings" };
@@ -18,6 +19,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   const sp = await searchParams;
   const tab = TABS.some((t) => t.id === one(sp.tab)) ? one(sp.tab) : "store";
   const s = await getSettings();
+  await ensureLangs();
   return (
     <div>
       <PageHeader title="Settings" sub="Store configuration, checkout and shipping rules." />

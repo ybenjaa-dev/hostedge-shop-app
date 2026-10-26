@@ -4,7 +4,7 @@ import openNext from "./.open-next/worker.js";
 
 type Env = { ASSETS: Fetcher } & Record<string, unknown>;
 
-const LANG = /^\/(ar|fr|en)(?=\/|$)/;
+const LANG = /^\/([a-z]{2})(?=\/|$)/; // two-letter language codes; the app answers 404 for ones the store does not have
 /** Paths that are not pages: never prefixed, never language-switched. */
 const NOT_PAGE = /^\/(_next|api|files|admin|setup|pwa|sw\.js|manifest\.webmanifest|sitemap|robots\.txt|accept-invite|favicon)/;
 
@@ -24,6 +24,8 @@ async function handle(request: Request, env: Env, ctx: ExecutionContext): Promis
   const isPage = !NOT_PAGE.test(path);
   const headers = new Headers(request.headers);
   headers.set("x-seo-path", path); // always set here, so a client can't forge it
+  headers.delete("x-seo-lang");
+  if (lang && isPage) headers.set("x-seo-lang", lang);
   if (lang && isPage) headers.set("cookie", withCookie(headers.get("cookie"), "lang", lang));
   if (!lang && !m && !isPage) return openNext.fetch(request, env, ctx);
   url.pathname = path;

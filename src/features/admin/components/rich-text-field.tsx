@@ -3,16 +3,18 @@ import { useEffect, useId, useRef, useState } from "react";
 import { Bold, Eraser, Heading2, Heading3, Italic, Link2, List, ListOrdered, Quote, Redo2, Underline, Undo2 } from "lucide-react";
 import type { Lang } from "@/lib/i18n-core";
 import { plainToHtml, sanitizeHtml, stripHtml } from "@/lib/rich-text";
-import { ADMIN_LANGS, LangTabs } from "./lang-tabs";
+import { useAdminLangs, LangTabs } from "./lang-tabs";
+import { useDirOf } from "@/components/lang-context";
 
 type Vals = Partial<Record<Lang, string>>;
 const html = (s: string | undefined) => (s ? sanitizeHtml(s) : "");
 
 function Editor({ lang, id, initial, onHtml, onFocusEditor, editorRef, label, minHeight }: { lang: Lang; id: string; initial: string; onHtml: (h: string) => void; onFocusEditor: () => void; editorRef: (el: HTMLDivElement | null) => void; label: string; minHeight: string }) {
   const el = useRef<HTMLDivElement | null>(null);
+  const dir = useDirOf(lang);
   useEffect(() => { if (el.current && !el.current.innerHTML) el.current.innerHTML = initial; }, [initial]);
   return (
-    <div id={id} ref={(n) => { el.current = n; editorRef(n); }} contentEditable suppressContentEditableWarning role="textbox" aria-multiline="true" aria-label={label} dir={lang === "ar" ? "rtl" : "ltr"} lang={lang} data-placeholder="Write here…"
+    <div id={id} ref={(n) => { el.current = n; editorRef(n); }} contentEditable suppressContentEditableWarning role="textbox" aria-multiline="true" aria-label={label} dir={dir} lang={lang} data-placeholder="Write here…"
       className="rte-body prose-lite" style={{ minHeight }}
       onFocus={onFocusEditor}
       onInput={(e) => onHtml((e.currentTarget as HTMLDivElement).innerHTML)}
@@ -24,8 +26,9 @@ function Editor({ lang, id, initial, onHtml, onFocusEditor, editorRef, label, mi
 /** Rich-text editor with a language tab bar. Submits sanitised HTML as `name.fr` / `name.ar` / `name.en` (hidden inputs). */
 export function RichTextField({ label, name, value = {}, hint, minHeight = "11rem" }: { label: string; name: string; value?: Vals; hint?: string; minHeight?: string }) {
   const uid = useId();
+  const ADMIN_LANGS = useAdminLangs();
   const [active, setActive] = useState<Lang>(() => (ADMIN_LANGS.find((l) => value[l.id]?.trim())?.id ?? "fr"));
-  const [vals, setVals] = useState<Vals>(() => ({ fr: html(value.fr), ar: html(value.ar), en: html(value.en) }));
+  const [vals, setVals] = useState<Vals>(() => Object.fromEntries(ADMIN_LANGS.map((l) => [l.id, html(value[l.id])])));
   const [refs] = useState<Partial<Record<Lang, HTMLDivElement | null>>>(() => ({}));
   const exec = (cmd: string, arg?: string) => { refs[active]?.focus(); document.execCommand(cmd, false, arg); setVals((v) => ({ ...v, [active]: refs[active]?.innerHTML ?? "" })); };
   const block = (tag: string) => exec("formatBlock", tag);
