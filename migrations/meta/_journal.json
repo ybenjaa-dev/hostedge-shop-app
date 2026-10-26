@@ -57,6 +57,13 @@
       "when": 1792991705371,
       "tag": "0007_visitors_push_search",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1793007899611,
+      "tag": "0008_user_profile",
+      "breakpoints": true
     }
   ]
 }

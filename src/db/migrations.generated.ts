@@ -125,5 +125,14 @@ export const MIGRATIONS: { name: string; statements: string[] }[] = [
       "ALTER TABLE `orders` ADD `visitor_id` text;",
       "ALTER TABLE `products` ADD `search_text` text;"
     ]
+  },
+  {
+    "name": "0008_user_profile",
+    "statements": [
+      "ALTER TABLE `users` ADD `phone` text;",
+      "ALTER TABLE `users` ADD `job_title` text;",
+      "ALTER TABLE `users` ADD `bio` text;",
+      "ALTER TABLE `users` ADD `avatar` text;"
+    ]
   }
 ];

@@ -14,7 +14,7 @@ export function ProductCard({ p, lang, t, currency, codMode, priority, rank, eye
   const sizes = p.variantNames.slice(0, 2).join(" · ");
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-[1.5rem] border border-line bg-surface transition hover:-translate-y-1 hover:shadow-[0_18px_34px_-22px_rgba(12,59,42,.55)]">
-      <Link href={`/p/${p.slug}`} className="relative block aspect-square overflow-hidden bg-mint" aria-label={name}>
+      <Link href={`/p/${p.slug}`} className="relative block aspect-square overflow-hidden bg-mint">
         {p.image ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img {...imgProps(p.image, "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw")} alt={name} width={480} height={480} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={`size-full object-cover transition duration-700 group-hover:scale-105 ${p.inStock ? "" : "opacity-50 grayscale"}`} />

@@ -7,11 +7,12 @@ import { NAV, type NavItem } from "../nav";
 import { can, ROLE_INFO, type Role } from "@/lib/permissions";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { OrderNotifier } from "./order-notifier";
+import { Avatar } from "@/components/avatar";
 
 type Ic = React.ComponentType<{ className?: string }>;
 const icon = (n: string) => ((Icons as unknown as Record<string, Ic>)[n] ?? Icons.Circle);
 
-export function AdminChrome({ role, userName, storeName, logout, children }: { role: Role; userName: string; storeName: string; logout: () => Promise<void>; children: React.ReactNode }) {
+export function AdminChrome({ role, userName, email, avatar, storeName, logout, children }: { role: Role; userName: string; email: string; avatar: string | null; storeName: string; logout: () => Promise<void>; children: React.ReactNode }) {
   const path = usePathname();
   const [open, setOpen] = useState(false);
   const [cmd, setCmd] = useState(false);
@@ -68,7 +69,7 @@ export function AdminChrome({ role, userName, storeName, logout, children }: { r
             <Link href="/" target="_blank" className="btn btn-ghost btn-sm hidden sm:inline-flex"><Icons.ExternalLink className="size-4" />View store</Link>
             {can(role, "orders.view") && <OrderNotifier onPending={setPending} />}
             <ThemeToggle admin />
-            <ProfileMenu userName={userName} role={role} logout={logout} />
+            <ProfileMenu userName={userName} email={email} avatar={avatar} role={role} logout={logout} />
           </div>
         </header>
         <main className="mx-auto max-w-7xl p-4 sm:p-6">{children}</main>
@@ -78,26 +79,38 @@ export function AdminChrome({ role, userName, storeName, logout, children }: { r
   );
 }
 
-function ProfileMenu({ userName, role, logout }: { userName: string; role: Role; logout: () => Promise<void> }) {
+function ProfileMenu({ userName, email, avatar, role, logout }: { userName: string; email: string; avatar: string | null; role: Role; logout: () => Promise<void> }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const path = usePathname();
+  useEffect(() => setOpen(false), [path]);
   useEffect(() => {
     if (!open) return;
-    const down = (e: Event) => { if (!ref.current?.contains(e.target as Node)) setOpen(false); };
+    // any press, tap or focus outside the menu closes it (capture phase, so nothing on the page can swallow the event)
+    const away = (e: Event) => { if (!ref.current?.contains(e.target as Node)) setOpen(false); };
     const key = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
-    document.addEventListener("pointerdown", down); document.addEventListener("keydown", key);
-    return () => { document.removeEventListener("pointerdown", down); document.removeEventListener("keydown", key); };
+    const evs = ["pointerdown", "mousedown", "touchstart", "focusin"] as const;
+    evs.forEach((n) => document.addEventListener(n, away, true));
+    document.addEventListener("keydown", key);
+    window.addEventListener("blur", () => setOpen(false), { once: true });
+    return () => { evs.forEach((n) => document.removeEventListener(n, away, true)); document.removeEventListener("keydown", key); };
   }, [open]);
+  const item = "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-sunken";
   return (
     <div ref={ref} className="relative">
       <button type="button" className="btn btn-ghost btn-sm gap-2" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
-        <span className="grid size-7 place-items-center rounded-full bg-brand text-xs font-extrabold text-brand-ink">{userName.slice(0, 1).toUpperCase()}</span><span className="hidden sm:inline">{userName}</span>
+        <Avatar name={userName} src={avatar} size="sm" /><span className="hidden sm:inline">{userName}</span>
       </button>
       {open && (
-        <div role="menu" className="absolute end-0 top-full z-50 mt-1 w-48 rounded-xl border border-line bg-surface p-1 shadow-xl">
-          <p className="px-3 py-2 text-xs text-muted">{ROLE_INFO[role]?.label ?? role}</p>
-          <Link role="menuitem" href="/admin/team/account" onClick={() => setOpen(false)} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-sunken"><Icons.UserCog className="size-4" />My account</Link>
-          <form action={logout}><button role="menuitem" className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-sunken"><Icons.LogOut className="size-4" />Sign out</button></form>
+        <div role="menu" className="absolute end-0 top-full z-50 mt-1 w-64 rounded-2xl border border-line bg-surface p-1.5 shadow-xl">
+          <div className="flex items-center gap-3 px-2.5 py-2.5">
+            <Avatar name={userName} src={avatar} size="md" />
+            <div className="min-w-0"><p className="truncate text-sm font-bold">{userName}</p><p className="truncate text-xs text-muted" dir="ltr">{email}</p><p className="text-xs font-semibold" style={{ color: ROLE_INFO[role]?.color }}>{ROLE_INFO[role]?.label ?? role}</p></div>
+          </div>
+          <div className="my-1 border-t border-line" />
+          <Link role="menuitem" href="/admin/team/account" onClick={() => setOpen(false)} className={item}><Icons.UserRound className="size-4" aria-hidden />My profile</Link>
+          <Link role="menuitem" href="/admin/team/account?tab=password" onClick={() => setOpen(false)} className={item}><Icons.KeyRound className="size-4" aria-hidden />Change password</Link>
+          <form action={logout}><button role="menuitem" className={item}><Icons.LogOut className="size-4" aria-hidden />Sign out</button></form>
         </div>
       )}
     </div>

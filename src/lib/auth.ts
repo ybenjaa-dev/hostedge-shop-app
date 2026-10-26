@@ -13,7 +13,7 @@ import { can, homeFor, isPerm, type Perm, type Role } from "@/lib/permissions";
 const COOKIE = "he_session";
 const SESSION_DAYS = 14;
 
-export type SessionUser = { id: string; email: string; name: string; role: Role };
+export type SessionUser = { id: string; email: string; name: string; role: Role; avatar: string | null };
 
 export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   const token = (await cookies()).get(COOKIE)?.value;
@@ -22,13 +22,13 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   const id = await sha256Hex(token);
   const db = getDb();
   const row = await db
-    .select({ id: schema.users.id, email: schema.users.email, name: schema.users.name, role: schema.users.role, active: schema.users.active })
+    .select({ id: schema.users.id, email: schema.users.email, name: schema.users.name, role: schema.users.role, active: schema.users.active, avatar: schema.users.avatar })
     .from(schema.sessions)
     .innerJoin(schema.users, eq(schema.users.id, schema.sessions.userId))
     .where(and(eq(schema.sessions.id, id), gt(schema.sessions.expiresAt, Date.now())))
     .get();
   if (!row || !row.active) return null;
-  return { id: row.id, email: row.email, name: row.name, role: row.role };
+  return { id: row.id, email: row.email, name: row.name, role: row.role, avatar: row.avatar };
 });
 
 /** For route handlers: the signed-in user if their role has this permission, else null. */

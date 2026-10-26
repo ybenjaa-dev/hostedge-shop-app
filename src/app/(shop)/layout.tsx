@@ -7,6 +7,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { WhatsAppFab } from "@/components/whatsapp-fab";
 import { StoreProvider } from "@/features/checkout/store-context";
 import { DICT } from "@/lib/dict";
+import { clientDict } from "@/lib/client-dict";
 import { CartDrawer } from "@/features/checkout/components/cart-drawer";
 
 export default async function ShopLayout({ children }: { children: React.ReactNode }) {
@@ -14,7 +15,7 @@ export default async function ShopLayout({ children }: { children: React.ReactNo
   if (!s.setupDone) redirect("/setup");
   const { lang, t } = await getT();
   const [cats, pages] = await Promise.all([listCategories(), listPages()]);
-  const store = { lang, currency: s.store.currency, codMode: s.checkout.codMode, placement: s.checkout.formPlacement, codFee: s.checkout.codFee, defaultShippingFee: s.checkout.defaultShippingFee, freeThreshold: s.checkout.freeShippingThreshold, taxRateBp: s.store.taxRateBp, taxInclusive: s.store.taxInclusive, country: s.store.country, countries: s.store.countries, whatsapp: s.store.whatsapp, bundlesInForm: s.checkout.bundlesInForm, dict: DICT[lang] };
+  const store = { lang, currency: s.store.currency, codMode: s.checkout.codMode, placement: s.checkout.formPlacement, codFee: s.checkout.codFee, defaultShippingFee: s.checkout.defaultShippingFee, freeThreshold: s.checkout.freeShippingThreshold, taxRateBp: s.store.taxRateBp, taxInclusive: s.store.taxInclusive, country: s.store.country, countries: s.store.countries, whatsapp: s.store.whatsapp, bundlesInForm: s.checkout.bundlesInForm, dict: clientDict(DICT[lang]) };
   return (
     <StoreProvider value={store}>
       <div className="v6">

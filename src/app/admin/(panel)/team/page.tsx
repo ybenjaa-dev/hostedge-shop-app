@@ -3,6 +3,7 @@ import { asc, desc } from "drizzle-orm";
 import { KeyRound } from "lucide-react";
 import { requireOwner } from "@/lib/auth";
 import { getDb, schema } from "@/db";
+import { Avatar } from "@/components/avatar";
 import { Badge, Empty, PageHeader, Panel } from "@/features/admin/components/ui";
 import { DataTable, Td } from "@/features/settings/components/table";
 import { nowMs } from "@/features/settings/lib";
@@ -19,18 +20,18 @@ export default async function TeamPage() {
   const me = await requireOwner();
   const db = getDb();
   const [users, invites] = await Promise.all([
-    db.select({ id: schema.users.id, email: schema.users.email, name: schema.users.name, role: schema.users.role, active: schema.users.active, createdAt: schema.users.createdAt }).from(schema.users).orderBy(asc(schema.users.createdAt)),
+    db.select({ id: schema.users.id, email: schema.users.email, name: schema.users.name, role: schema.users.role, active: schema.users.active, avatar: schema.users.avatar, jobTitle: schema.users.jobTitle, createdAt: schema.users.createdAt }).from(schema.users).orderBy(asc(schema.users.createdAt)),
     db.select({ id: schema.invites.id, email: schema.invites.email, role: schema.invites.role, expiresAt: schema.invites.expiresAt }).from(schema.invites).orderBy(desc(schema.invites.createdAt)),
   ]);
   const now = nowMs();
   return (
     <div className="space-y-6">
-      <PageHeader title="Team" sub="Invite staff and owners, manage access." actions={<Link href="/admin/team/account" className="btn btn-outline btn-sm"><KeyRound className="size-4" aria-hidden />My password</Link>} />
+      <PageHeader title="Team" sub="Invite staff and owners, manage access." actions={<Link href="/admin/team/account" className="btn btn-outline btn-sm"><KeyRound className="size-4" aria-hidden />My profile</Link>} />
       <Panel title="Invite a teammate"><InviteForm /></Panel>
       <DataTable head={["User", "Role", "Status", ""]}>
         {users.map((u) => (
           <tr key={u.id}>
-            <Td><div className="font-semibold">{u.name}{u.id === me.id && <span className="ms-2 text-xs font-normal text-muted">(you)</span>}</div><div className="text-xs text-muted" dir="ltr">{u.email}</div></Td>
+            <Td><div className="flex items-center gap-3"><Avatar name={u.name} src={u.avatar} size="md" /><div className="min-w-0"><div className="font-semibold">{u.name}{u.id === me.id && <span className="ms-2 text-xs font-normal text-muted">(you)</span>}</div><div className="text-xs text-muted">{u.jobTitle ? `${u.jobTitle} · ` : ""}<span dir="ltr">{u.email}</span></div></div></div></Td>
             <Td><RoleSelect id={u.id} role={u.role} name={u.name} /></Td>
             <Td>{u.active ? <Badge color="#16a34a">Active</Badge> : <Badge>Deactivated</Badge>}</Td>
             <Td><div className="flex flex-wrap justify-end gap-2">
