@@ -1,5 +1,5 @@
 "use server";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { z } from "zod";
 import { getEnv } from "@/lib/env";
 import { ensureSchema } from "@/db/ensure-schema";
@@ -13,7 +13,7 @@ import { quoteInputSchema } from "@/features/orders/schema";
 
 export async function placeOrder(payload: unknown): Promise<CreateOrderResult> {
   try {
-    return await createOrder(payload, { ip: await clientIp(), ua: (await headers()).get("user-agent") });
+    return await createOrder(payload, { ip: await clientIp(), ua: (await headers()).get("user-agent"), vid: (await cookies()).get("he_vid")?.value ?? null });
   } catch (e) {
     console.error("placeOrder", e);
     return { ok: false, code: "error" };

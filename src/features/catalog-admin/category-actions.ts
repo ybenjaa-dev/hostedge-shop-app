@@ -1,4 +1,5 @@
 "use server";
+import { refreshCategorySearch } from "@/features/catalog/search";
 import { z } from "zod";
 import { and, eq, ne, sql } from "drizzle-orm";
 import { getDb, schema } from "@/db";
@@ -33,6 +34,7 @@ export async function saveCategory(_p: ActionState, form: FormData): Promise<Act
       await db.insert(schema.categories).values({ id, ...values });
       await audit(user, "category.create", "category", id);
     }
+    if (d.id) await refreshCategorySearch(d.id);
     refresh();
     return { message: d.id ? "Category saved" : "Category created" };
   });

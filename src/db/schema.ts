@@ -71,6 +71,8 @@ export const products = sqliteTable(
     shortDesc: text("short_desc").notNull().default("{}"),
     longDesc: text("long_desc").notNull().default("{}"),
     specs: text("specs").notNull().default("{}"), // JSON i18n; one "Label: value" per line (supplement facts, specs…)
+    /** Lower-cased, accent-folded text of name (all languages), SKU, descriptions and category — what instant search matches against. */
+    searchText: text("search_text"),
     offerTemplate: text("offer_template"), // quantity-offer card layout for this product; null → store default
     categoryId: text("category_id"),
     sku: text("sku"),
@@ -269,6 +271,8 @@ export const orders = sqliteTable(
     source: text("source"),
     /** Ad-click context captured at checkout (JSON: fbp, fbc, ttp, ttclid, ua, url) — used for server-side (Conversions API) events later. */
     tracking: text("tracking"),
+    /** The visitor (device) that placed the order — see the `visitors` table. */
+    visitorId: text("visitor_id"),
     lang: text("lang"),
     createdAt: ts("created_at"),
     updatedAt: ts("updated_at"),
@@ -427,3 +431,88 @@ export const productLinks = sqliteTable(
   },
   (t) => [uniqueIndex("product_links_uniq_idx").on(t.productId, t.linkedId, t.kind), index("product_links_product_idx").on(t.productId, t.kind)],
 );
+
+/** Anonymous visitor registry (only for people who accepted the notice): where they come from and which device they use. `fp` is a hash of browser/device traits — no raw personal data. */
+export const visitors = sqliteTable(
+  "visitors",
+  {
+    id: text("id").primaryKey(), // random id kept in a first-party cookie
+    fp: text("fp"),              // device fingerprint hash
+    firstSeen: integer("first_seen").notNull().$defaultFn(now),
+    lastSeen: integer("last_seen").notNull().$defaultFn(now),
+    visits: integer("visits").notNull().default(1),
+    pageViews: integer("page_views").notNull().default(1),
+    ip: text("ip"),
+    country: text("country"),
+    region: text("region"),
+    city: text("city"),
+    timezone: text("timezone"),
+    latitude: text("latitude"),
+    longitude: text("longitude"),
+    network: text("network"),   // ISP / ASN organisation
+    ua: text("ua"),
+    browser: text("browser"),
+    os: text("os"),
+    device: text("device"),     // mobile | tablet | desktop
+    screen: text("screen"),
+    lang: text("lang"),
+    referrer: text("referrer"),
+    landing: text("landing"),
+    utm: text("utm"),           // JSON
+    phone: text("phone"),       // set once the visitor places an order
+    orders: integer("orders").notNull().default(0),
+    push: integer("push", { mode: "boolean" }).notNull().default(false),
+  },
+  (t) => [index("visitors_fp_idx").on(t.fp), index("visitors_last_idx").on(t.lastSeen), index("visitors_country_idx").on(t.country), index("visitors_phone_idx").on(t.phone)],
+);
+
+/** Web Push subscriptions (one per browser). */
+export const pushSubscriptions = sqliteTable(
+  "push_subscriptions",
+  {
+    id: text("id").primaryKey(),
+    endpoint: text("endpoint").notNull(),
+    p256dh: text("p256dh").notNull(),
+    auth: text("auth").notNull(),
+    visitorId: text("visitor_id"),
+    lang: text("lang"),
+    country: text("country"),
+    city: text("city"),
+    ua: text("ua"),
+    createdAt: ts("created_at"),
+    lastSentAt: integer("last_sent_at"),
+    /** id of the last campaign delivered to this browser — lets a big send resume where it stopped. */
+    lastMsg: text("last_msg"),
+    failures: integer("failures").notNull().default(0),
+    active: integer("active", { mode: "boolean" }).notNull().default(true),
+  },
+  (t) => [uniqueIndex("push_endpoint_idx").on(t.endpoint), index("push_visitor_idx").on(t.visitorId)],
+);
+
+/** Messages composed in the admin and the outcome of sending them. */
+export const pushMessages = sqliteTable(
+  "push_messages",
+  {
+    id: text("id").primaryKey(),
+    title: text("title").notNull(),
+    body: text("body").notNull(),
+    url: text("url"),
+    image: text("image"),
+    audience: text("audience").notNull().default("{}"), // JSON filter: lang / country / city
+    status: text("status", { enum: ["sending", "sent"] }).notNull().default("sending"),
+    targeted: integer("targeted").notNull().default(0),
+    delivered: integer("delivered").notNull().default(0),
+    failed: integer("failed").notNull().default(0),
+    clicks: integer("clicks").notNull().default(0),
+    createdBy: text("created_by"),
+    createdAt: ts("created_at"),
+  },
+  (t) => [index("push_messages_created_idx").on(t.createdAt)],
+);
+
+/** Devices barred from ordering (matched by fingerprint). */
+export const blockedFingerprints = sqliteTable("blocked_fingerprints", {
+  fp: text("fp").primaryKey(),
+  reason: text("reason"),
+  createdAt: ts("created_at"),
+});

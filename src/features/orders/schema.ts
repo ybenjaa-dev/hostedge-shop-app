@@ -17,7 +17,7 @@ export const orderInputSchema = z.object({
   hp: z.string().max(200).optional(), // honeypot — must stay empty
   source: z.string().max(40).optional(),
   lang: z.string().max(5).optional(),
-  tracking: z.object({ fbp: z.string().max(120).optional(), fbc: z.string().max(200).optional(), ttp: z.string().max(120).optional(), ttclid: z.string().max(200).optional(), url: z.string().max(500).optional() }).optional(),
+  tracking: z.object({ fbp: z.string().max(120).optional(), fbc: z.string().max(200).optional(), ttp: z.string().max(120).optional(), ttclid: z.string().max(200).optional(), fp: z.string().max(64).optional(), url: z.string().max(500).optional() }).optional(),
 });
 export type OrderInput = z.infer<typeof orderInputSchema>;
 
