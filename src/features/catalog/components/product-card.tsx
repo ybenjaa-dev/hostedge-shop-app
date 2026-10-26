@@ -11,7 +11,7 @@ export function ProductCard({ p, lang, t, currency, codMode, priority }: { p: P;
   const discount = p.compareAt && p.compareAt > p.price ? Math.round(((p.compareAt - p.price) / p.compareAt) * 100) : 0;
   return (
     <article className="group relative flex flex-col">
-      <Link href={`/p/${p.slug}`} className="relative block aspect-[4/5] overflow-hidden rounded-2xl bg-sunken" aria-label={name}>
+      <Link href={`/p/${p.slug}`} className="relative block aspect-[4/5] overflow-hidden rounded-2xl bg-sunken">
         {p.image ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img {...imgProps(p.image, "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw")} alt={name} width={480} height={600} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={`size-full object-cover transition duration-500 group-hover:scale-[1.04] ${p.inStock ? "" : "opacity-60 grayscale"}`} />

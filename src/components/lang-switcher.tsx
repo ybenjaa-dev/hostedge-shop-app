@@ -24,7 +24,7 @@ export function LangSwitcher({ current, langs, label }: { current: Lang; langs: 
   if (langs.length < 2) return null;
   return (
     <div ref={root} className="relative" data-lang-switcher>
-      <button type="button" aria-label={label} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)} className="btn btn-ghost btn-sm gap-1.5 !px-2 sm:!px-3">
+      <button type="button" aria-label={style === "flag-code" || style === "code" ? `${label}: ${current.toUpperCase()}` : style === "name" ? `${label}: ${nameOf(current)}` : label} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)} className="btn btn-ghost btn-sm gap-1.5 !px-2 sm:!px-3">
         {style !== "name" && style !== "code" && <Flag lang={current} />}
         {style === "flag-code" || style === "code" ? <span className="text-xs font-bold uppercase">{current}</span> : null}
         {style === "name" && <span className="text-xs font-bold">{nameOf(current)}</span>}

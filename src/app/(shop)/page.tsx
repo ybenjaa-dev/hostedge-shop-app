@@ -83,7 +83,7 @@ export default async function Home() {
             <div className="grid gap-4 md:grid-cols-3">
               {reviews.slice(0, 3).map((r) => (
                 <figure key={r.id} className="card p-5">
-                  <div className="flex gap-0.5" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`size-4 ${i < r.rating ? "fill-accent text-accent" : "text-line"}`} />)}</div>
+                  <div className="flex gap-0.5" role="img" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`size-4 ${i < r.rating ? "fill-accent text-accent" : "text-line"}`} />)}</div>
                   <blockquote className="mt-3 leading-relaxed">“{r.body}”</blockquote>
                   <figcaption className="mt-3 text-sm font-semibold">{r.name}{r.city && <span className="font-normal text-muted"> · {r.city}</span>}</figcaption>
                 </figure>
