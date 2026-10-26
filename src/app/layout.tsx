@@ -67,7 +67,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link rel="stylesheet" href={googleFontsUrl(b.fontLatin, b.fontArabic)} media="print" data-swap="" />
+        <link rel="stylesheet" href={googleFontsUrl(b.fontLatin, b.fontArabic)} media="print" data-swap="" suppressHydrationWarning />
         <noscript><link rel="stylesheet" href={googleFontsUrl(b.fontLatin, b.fontArabic)} /></noscript>
         <script dangerouslySetInnerHTML={{ __html: FONT_SWAP }} />
         <style dangerouslySetInnerHTML={{ __html: css }} />

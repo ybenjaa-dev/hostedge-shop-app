@@ -19,6 +19,11 @@ export const users = sqliteTable(
     passwordHash: text("password_hash").notNull(),
     role: text("role", { enum: ["owner", "staff", "confirmer", "packer", "accountant"] }).notNull().default("staff"),
     active: integer("active", { mode: "boolean" }).notNull().default(true),
+    // profile (each person edits their own)
+    phone: text("phone"),
+    jobTitle: text("job_title"),
+    bio: text("bio"),
+    avatar: text("avatar"), // R2 key under uploads/avatars/
     createdAt: ts("created_at"),
   },
   (t) => [uniqueIndex("users_email_idx").on(t.email)],
