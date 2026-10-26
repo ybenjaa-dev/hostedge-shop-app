@@ -66,9 +66,16 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
   // The sticky "Order now" bar has no business on screen while the order form is: hide it when the form is in view (or the sheet is open).
   useEffect(() => {
     if (!formEl) { setFormInView(false); return; }
-    const io = new IntersectionObserver(([e]) => setFormInView(!!e?.isIntersecting), { threshold: 0.12 });
+    // threshold 0: the form is taller than a phone screen, so a ratio would never be reached; any visible part counts
+    let visible = false, focused = false;
+    const sync = () => setFormInView(visible || focused);
+    const io = new IntersectionObserver(([e]) => { visible = !!e?.isIntersecting; sync(); }, { threshold: 0 });
     io.observe(formEl);
-    return () => io.disconnect();
+    // typing in the form (keyboard open) always hides the bar
+    const fin = () => { focused = true; sync(); };
+    const fout = () => { focused = false; setTimeout(sync, 0); };
+    formEl.addEventListener("focusin", fin); formEl.addEventListener("focusout", fout);
+    return () => { io.disconnect(); formEl.removeEventListener("focusin", fin); formEl.removeEventListener("focusout", fout); };
   }, [formEl]);
 
   const bundleTiers = useMemo(() => {
