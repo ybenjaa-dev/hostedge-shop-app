@@ -35,7 +35,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
   const status = o.status as OrderStatus;
   const labels = Object.fromEntries(ORDER_STATUSES.map((x) => [x, statusInfo(s, x, "en").label]));
   const info = statusInfo(s, status, "en");
-  const lang = (o.lang as "ar" | "fr" | "en" | null) ?? s.store.defaultLang;
+  const lang = (o.lang as string | null) ?? s.store.defaultLang;
   const vars = { name: o.name as string, store: s.store.name, order: `#${o.number}`, total: formatMoney(o.total as number, cur, lang), tracking: (o.tracking_number as string) ?? "" };
   const confirmMsg = fill(tr(s.templates.confirm, lang), vars);
   const shippedMsg = fill(tr(s.templates.shipped, lang), vars);

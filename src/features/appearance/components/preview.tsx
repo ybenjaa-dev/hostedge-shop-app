@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useId, useRef, type ElementType, type ReactNode } from "react";
+import { useDirOf } from "@/components/lang-context";
 import { ArrowDown, ArrowUp, Eye, EyeOff } from "lucide-react";
 import { BRAND } from "@/lib/brand";
 import { Banknote, RotateCcw, Truck, ShieldCheck, Headset, Gem, ShoppingBag, Menu } from "lucide-react";
@@ -51,7 +52,8 @@ export function StorePreview({ v, storeName, tagline, currency, lang, slide = 0,
   const b = v.branding;
   const primary = ok(b.primary, "#0f766e"), secondary = ok(b.secondary, "#1f2937"), accent = ok(b.accent, "#f59e0b");
   const radius = b.buttonStyle === "pill" ? "9999px" : b.buttonStyle === "square" ? "0.25rem" : "0.75rem";
-  const font = lang === "ar" ? b.fontArabic : b.fontLatin;
+  const dir = useDirOf(lang);
+  const font = dir === "rtl" ? b.fontArabic : b.fontLatin;
   const style = {
     "--brand": primary, "--brand-ink": onColor(primary), "--secondary": secondary, "--accent": accent, "--accent-ink": onColor(accent),
     "--btn-radius": radius, "--brand-soft": `color-mix(in srgb, ${primary} 10%, var(--bg))`,
@@ -88,7 +90,7 @@ export function StorePreview({ v, storeName, tagline, currency, lang, slide = 0,
     </section>
   );
   return (
-    <div style={style} dir={lang === "ar" ? "rtl" : "ltr"} lang={lang} className={`overflow-hidden rounded-2xl border border-line bg-bg text-ink ${BRAND.themeClass}`} data-preview="store">
+    <div style={style} dir={dir} lang={lang} className={`overflow-hidden rounded-2xl border border-line bg-bg text-ink ${BRAND.themeClass}`} data-preview="store">
       <link rel="stylesheet" href={googleFontsUrl(b.fontLatin, b.fontArabic)} precedence="default" />
       {((v.announcement.enabled && tr(v.announcement.text, lang)) || edit) && (
         <Region id="announcement" label="Announcement" edit={edit} className="!rounded-none">

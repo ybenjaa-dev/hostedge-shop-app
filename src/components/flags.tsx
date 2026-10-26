@@ -1,8 +1,16 @@
+"use client";
 import type { Lang } from "@/lib/i18n-core";
+import { flagEmoji } from "@/lib/lang-presets";
+import { useMeta } from "./lang-context";
 
 /** Soft-rounded, colourful flags (4:3) for the language switcher. Arabic → Morocco, French → France, English → United Kingdom. */
 export function Flag({ lang, className = "h-[18px] w-6" }: { lang: Lang; className?: string }) {
+  const meta = useMeta(lang);
   const id = `fl-${lang}`;
+  if (lang !== "ar" && lang !== "fr" && lang !== "en") {
+    // languages added by the owner: the country's emoji flag (some Windows browsers show the two letters instead)
+    return <span aria-hidden className={`inline-grid shrink-0 place-items-center rounded-[5px] bg-sunken text-[0.8em] leading-none ${className}`}>{meta.flag ? flagEmoji(meta.flag) : lang.toUpperCase()}</span>;
+  }
   return (
     <svg viewBox="0 0 24 18" className={`shrink-0 ${className}`} aria-hidden focusable="false">
       <defs><clipPath id={id}><rect width="24" height="18" rx="4.5" /></clipPath></defs>

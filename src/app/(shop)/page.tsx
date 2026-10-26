@@ -117,7 +117,7 @@ function SectionTitle({ title, href, more }: { title: string; href?: string; mor
   );
 }
 
-function Hero({ s, lang, t }: { s: Awaited<ReturnType<typeof getSettings>>; lang: "ar" | "fr" | "en"; t: ReturnType<typeof import("@/lib/dict").makeT> }) {
+function Hero({ s, lang, t }: { s: Awaited<ReturnType<typeof getSettings>>; lang: string; t: ReturnType<typeof import("@/lib/dict").makeT> }) {
   const slides = s.hero.slides;
   if (!slides.length) {
     return (

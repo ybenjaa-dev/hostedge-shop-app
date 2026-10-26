@@ -9,7 +9,7 @@ import { Panel } from "@/features/admin/components/ui";
 import type { Settings } from "@/lib/settings";
 import { CURRENCIES, toMajorString } from "@/lib/money";
 import { COUNTRIES } from "@/lib/phone";
-import { LANGS, LANG_LABEL } from "@/lib/i18n-core";
+import { allLangMetas, allLangs, labelOf } from "@/lib/i18n-core";
 import { DEFAULT_STATUS_DEFS, ORDER_STATUSES } from "@/lib/order-status";
 import { saveStore, saveSocial, saveCheckout, saveAnalytics, saveStatuses, saveTemplates, saveEngage } from "../actions/save";
 
@@ -33,12 +33,12 @@ export function StoreSection({ s }: { s: Settings }) {
             <select id="currency" name="currency" defaultValue={st.currency} className="field">{Object.entries(CURRENCIES).map(([k, v]) => <option key={k} value={k}>{k} — {v.name}</option>)}</select>
           </Field>
           <Field label="Default language" htmlFor="defaultLang">
-            <select id="defaultLang" name="defaultLang" defaultValue={st.defaultLang} className="field">{LANGS.map((l) => <option key={l} value={l}>{LANG_LABEL[l]}</option>)}</select>
+            <select id="defaultLang" name="defaultLang" defaultValue={st.defaultLang} className="field">{allLangs().map((l) => <option key={l} value={l}>{labelOf(l)}</option>)}</select>
           </Field>
           <fieldset>
             <legend className="label">Enabled languages</legend>
-            <div className="flex flex-wrap gap-3">{LANGS.map((l) => (
-              <label key={l} className="flex min-h-11 items-center gap-2 rounded-lg border border-line px-3 text-sm font-semibold"><input type="checkbox" name="langs" value={l} defaultChecked={st.langs.includes(l)} className="size-4 accent-[var(--brand)]" />{LANG_LABEL[l]}</label>
+            <div className="flex flex-wrap gap-3">{allLangs().map((l) => (
+              <label key={l} className="flex min-h-11 items-center gap-2 rounded-lg border border-line px-3 text-sm font-semibold"><input type="checkbox" name="langs" value={l} defaultChecked={st.langs.includes(l)} className="size-4 accent-[var(--brand)]" />{labelOf(l)}</label>
             ))}</div>
           </fieldset>
         </div>
@@ -195,9 +195,9 @@ export function StatusesSection({ s }: { s: Settings }) {
             <div key={st} className="card space-y-3 p-4">
               <div className="flex items-center justify-between gap-2"><code className="text-xs font-bold text-muted">{st}</code>
                 <label className="flex items-center gap-2 text-xs font-semibold">Color <input type="color" name={`st.${st}.color`} defaultValue={ov?.color ?? def.color} aria-label={`${st} color`} className="size-9 cursor-pointer rounded border border-line bg-transparent p-0.5" /></label></div>
-              {LANGS.map((l) => (
+              {allLangs().map((l) => (
                 <div key={l} className="flex items-center gap-2"><span className="w-7 text-center text-[11px] font-extrabold uppercase text-muted">{l}</span>
-                  <input name={`st.${st}.label.${l}`} defaultValue={ov?.label?.[l] ?? def.label[l]} dir={l === "ar" ? "rtl" : "ltr"} maxLength={60} className="field" aria-label={`${st} label (${l})`} /></div>
+                  <input name={`st.${st}.label.${l}`} defaultValue={(ov?.label as Record<string, string> | undefined)?.[l] ?? (def.label as Record<string, string>)[l] ?? ""} dir={allLangMetas().find((m) => m.code === l)?.dir ?? "ltr"} maxLength={60} className="field" aria-label={`${st} label (${l})`} /></div>
               ))}
             </div>
           );

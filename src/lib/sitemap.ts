@@ -2,14 +2,16 @@ import "server-only";
 import { getEnv } from "@/lib/env";
 import { ensureSchema } from "@/db/ensure-schema";
 import { getSettings } from "@/lib/settings";
-import { LANGS, isLang, type Lang } from "@/lib/i18n-core";
+import { allLangs, isLang, type Lang } from "@/lib/i18n-core";
+import { ensureLangs } from "@/lib/languages";
 
 type Entry = { path: string; changefreq: string; priority: number; lastmod?: number };
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 export async function enabledLangs(): Promise<{ langs: Lang[]; def: Lang; on: boolean }> {
+  await ensureLangs();
   const s = await getSettings();
-  return { langs: LANGS.filter((l) => s.store.langs.includes(l)), def: s.store.defaultLang, on: s.engage.langUrls };
+  return { langs: allLangs().filter((l) => s.store.langs.includes(l)), def: s.store.defaultLang, on: s.engage.langUrls };
 }
 
 async function entries(): Promise<Entry[]> {

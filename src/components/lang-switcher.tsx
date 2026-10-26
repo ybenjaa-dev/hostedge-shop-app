@@ -2,13 +2,17 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { setLang } from "@/features/settings/actions/lang";
-import { LANG_LABEL, type Lang } from "@/lib/i18n-core";
+import type { Lang } from "@/lib/i18n-core";
+import { useLangMetas, useLangUi } from "./lang-context";
 import { Flag } from "./flags";
 
 /** Language menu: soft-rounded flags, closes on outside click / Escape / choosing a language. */
 export function LangSwitcher({ current, langs, label }: { current: Lang; langs: Lang[]; label: string }) {
   const [open, setOpen] = useState(false);
   const [pending, start] = useTransition();
+  const metas = useLangMetas();
+  const { style } = useLangUi();
+  const nameOf = (l: string) => metas.find((m) => m.code === l)?.native ?? l;
   const root = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!open) return;
@@ -19,10 +23,11 @@ export function LangSwitcher({ current, langs, label }: { current: Lang; langs: 
   }, [open]);
   if (langs.length < 2) return null;
   return (
-    <div ref={root} className="relative">
+    <div ref={root} className="relative" data-lang-switcher>
       <button type="button" aria-label={label} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)} className="btn btn-ghost btn-sm gap-1.5 !px-2 sm:!px-3">
-        <Flag lang={current} />
-        <span className="text-xs font-bold uppercase">{current}</span>
+        {style !== "name" && style !== "code" && <Flag lang={current} />}
+        {style === "flag-code" || style === "code" ? <span className="text-xs font-bold uppercase">{current}</span> : null}
+        {style === "name" && <span className="text-xs font-bold">{nameOf(current)}</span>}
         <ChevronDown className={`hidden size-3.5 opacity-60 transition sm:block ${open ? "rotate-180" : ""}`} aria-hidden />
       </button>
       {open && (
@@ -37,7 +42,7 @@ export function LangSwitcher({ current, langs, label }: { current: Lang; langs: 
               }); }}
               className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-start text-sm hover:bg-sunken ${l === current ? "font-bold text-brand" : "text-ink"}`}>
               <Flag lang={l} />
-              <span className="flex-1">{LANG_LABEL[l]}</span>
+              <span className="flex-1">{nameOf(l)}</span>
               {l === current && <Check className="size-4" aria-hidden />}
             </button>
           ))}

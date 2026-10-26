@@ -5,7 +5,7 @@ import { run, audit, fd, fdI18n, type ActionState } from "@/features/admin/run";
 import { getSettings, saveSettings, type Settings } from "@/lib/settings";
 import { CURRENCIES, toMinor } from "@/lib/money";
 import { countryByCode, normalizePhone } from "@/lib/phone";
-import { LANGS, isLang, type Lang } from "@/lib/i18n-core";
+import { allLangs, isLang, type Lang } from "@/lib/i18n-core";
 import { DEFAULT_STATUS_DEFS, ORDER_STATUSES, type StatusDef } from "@/lib/order-status";
 import { isHex } from "@/lib/color";
 import { parse, refresh, fail } from "../lib";
@@ -22,7 +22,7 @@ export async function saveStore(_p: ActionState, form: FormData): Promise<Action
         name: z.string().min(1, "Store name is required").max(80),
         country: z.string().refine((c) => !!countryByCode(c), "Choose a valid country"),
         currency: z.string().refine((c) => c in CURRENCIES, "Unsupported currency"),
-        defaultLang: z.enum(LANGS),
+        defaultLang: z.string().refine(isLang, "Unknown language"),
         email: z.union([z.literal(""), z.email("Invalid email")]),
         whatsapp: z.string().max(30),
         tax: z.string().regex(/^\d{1,3}(\.\d{1,2})?$/, "Tax rate must be a number like 20 or 5.5"),
@@ -46,7 +46,7 @@ export async function saveStore(_p: ActionState, form: FormData): Promise<Action
     const store: Settings["store"] = {
       ...prev.store,
       name: d.name, tagline: fdI18n(form, "tagline"), country: d.country, currency: d.currency, defaultLang: d.defaultLang,
-      langs: LANGS.filter((l) => finalLangs.includes(l)), phones: d.phones, whatsapp, email: d.email,
+      langs: allLangs().filter((l) => finalLangs.includes(l)), phones: d.phones, whatsapp, email: d.email,
       address: fdI18n(form, "address"), hours: fdI18n(form, "hours"), countries: finalCountries,
       taxRateBp: Math.round(tax * 100), taxInclusive: form.get("taxInclusive") === "1",
     };
@@ -168,7 +168,7 @@ export async function saveStatuses(_p: ActionState, form: FormData): Promise<Act
       const ov: Partial<StatusDef> = {};
       const label = fdI18n(form, `st.${st}.label`);
       const changed: Partial<StatusDef["label"]> = {};
-      for (const l of LANGS) if (label[l] && label[l] !== def.label[l]) { if (label[l]!.length > 60) return fail(`${st}: label too long`); changed[l] = label[l]; }
+      for (const l of allLangs()) if (label[l] && label[l] !== (def.label as Record<string, string>)[l]) { if (label[l]!.length > 60) return fail(`${st}: label too long`); (changed as Record<string, string>)[l] = label[l]!; }
       if (Object.keys(changed).length) ov.label = changed as StatusDef["label"];
       const color = fd(form, `st.${st}.color`);
       if (color) {

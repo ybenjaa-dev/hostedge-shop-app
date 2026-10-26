@@ -1,3 +1,4 @@
+import { dirOf } from "@/lib/i18n-core";
 import { getSettings } from "@/lib/settings";
 import { getLang } from "@/lib/i18n";
 import { DICT } from "@/lib/dict";
@@ -10,7 +11,7 @@ export async function GET() {
   const labels = Object.fromEntries(Object.entries(d).filter(([k]) => /^(search\.suggest|pwa|privacy|push)\./.test(k)));
   const iconKey = s.branding.favicon || s.branding.logo;
   return Response.json({
-    lang, dir: lang === "ar" ? "rtl" : "ltr", store: s.store.name, icon: iconKey ? fileUrl(iconKey, "thumb") : "",
+    lang, dir: dirOf(lang), store: s.store.name, icon: iconKey ? fileUrl(iconKey, "thumb") : "",
     pwa: s.engage.pwa, visitors: s.engage.visitors, push: s.engage.push && !!s.engage.vapidPublic, pushKey: s.engage.vapidPublic, pushDelaySec: s.engage.pushDelaySec,
     labels,
   }, { headers: { "Cache-Control": "public, max-age=60, s-maxage=60" } });

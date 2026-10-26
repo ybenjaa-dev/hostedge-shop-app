@@ -1,9 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
+import { notFound } from "next/navigation";
 import "./globals.css";
 import { getSettings } from "@/lib/settings";
 import { getLang } from "@/lib/i18n";
-import { dirOf } from "@/lib/i18n-core";
+import { allLangMetas, dirOf, isLang } from "@/lib/i18n-core";
+import { getLangUi } from "@/lib/languages";
+import { LangMetaProvider } from "@/components/lang-context";
 import { googleFontsUrl } from "@/lib/fonts";
 import { fileUrl } from "@/lib/storage";
 import { onColor } from "@/lib/color";
@@ -40,25 +43,34 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#fbfaf7" };
 
-const themeInit = `try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.dataset.theme='dark'}catch(e){}`;
+/** Applies the saved theme before first paint. The owner can force a default, and hide the toggle (then visitors' old choice is ignored on the storefront). */
+const themeInit = (mode: string, locked: boolean) => `try{var m='${mode}',t=${locked} && location.pathname.indexOf('/admin')!==0?null:localStorage.getItem('theme');if(t==='dark'||(!t&&(m==='dark'||(m==='system'&&matchMedia('(prefers-color-scheme: dark)').matches))))document.documentElement.dataset.theme='dark'}catch(e){}`;
+const HIDE_CSS = `html[data-hide-lang] [data-lang-switcher],html[data-hide-theme] [data-theme-toggle]:not([data-admin]){display:none!important}@media (max-width:767px){html[data-hide-lang-m] [data-lang-switcher],html[data-hide-theme-m] [data-theme-toggle]:not([data-admin]){display:none!important}}`;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const s = await getSettings();
   const lang = await getLang();
+  const ui = await getLangUi();
+  const prefix = (await headers()).get("x-seo-lang");
+  if (prefix && !isLang(prefix)) notFound(); // /zz/… for a language the store doesn't have
+  const rtl = dirOf(lang) === "rtl";
   const b = s.branding;
   const radius = b.buttonStyle === "pill" ? "9999px" : b.buttonStyle === "square" ? "0.25rem" : "0.75rem";
-  const css = `:root:root{--brand:${b.primary};--brand-ink:${onColor(b.primary)};--secondary:${b.secondary};--accent:${b.accent};--accent-ink:${onColor(b.accent)};--btn-radius:${radius};--font-body:'${b.fontLatin}';--font-body-ar:'${b.fontArabic}';--font-display:'${lang === "ar" ? b.fontArabic : b.fontLatin}';--font-heading:'${lang === "ar" ? b.fontArabic : b.fontLatin}'}`;
+  const css = `:root:root{--brand:${b.primary};--brand-ink:${onColor(b.primary)};--secondary:${b.secondary};--accent:${b.accent};--accent-ink:${onColor(b.accent)};--btn-radius:${radius};--font-body:'${b.fontLatin}';--font-body-ar:'${b.fontArabic}';--font-display:'${rtl ? b.fontArabic : b.fontLatin}';--font-heading:'${rtl ? b.fontArabic : b.fontLatin}'}`;
   return (
-    <html lang={lang} dir={dirOf(lang)} suppressHydrationWarning>
+    <html lang={lang} dir={dirOf(lang)} suppressHydrationWarning
+      data-hide-lang={!ui.langSwitcher.show ? "" : undefined} data-hide-lang-m={!ui.langSwitcher.mobile ? "" : undefined}
+      data-hide-theme={!ui.themeToggle.show ? "" : undefined} data-hide-theme-m={!ui.themeToggle.mobile ? "" : undefined}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link rel="stylesheet" href={googleFontsUrl(b.fontLatin, b.fontArabic)} />
         <style dangerouslySetInnerHTML={{ __html: css }} />
-        <script dangerouslySetInnerHTML={{ __html: themeInit }} />
+        <style dangerouslySetInnerHTML={{ __html: HIDE_CSS }} />
+        <script dangerouslySetInnerHTML={{ __html: themeInit(ui.themeToggle.default, !ui.themeToggle.show) }} />
       </head>
       <body className="min-h-dvh antialiased">
-        <ToastProvider>{children}</ToastProvider>
+        <LangMetaProvider metas={allLangMetas().filter((m) => !m.custom || s.store.langs.includes(m.code))} ui={{ style: ui.langSwitcher.style }}><ToastProvider>{children}</ToastProvider></LangMetaProvider>
         <Analytics a={s.analytics} />
       </body>
     </html>

@@ -17,6 +17,7 @@ export const NAV: NavItem[] = [
   { href: "/admin/pages", label: "Pages", icon: "FileText", group: "Store", perm: "pages.edit" },
   { href: "/admin/shipping", label: "Shipping", icon: "Truck", group: "Store", perm: "shipping.manage" },
   { href: "/admin/settings", label: "Settings", icon: "Settings", group: "Store", perm: "dashboard.view", owner: true },
+  { href: "/admin/languages", label: "Languages", icon: "Languages", group: "Store", perm: "dashboard.view", owner: true },
   { href: "/admin/team", label: "Team", icon: "UserCog", group: "Admin", perm: "dashboard.view", owner: true },
   { href: "/admin/performance", label: "Team performance", icon: "Gauge", group: "Admin", perm: "performance.view" },
   { href: "/admin/activity", label: "Activity log", icon: "History", group: "Admin", perm: "activity.view" },
