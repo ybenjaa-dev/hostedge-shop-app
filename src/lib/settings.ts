@@ -55,6 +55,16 @@ export type Settings = {
     reviewsAutoApprove: boolean;
   };
   /** Default layout of the quantity-offer cards; a product can override it. */
+  /** Engagement features. */
+  engage: {
+    pwa: boolean;           // installable app + offline pages
+    visitors: boolean;      // anonymous visitor registry (after the visitor accepts the notice)
+    push: boolean;          // Web Push opt-in and sending
+    pushDelaySec: number;   // wait this long on the site before offering notifications
+    vapidPublic: string;    // public VAPID key (the private one is stored encrypted)
+    vapidSubject: string;   // mailto: / https: contact for push services
+    langUrls: boolean;      // /ar /fr /en URLs + hreflang + a sitemap per language
+  };
   offers: {
     template: OfferTemplate;
     /** One-click add-on offered right after the order is placed (before the thank-you page). */
@@ -117,6 +127,7 @@ export const DEFAULT_SETTINGS: Settings = {
     reviewsAutoApprove: false,
   },
   announcement: { enabled: true, text: { en: "Free delivery · Pay when you receive", fr: "Livraison rapide · Paiement à la livraison", ar: "الدفع عند الاستلام · توصيل سريع" }, href: "" },
+  engage: { pwa: true, visitors: true, push: true, pushDelaySec: 25, vapidPublic: "", vapidSubject: "", langUrls: true },
   offers: { template: "list", upsell: { enabled: true, discountPct: 10, windowMin: 30 } },
   hero: { slides: [] },
   home: {

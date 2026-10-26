@@ -14,7 +14,7 @@ export const PERMISSIONS = [
   "dashboard.view", "orders.view", "orders.confirm", "orders.fulfil", "orders.export", "orders.note",
   "cash.manage", "abandoned.view", "customers.view", "customers.block",
   "products.view", "products.edit", "media.manage", "categories.manage", "coupons.manage", "reviews.moderate",
-  "appearance.edit", "pages.edit", "shipping.manage", "activity.view", "performance.view",
+  "appearance.edit", "pages.edit", "shipping.manage", "activity.view", "performance.view", "visitors.view", "push.send",
 ] as const;
 export type Perm = (typeof PERMISSIONS)[number];
 

@@ -11,7 +11,7 @@ import { CURRENCIES, toMajorString } from "@/lib/money";
 import { COUNTRIES } from "@/lib/phone";
 import { LANGS, LANG_LABEL } from "@/lib/i18n-core";
 import { DEFAULT_STATUS_DEFS, ORDER_STATUSES } from "@/lib/order-status";
-import { saveStore, saveSocial, saveCheckout, saveAnalytics, saveStatuses, saveTemplates } from "../actions/save";
+import { saveStore, saveSocial, saveCheckout, saveAnalytics, saveStatuses, saveTemplates, saveEngage } from "../actions/save";
 
 export function StoreSection({ s }: { s: Settings }) {
   const st = s.store;
@@ -213,6 +213,27 @@ export function TemplatesSection({ s }: { s: Settings }) {
     <AdminForm action={saveTemplates} submitLabel="Save message templates">
       <p className="text-sm text-muted">WhatsApp messages. Placeholders: <code>{"{name}"}</code> <code>{"{store}"}</code> <code>{"{order}"}</code> <code>{"{total}"}</code> <code>{"{tracking}"}</code></p>
       {TPL.map(([k, label]) => <Panel key={k} title={label}><I18nField label={label} name={k} value={s.templates[k]} textarea rows={3} /></Panel>)}
+    </AdminForm>
+  );
+}
+
+export function EngageSection({ s }: { s: Settings }) {
+  const e = s.engage;
+  return (
+    <AdminForm action={saveEngage} submitLabel="Save">
+      <Panel title="App & notifications">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Toggle name="pwa" label="Installable app (PWA)" hint="Home-screen install, offline page, faster repeat visits on weak connections." defaultChecked={e.pwa} />
+          <Toggle name="push" label="Push notifications" hint="Ask visitors for permission and let you send them messages from Push notifications." defaultChecked={e.push} />
+          <Toggle name="visitors" label="Visitor registry" hint="After the visitor accepts the privacy notice: country, city, device and a device fingerprint. Used to spot repeat fake orders and to target push messages." defaultChecked={e.visitors} />
+        </div>
+        <div className="mt-3"><Toggle name="langUrls" label="Language URLs for search engines" hint="Each language gets its own address (/ar, /fr, /en), hreflang tags and its own sitemap, so Google shows the right language to the right person." defaultChecked={e.langUrls} /></div>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <Field label="Ask for notifications after (seconds)" htmlFor="pds" hint="5–600. Never shown on the cart or checkout."><input id="pds" name="pushDelaySec" type="number" min={5} max={600} defaultValue={e.pushDelaySec} className="field num" /></Field>
+          <Field label="Push contact (VAPID subject)" htmlFor="vs" hint="mailto:you@example.com — the push services may use it to reach you. Empty = the store email."><input id="vs" name="vapidSubject" defaultValue={e.vapidSubject} maxLength={200} dir="ltr" className="field" placeholder="mailto:hello@yourstore.com" /></Field>
+        </div>
+        <p className="mt-4 rounded-xl bg-sunken p-3 text-xs leading-relaxed text-muted">Collecting IP, location and device data is personal-data processing (Morocco law 09-08, GDPR). Visitors see a notice and nothing is recorded until they accept; keep your privacy page up to date.</p>
+      </Panel>
     </AdminForm>
   );
 }

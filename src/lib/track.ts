@@ -22,8 +22,8 @@ const cookie = (n: string) => document.cookie.split("; ").find((c) => c.startsWi
  * Ad-click context the server needs to match a later "confirmed/delivered" event back to the ad click:
  * the pixel cookies (_fbp, _fbc, _ttp) and the click ids from the landing URL (fbclid, ttclid), remembered for 90 days.
  */
-export function trackingContext(): { fbp?: string; fbc?: string; ttp?: string; ttclid?: string; url: string } {
-  const out: { fbp?: string; fbc?: string; ttp?: string; ttclid?: string; url: string } = { url: location.href.slice(0, 500) };
+export function trackingContext(): { fbp?: string; fbc?: string; ttp?: string; ttclid?: string; fp?: string; url: string } {
+  const out: { fbp?: string; fbc?: string; ttp?: string; ttclid?: string; fp?: string; url: string } = { url: location.href.slice(0, 500) };
   try {
     const q = new URLSearchParams(location.search);
     const saved = JSON.parse(localStorage.getItem("he_clk") ?? "{}") as { fbc?: string; ttclid?: string; at?: number };
@@ -32,6 +32,7 @@ export function trackingContext(): { fbp?: string; fbc?: string; ttp?: string; t
     const next = { fbc: fbclid ? `fb.1.${Date.now()}.${fbclid}` : fresh.fbc, ttclid: ttclid ?? fresh.ttclid, at: fbclid || ttclid ? Date.now() : fresh.at };
     if (fbclid || ttclid) localStorage.setItem("he_clk", JSON.stringify(next));
     out.fbp = cookie("_fbp") || undefined; out.fbc = cookie("_fbc") || next.fbc || undefined; out.ttp = cookie("_ttp") || undefined; out.ttclid = next.ttclid || undefined;
+    out.fp = localStorage.getItem("he_fp") || undefined; // set only after the visitor accepted the privacy notice
   } catch { /* storage blocked */ }
   return out;
 }

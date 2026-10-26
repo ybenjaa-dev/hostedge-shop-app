@@ -2,7 +2,7 @@ import { requireOwner } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { PageHeader } from "@/features/admin/components/ui";
 import { Tabs } from "@/features/settings/components/tabs";
-import { StoreSection, SocialSection, CheckoutSection, AnalyticsSection, StatusesSection, TemplatesSection } from "@/features/settings/components/store-sections";
+import { StoreSection, SocialSection, CheckoutSection, AnalyticsSection, StatusesSection, TemplatesSection, EngageSection } from "@/features/settings/components/store-sections";
 import { OffersSection } from "@/features/settings/components/offers-section";
 import { CitiesSection } from "@/features/settings/components/cities-section";
 import { one } from "@/features/settings/lib";
@@ -10,7 +10,7 @@ import { one } from "@/features/settings/lib";
 export const metadata = { title: "Settings" };
 const TABS = [
   { id: "store", label: "Store" }, { id: "checkout", label: "Checkout" }, { id: "offers", label: "Offers" }, { id: "cities", label: "Cities" }, { id: "social", label: "Social links" },
-  { id: "analytics", label: "Analytics & ads" }, { id: "statuses", label: "Order statuses" }, { id: "templates", label: "Messages" },
+  { id: "analytics", label: "Analytics & ads" }, { id: "statuses", label: "Order statuses" }, { id: "templates", label: "Messages" }, { id: "engage", label: "App, push & SEO" },
 ];
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
@@ -30,6 +30,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         {tab === "social" && <SocialSection s={s} />}
         {tab === "analytics" && <AnalyticsSection s={s} />}
         {tab === "statuses" && <StatusesSection s={s} />}
+        {tab === "engage" && <EngageSection s={s} />}
         {tab === "templates" && <TemplatesSection s={s} />}
       </div>
     </div>

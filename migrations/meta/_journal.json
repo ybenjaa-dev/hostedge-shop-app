@@ -50,6 +50,13 @@
       "when": 1792966474587,
       "tag": "0006_tracking_upsell",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1792991705371,
+      "tag": "0007_visitors_push_search",
+      "breakpoints": true
     }
   ]
 }

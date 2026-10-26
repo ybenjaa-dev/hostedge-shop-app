@@ -1,4 +1,5 @@
 "use server";
+import { refreshSearchText } from "@/features/catalog/search";
 import { sanitizeHtml } from "@/lib/rich-text";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -72,6 +73,7 @@ export async function saveProductAction(_p: ActionState, form: FormData): Promis
       [...new Set(ids)].filter((x) => x !== pid && real.includes(x)).forEach((lid, i) => stmts.push(db.prepare("INSERT INTO product_links (id, product_id, linked_id, kind, position) VALUES (?,?,?,?,?)").bind(newId(), pid, lid, kind, i)));
     }
     await db.batch(stmts);
+    await refreshSearchText([pid]);
     await audit(user, id ? "product.update" : "product.create", "product", pid);
     revalidatePath("/", "layout");
     if (!id) createdId = pid;
@@ -159,6 +161,7 @@ export async function importProductsAction(_p: ActionState, form: FormData): Pro
         }
       } catch (e) { errors.push(`Row ${n + 2}: ${e instanceof Error ? e.message : "invalid"}`); }
     }
+    await getEnv().DB.prepare("UPDATE products SET search_text = NULL WHERE updated_at >= ?").bind(Date.now() - 5 * 60_000).run(); // re-indexed lazily on the next search
     await audit(user, "product.import", "product", undefined, { created, updated, errors: errors.length });
     revalidatePath("/", "layout");
     return { message: `Imported: ${created} created, ${updated} updated${errors.length ? `, ${errors.length} skipped (${errors.slice(0, 3).join("; ")})` : ""}` };

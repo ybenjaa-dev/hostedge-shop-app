@@ -57,6 +57,23 @@ export async function saveStore(_p: ActionState, form: FormData): Promise<Action
   });
 }
 
+export async function saveEngage(_p: ActionState, form: FormData): Promise<ActionState> {
+  return run("owner", async (user) => {
+    const cur = (await getSettings()).engage;
+    const delay = Math.round(Number(fd(form, "pushDelaySec")));
+    const subject = fd(form, "vapidSubject");
+    if (subject && !/^(mailto:[^\s@]+@[^\s@]+|https:\/\/[^\s]+)$/.test(subject)) return fail("Contact must be mailto:you@example.com or an https:// link.");
+    await saveSettings("engage", {
+      ...cur, pwa: form.get("pwa") === "1", visitors: form.get("visitors") === "1", push: form.get("push") === "1", langUrls: form.get("langUrls") === "1",
+      pushDelaySec: Number.isFinite(delay) ? Math.min(600, Math.max(5, delay)) : cur.pushDelaySec, vapidSubject: subject,
+    });
+    if (form.get("push") === "1") await (await import("@/features/push/server")).getVapid(); // creates the key pair on first use
+    await audit(user, "settings.engage", "settings", "engage");
+    refresh();
+    return { message: "Saved" };
+  });
+}
+
 export async function saveSocial(_p: ActionState, form: FormData): Promise<ActionState> {
   return run("owner", async (user) => {
     const keys = ["instagram", "facebook", "tiktok", "snapchat", "youtube", "x", "whatsappChannel"] as const;

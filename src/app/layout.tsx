@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import "./globals.css";
 import { getSettings } from "@/lib/settings";
 import { getLang } from "@/lib/i18n";
@@ -16,7 +17,20 @@ export async function generateMetadata(): Promise<Metadata> {
   const s = await getSettings();
   const lang = await getLang();
   const fav = fileUrl(s.branding.favicon);
+  // per-language URLs: canonical + hreflang for every enabled language (the Worker tells us which page this is)
+  const h = await headers();
+  const path = h.get("x-seo-path");
+  let alternates: Metadata["alternates"];
+  if (s.engage.langUrls && path && !/^\/(admin|api|setup|order|checkout|cart|track|offline|accept-invite)(\/|$)/.test(path)) {
+    const origin = `${h.get("x-forwarded-proto") ?? "https"}://${h.get("host")}`;
+    const at = (l: string) => `${origin}/${l}${path === "/" ? "" : path}`;
+    alternates = { canonical: at(lang), languages: { ...Object.fromEntries(s.store.langs.map((l) => [l, at(l)])), "x-default": at(s.store.defaultLang) } };
+  }
   return {
+    alternates,
+    manifest: s.engage.pwa ? "/manifest.webmanifest" : undefined,
+    appleWebApp: s.engage.pwa ? { capable: true, title: s.store.name, statusBarStyle: "default" } : undefined,
+    other: { "mobile-web-app-capable": "yes" },
     title: { default: s.store.name, template: `%s · ${s.store.name}` },
     description: tr(s.store.tagline, lang) || s.store.name,
     icons: fav ? { icon: fav } : undefined,

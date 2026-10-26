@@ -11,6 +11,8 @@ export const NAV: NavItem[] = [
   { href: "/admin/coupons", label: "Coupons", icon: "Ticket", group: "Catalog", perm: "coupons.manage" },
   { href: "/admin/reviews", label: "Reviews", icon: "Star", group: "Catalog", perm: "reviews.moderate" },
   { href: "/admin/customers", label: "Customers", icon: "Users", group: "Customers", perm: "customers.view" },
+  { href: "/admin/visitors", label: "Visitors", icon: "Radar", group: "Customers", perm: "visitors.view" },
+  { href: "/admin/push", label: "Push notifications", icon: "BellRing", group: "Customers", perm: "push.send" },
   { href: "/admin/appearance", label: "Appearance", icon: "Palette", group: "Store", perm: "appearance.edit" },
   { href: "/admin/pages", label: "Pages", icon: "FileText", group: "Store", perm: "pages.edit" },
   { href: "/admin/shipping", label: "Shipping", icon: "Truck", group: "Store", perm: "shipping.manage" },

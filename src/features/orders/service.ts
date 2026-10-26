@@ -1,4 +1,5 @@
 import "server-only";
+import { isBlockedFingerprint, linkOrderToVisitor } from "@/features/visitors/server";
 import { getEnv } from "@/lib/env";
 import { ensureSchema } from "@/db/ensure-schema";
 import { browserEvent } from "@/features/tracking/capi-core";
@@ -26,7 +27,7 @@ async function nextOrderNumber(): Promise<string> {
 }
 
 /** Public tracking token = HMAC-less short code stored with the order id; lets confirmation page load the order. */
-export async function createOrder(raw: unknown, ctx: { ip: string; ua?: string | null }): Promise<CreateOrderResult> {
+export async function createOrder(raw: unknown, ctx: { ip: string; ua?: string | null; vid?: string | null }): Promise<CreateOrderResult> {
   await ensureSchema();
   const parsed = orderInputSchema.safeParse(raw);
   if (!parsed.success) {
@@ -56,7 +57,7 @@ export async function createOrder(raw: unknown, ctx: { ip: string; ua?: string |
   if (!ipRl.ok || !phoneRl.ok) return { ok: false, code: "rate_limit" };
 
   const blocked = await db.prepare("SELECT phone FROM blocked_phones WHERE phone = ?").bind(ph.e164).first();
-  if (blocked) return { ok: false, code: "blocked" };
+  if (blocked || (await isBlockedFingerprint(input.tracking?.fp))) return { ok: false, code: "blocked" };
 
   const quote = await buildQuote({ items: input.items, cityId: input.cityId, couponCode: input.couponCode });
   if (quote.errors.some((e) => e.reason === "stock")) return { ok: false, code: "stock" };
@@ -123,6 +124,7 @@ export async function createOrder(raw: unknown, ctx: { ip: string; ua?: string |
     return { ok: false, code: "error" };
   }
 
+  await linkOrderToVisitor(ctx.vid ?? null, id, ph.e164).catch(() => {});
   // server-side ad events (Meta / TikTok Conversions API) — in the background, never blocks or breaks the order
   void import("@/features/tracking/capi").then((m) => m.dispatchInBackground(id, "placed")).catch(() => {});
   return {

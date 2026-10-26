@@ -29,7 +29,12 @@ export function LangSwitcher({ current, langs, label }: { current: Lang; langs: 
         <div role="menu" aria-label={label} className="absolute end-0 top-full z-50 mt-1 min-w-44 overflow-hidden rounded-xl border border-line bg-surface p-1 text-ink shadow-xl">
           {langs.map((l) => (
             <button key={l} type="button" role="menuitemradio" aria-checked={l === current} lang={l} disabled={pending}
-              onClick={() => { setOpen(false); if (l !== current) start(() => { void setLang(l); }); }}
+              onClick={() => { setOpen(false); if (l !== current) start(async () => {
+                await setLang(l);
+                // on a language URL (/ar/…) stay on the matching URL of the new language
+                const m = /^\/(ar|fr|en)(?=\/|$)/.exec(location.pathname);
+                if (m) location.assign(`/${l}${location.pathname.slice(3)}${location.search}`);
+              }); }}
               className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-start text-sm hover:bg-sunken ${l === current ? "font-bold text-brand" : "text-ink"}`}>
               <Flag lang={l} />
               <span className="flex-1">{LANG_LABEL[l]}</span>
