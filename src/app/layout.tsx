@@ -11,7 +11,7 @@ import { getExtra } from "@/lib/appearance-extra-server";
 import { LangMetaProvider } from "@/components/lang-context";
 import { googleFontsUrl } from "@/lib/fonts";
 import { fileUrl } from "@/lib/storage";
-import { onColor, readableOnWhite } from "@/lib/color";
+import { onColor } from "@/lib/color";
 import { ToastProvider } from "@/components/toast";
 import { Analytics } from "@/components/analytics";
 import { tr } from "@/lib/i18n-core";
@@ -60,7 +60,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   if (prefix && !isLang(prefix)) notFound(); // /zz/… for a language the store doesn't have
   const rtl = dirOf(lang) === "rtl";
   const b = s.branding;
-  const brand = readableOnWhite(b.primary); // darkened just enough for 4.5:1 text contrast in light mode
+  const brand = b.primary; // the owner's colour, exactly as chosen
   const radius = b.buttonStyle === "pill" ? "9999px" : b.buttonStyle === "square" ? "0.25rem" : "0.75rem";
   const css = `:root:root{--brand:${brand};--brand-ink:${onColor(brand)};--secondary:${b.secondary};--accent:${b.accent};--accent-ink:${onColor(b.accent)};--btn-radius:${radius};--font-body:'${b.fontLatin}';--font-body-ar:'${b.fontArabic}';--font-display:'${rtl ? b.fontArabic : b.fontLatin}';--font-heading:'${rtl ? b.fontArabic : b.fontLatin}'}${brand !== b.primary ? `:root:root[data-theme="dark"]{--brand:${b.primary};--brand-ink:${onColor(b.primary)}}` : ""}`;
   return (

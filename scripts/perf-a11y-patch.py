@@ -16,12 +16,6 @@ def layout(s):
 const FONT_SWAP = `document.querySelectorAll('link[data-swap]').forEach(function(l){function s(){l.media='all'}l.sheet?s():l.addEventListener('load',s)})`;
 const HIDE_CSS =''', 1)
     s = s.replace('data-swap="" />', 'data-swap="" suppressHydrationWarning />')  # the swap script flips media before React hydrates
-    if 'readableOnWhite' not in s:
-        s = s.replace('import { onColor } from "@/lib/color";', 'import { onColor, readableOnWhite } from "@/lib/color";', 1)
-        s = s.replace('  const b = s.branding;\n', '  const b = s.branding;\n  const brand = readableOnWhite(b.primary); // darkened just enough for 4.5:1 text contrast in light mode\n', 1)
-        s = s.replace('--brand:${b.primary};--brand-ink:${onColor(b.primary)};', '--brand:${brand};--brand-ink:${onColor(brand)};', 1)
-        s = s.replace("--font-heading:'${rtl ? b.fontArabic : b.fontLatin}'}`;", "--font-heading:'${rtl ? b.fontArabic : b.fontLatin}'}${brand !== b.primary ? `:root:root[data-theme=\"dark\"]{--brand:${b.primary};--brand-ink:${onColor(b.primary)}}` : \"\"}`;", 1)
-        s = s.replace("--font-heading:${lang === \"ar\" ? \"'Reem Kufi'\" : \"'Cormorant Garamond'\"}}`;", "--font-heading:${lang === \"ar\" ? \"'Reem Kufi'\" : \"'Cormorant Garamond'\"}}${brand !== b.primary ? `:root:root[data-theme=\"dark\"]{--brand:${b.primary};--brand-ink:${onColor(b.primary)}}` : \"\"}`;", 1)
     return s
 edit('src/app/layout.tsx', layout)
 
