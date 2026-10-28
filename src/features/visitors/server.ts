@@ -70,3 +70,12 @@ export async function isBlockedFingerprint(fp: string | null | undefined): Promi
   if (!fp || !/^[a-f0-9]{16,64}$/.test(fp)) return false;
   return !!(await getEnv().DB.prepare("SELECT 1 AS x FROM blocked_fingerprints WHERE fp = ?").bind(fp).first());
 }
+
+/** A visitor is shut out when their device fingerprint, or the phone number they ordered with, has been blocked. */
+export async function isVisitorBlocked(vid: string | null | undefined): Promise<boolean> {
+  if (!vid || !/^[a-z0-9]{16,32}$/.test(vid)) return false;
+  const r = await getEnv().DB.prepare(`SELECT 1 AS x FROM visitors v WHERE v.id = ? AND (
+      (v.fp IS NOT NULL AND EXISTS (SELECT 1 FROM blocked_fingerprints b WHERE b.fp = v.fp))
+      OR (v.phone IS NOT NULL AND EXISTS (SELECT 1 FROM blocked_phones p WHERE p.phone = v.phone)))`).bind(vid).first();
+  return !!r;
+}

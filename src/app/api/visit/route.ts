@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { getSettings } from "@/lib/settings";
 import { clientIp, rateLimit } from "@/lib/ratelimit";
-import { recordVisit, type VisitBody } from "@/features/visitors/server";
+import { isVisitorBlocked, recordVisit, type VisitBody } from "@/features/visitors/server";
 
 const COOKIE = "he_vid";
 
@@ -15,5 +15,5 @@ export async function POST(req: Request) {
   const r = await recordVisit(req, body, jar.get(COOKIE)?.value ?? null);
   if (!r) return new Response(null, { status: 204 });
   jar.set(COOKIE, r.id, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax", httpOnly: true, secure: process.env.NODE_ENV === "production" });
-  return Response.json({ ok: true, isNew: r.isNew });
+  return Response.json({ ok: true, isNew: r.isNew, blocked: await isVisitorBlocked(r.id) });
 }

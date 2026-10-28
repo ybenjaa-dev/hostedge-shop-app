@@ -24,7 +24,7 @@ export async function OffersSection({ s }: { s: Settings }) {
     <>
       <Panel title="Offer card layout">
         <p className="mb-3 text-sm text-muted">How the “1 for 129 · 2 for 229 · 3 for 319” cards look on product pages. This is the default for every product — a product can pick its own layout in the <b>Quantity offers</b> section of its page. <Link href="/admin/products" className="font-bold text-brand underline">Set offers on a product</Link></p>
-        <AdminForm action={saveOfferTemplate} submitLabel="Save layout for all products"><OfferTemplatePicker name="template" value={s.offers.template} /></AdminForm>
+        <AdminForm action={saveOfferTemplate} submitLabel="Save layout for all products"><OfferTemplatePicker name="template" value={s.offers.template} currency={s.store.currency} lang={s.store.defaultLang} /></AdminForm>
       </Panel>
       <Panel title="One-tap add-on after checkout">
         <p className="mb-3 text-sm text-muted">Right after a customer places an order, offer one or two companion products (chosen on each product under <b>Cross-sell</b>) at a special price. One tap adds them to the same order — no new form, still pay on delivery. Free delivery is unlocked automatically if the new total passes your threshold.</p>

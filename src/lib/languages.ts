@@ -1,5 +1,7 @@
 import "server-only";
-import { getRaw, setRaw } from "@/lib/settings";
+import { setRaw } from "@/lib/settings";
+import { getEnv } from "@/lib/env";
+import { ensureSchema } from "@/db/ensure-schema";
 import { DICT } from "@/lib/dict";
 import { LANGS, setCustomLangs, customLangs, type LangMeta } from "@/lib/i18n-core";
 
@@ -16,16 +18,19 @@ export const DEFAULT_UI: LangUi = {
 type Stored = { custom: LangMeta[]; fallback: Record<string, string> };
 export type Strings = Record<string, Record<string, string>>;
 
-const K_CFG = "languages", K_STR = "ui_strings", K_UI = "ui_header";
+const K_CFG = "languages", K_STR = "ui_strings", K_UI = "ui_header", K_EXTRA = "appearance_extra";
 const PRISTINE = new Map<string, Record<string, string>>();
-let cache: { at: number; cfg: Stored; strings: Strings; ui: LangUi } | null = null;
+let cache: { at: number; cfg: Stored; strings: Strings; ui: LangUi; extra: string | null } | null = null;
 
 const parse = <T,>(raw: string | null, d: T): T => { try { return raw ? { ...d, ...(JSON.parse(raw) as object) } as T : d; } catch { return d; } };
 
 /** Load the saved languages once every few seconds and push them into the dictionaries (so every `t()` in the app sees them). */
 export async function ensureLangs(force = false) {
   if (!force && cache && Date.now() - cache.at < 10_000) return cache;
-  const [c, s, u] = await Promise.all([getRaw(K_CFG), getRaw(K_STR), getRaw(K_UI)]);
+  await ensureSchema();
+  const rows = await getEnv().DB.prepare("SELECT key, value FROM settings WHERE key IN (?, ?, ?, ?)").bind(K_CFG, K_STR, K_UI, K_EXTRA).all<{ key: string; value: string }>(); // one query for everything the storefront needs on each page
+  const raw: Record<string, string> = Object.fromEntries((rows.results ?? []).map((r) => [r.key, r.value]));
+  const [c, s, u] = [raw[K_CFG] ?? null, raw[K_STR] ?? null, raw[K_UI] ?? null];
   const cfg = parse<Stored>(c, { custom: [], fallback: {} });
   const strings = parse<Strings>(s, {});
   const ui = { ...DEFAULT_UI, ...parse<Partial<LangUi>>(u, {}), } as LangUi;
@@ -41,10 +46,11 @@ export async function ensureLangs(force = false) {
     const base = cfg.fallback[m.code] && PRISTINE.has(cfg.fallback[m.code]!) ? cfg.fallback[m.code]! : "en";
     dict[m.code] = { ...PRISTINE.get(base)!, ...(strings[m.code] ?? {}) };
   }
-  cache = { at: Date.now(), cfg, strings, ui };
+  cache = { at: Date.now(), cfg, strings, ui, extra: raw[K_EXTRA] ?? null };
   return cache;
 }
 
+export async function getExtraRaw(): Promise<string | null> { return (await ensureLangs()).extra; }
 export async function getLangUi(): Promise<LangUi> { return (await ensureLangs()).ui; }
 export async function getLangConfig() { const c = await ensureLangs(); return { custom: c.cfg.custom, fallback: c.cfg.fallback, strings: c.strings, ui: c.ui }; }
 export const pristineKeys = (): string[] => Object.keys(PRISTINE.get("en") ?? (DICT as unknown as Record<string, object>).en);

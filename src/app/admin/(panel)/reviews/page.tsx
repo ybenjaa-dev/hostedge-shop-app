@@ -35,7 +35,7 @@ export default async function ReviewsPage({ searchParams }: { searchParams: Prom
       <PageHeader title="Reviews" sub="Moderate customer reviews before they appear in the store." />
       <Tabs base="/admin/reviews" label="Filter reviews" current={status} items={FILTERS.map(([id, label]) => ({ id, href: `/admin/reviews?status=${id}`, label: <>{label}{id !== "all" && <span className="num ms-1.5 rounded-full bg-sunken px-1.5 text-xs">{cnt[id] ?? 0}</span>}</> }))} />
       <Panel className="mb-6">
-        <details>
+        <details data-keep-open>
           <summary className="flex min-h-11 cursor-pointer items-center gap-2 font-bold"><Star className="size-4" aria-hidden />Add a review manually</summary>
           <div className="mt-4"><AdminForm action={addReview} submitLabel="Add review" resetOnSuccess>
             <div className="grid gap-4 sm:grid-cols-2">

@@ -8,6 +8,7 @@ import { can, ROLE_INFO, type Role } from "@/lib/permissions";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { OrderNotifier } from "./order-notifier";
 import { Avatar } from "@/components/avatar";
+import { CommandPalette } from "./command-palette";
 
 type Ic = React.ComponentType<{ className?: string }>;
 const icon = (n: string) => ((Icons as unknown as Record<string, Ic>)[n] ?? Icons.Circle);
@@ -74,7 +75,7 @@ export function AdminChrome({ role, userName, email, avatar, storeName, logout, 
         </header>
         <main className="mx-auto max-w-7xl p-4 sm:p-6">{children}</main>
       </div>
-      {cmd && <CommandPalette items={items} onClose={() => setCmd(false)} />}
+      {cmd && <CommandPalette items={items} role={role} onClose={() => setCmd(false)} />}
     </div>
   );
 }
@@ -113,28 +114,6 @@ function ProfileMenu({ userName, email, avatar, role, logout }: { userName: stri
           <form action={logout}><button role="menuitem" className={item}><Icons.LogOut className="size-4" aria-hidden />Sign out</button></form>
         </div>
       )}
-    </div>
-  );
-}
-
-function CommandPalette({ items, onClose }: { items: NavItem[]; onClose: () => void }) {
-  const [q, setQ] = useState("");
-  const [i, setI] = useState(0);
-  const ref = useRef<HTMLInputElement>(null);
-  useEffect(() => ref.current?.focus(), []);
-  const n = q.trim();
-  const results: { label: string; href: string }[] = [
-    ...(n ? [{ label: `Search orders for “${n}”`, href: `/admin/orders?q=${encodeURIComponent(n)}` }, { label: `Search products for “${n}”`, href: `/admin/products?q=${encodeURIComponent(n)}` }, { label: `Search customers for “${n}”`, href: `/admin/customers?q=${encodeURIComponent(n)}` }] : []),
-    ...items.filter((x) => x.label.toLowerCase().includes(n.toLowerCase())).map((x) => ({ label: `Go to ${x.label}`, href: x.href })),
-  ];
-  const go = (href: string) => { onClose(); window.location.assign(href); };
-  return (
-    <div className="fixed inset-0 z-[90] grid place-items-start justify-items-center bg-black/50 px-4 pt-[12vh]" role="dialog" aria-modal="true" aria-label="Command search" onClick={onClose}>
-      <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-line bg-surface shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <input ref={ref} value={q} onChange={(e) => { setQ(e.target.value); setI(0); }} placeholder="Search orders, products, customers or jump to…" className="w-full border-b border-line bg-transparent px-5 py-4 text-base outline-none"
-          onKeyDown={(e) => { if (e.key === "Escape") onClose(); else if (e.key === "ArrowDown") { e.preventDefault(); setI((x) => Math.min(x + 1, results.length - 1)); } else if (e.key === "ArrowUp") { e.preventDefault(); setI((x) => Math.max(0, x - 1)); } else if (e.key === "Enter" && results[i]) go(results[i]!.href); }} />
-        <ul className="max-h-80 overflow-auto p-2">{results.map((r, k) => <li key={r.href}><button className={`w-full rounded-lg px-3 py-2.5 text-start text-sm ${k === i ? "bg-sunken font-semibold" : ""}`} onMouseEnter={() => setI(k)} onClick={() => go(r.href)}>{r.label}</button></li>)}</ul>
-      </div>
     </div>
   );
 }
