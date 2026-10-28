@@ -9,6 +9,7 @@ import { statusInfo } from "@/lib/status-labels";
 import { getEnv } from "@/lib/env";
 import { OrdersTable } from "@/features/orders/components/orders-table";
 import { PageHeader, Empty, Pager, FilterBar, FbItem } from "@/features/admin/components/ui";
+import { ExportButton } from "@/features/admin/components/export-button";
 import { bulkSendAction } from "@/features/orders/carrier-bridge";
 
 export const metadata = { title: "Orders" };
@@ -34,7 +35,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
   );
   return (
     <>
-      <PageHeader title="Orders" sub={`${total} order${total === 1 ? "" : "s"}`} />
+      <PageHeader title="Orders" sub={`${total} order${total === 1 ? "" : "s"}`} actions={can(me.role, "orders.export") && total > 0 ? <ExportButton href={`/admin/orders/export?${qs}`} count={qs ? total : undefined} noun="order" /> : undefined} />
       <div className="no-scrollbar mb-4 flex gap-2 overflow-x-auto pb-1">
         {tab("", "All", Object.values(counts).reduce((a, b) => a + b, 0))}
         {ORDER_STATUSES.filter((x) => counts[x]).map((x) => tab(x, labels[x]!, counts[x]))}
@@ -48,7 +49,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
       {rows.length === 0 ? (
         <Empty title="No orders found" hint="Orders placed on the storefront show up here instantly." action={<Link href="/admin/orders" className="btn btn-outline btn-sm">Clear filters</Link>} />
       ) : (
-        <OrdersTable rows={rows} labels={labels} colors={colors} carriers={carriers.results.map((c) => ({ id: c.id, name: c.id }))} exportQs={qs} bulkCarrier={can(me.role, "orders.fulfil") ? bulkSendAction : undefined} statuses={ORDER_STATUSES.filter((x) => canSetStatus(me.role, x))} canExport={can(me.role, "orders.export")} canPrint={can(me.role, "orders.fulfil") || can(me.role, "orders.export")} />
+        <OrdersTable rows={rows} labels={labels} colors={colors} carriers={carriers.results.map((c) => ({ id: c.id, name: c.id }))} bulkCarrier={can(me.role, "orders.fulfil") ? bulkSendAction : undefined} statuses={ORDER_STATUSES.filter((x) => canSetStatus(me.role, x))} canPrint={can(me.role, "orders.fulfil") || can(me.role, "orders.export")} />
       )}
       <Pager page={page} pages={Math.max(1, Math.ceil(total / perPage))} base="/admin/orders" params={sp} />
     </>

@@ -10,6 +10,7 @@ import { OrderNotifier } from "./order-notifier";
 import { Avatar } from "@/components/avatar";
 import { CommandPalette } from "./command-palette";
 
+const BELL_PERMS = ["orders.view", "abandoned.view", "products.view", "reviews.moderate"] as const;
 type Ic = React.ComponentType<{ className?: string }>;
 const icon = (n: string) => ((Icons as unknown as Record<string, Ic>)[n] ?? Icons.Circle);
 
@@ -68,7 +69,7 @@ export function AdminChrome({ role, userName, email, avatar, storeName, logout, 
           <button onClick={() => setCmd(true)} className="btn btn-outline btn-sm min-w-0 flex-1 justify-start gap-2 font-normal text-muted sm:max-w-xs sm:flex-none"><Icons.Search className="size-4" /><span className="truncate">Search…</span><kbd className="ms-auto hidden rounded border border-line px-1.5 text-[11px] sm:block">Ctrl K</kbd></button>
           <div className="ms-auto flex items-center gap-1">
             <Link href="/" target="_blank" className="btn btn-ghost btn-sm hidden sm:inline-flex"><Icons.ExternalLink className="size-4" />View store</Link>
-            {can(role, "orders.view") && <OrderNotifier onPending={setPending} />}
+            {BELL_PERMS.some((p) => can(role, p)) && <OrderNotifier onPending={setPending} userKey={email} canOrders={can(role, "orders.view")} />}
             <ThemeToggle admin />
             <ProfileMenu userName={userName} email={email} avatar={avatar} role={role} logout={logout} />
           </div>

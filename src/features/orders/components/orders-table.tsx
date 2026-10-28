@@ -13,9 +13,9 @@ import { Badge } from "@/features/admin/components/ui";
 export type Row = { id: string; number: string; status: string; name: string; phone: string; city: string; total: number; currency: string; carrierId: string | null; trackingNumber: string | null; attempts: number; createdAt: number; itemsCount: number; shipmentError: string | null };
 type Carrier = { id: string; name: string };
 
-export function OrdersTable({ rows, labels, colors, carriers, exportQs, bulkCarrier, statuses = [...ORDER_STATUSES], canExport = true, canPrint = true }: {
-  rows: Row[]; labels: Record<string, string>; colors: Record<string, string>; carriers: Carrier[]; exportQs: string;
-  statuses?: string[]; canExport?: boolean; canPrint?: boolean;
+export function OrdersTable({ rows, labels, colors, carriers, bulkCarrier, statuses = [...ORDER_STATUSES], canPrint = true }: {
+  rows: Row[]; labels: Record<string, string>; colors: Record<string, string>; carriers: Carrier[];
+  statuses?: string[]; canPrint?: boolean;
   bulkCarrier?: (ids: string[], carrierId: string) => Promise<{ orderId: string; ok: boolean; error?: string }[]>;
 }) {
   const [sel, setSel] = useState<Set<string>>(new Set());
@@ -79,7 +79,6 @@ export function OrdersTable({ rows, labels, colors, carriers, exportQs, bulkCarr
           </tr>
         ))}
       </DataTable>
-      {canExport && <a href={`/admin/orders/export?${exportQs}`} className="btn btn-outline btn-sm mt-3"><Download className="size-4" />Export filtered CSV</a>}
     </div>
   );
 }

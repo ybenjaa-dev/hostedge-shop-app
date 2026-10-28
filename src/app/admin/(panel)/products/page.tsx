@@ -1,10 +1,11 @@
 import { requirePerm } from "@/lib/auth";
 import Link from "next/link";
-import { Plus, Upload, Download } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import { listAdminProducts, listCategoryOptions } from "@/features/catalog-admin/queries";
 import { getSettings } from "@/lib/settings";
 import { tr } from "@/lib/i18n-core";
 import { PageHeader, Empty, Pager, FilterBar, FbItem } from "@/features/admin/components/ui";
+import { ExportButton } from "@/features/admin/components/export-button";
 import { ProductsTable } from "@/features/catalog-admin/products-table";
 
 export const metadata = { title: "Products" };
@@ -19,7 +20,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
     <>
       <PageHeader title="Products" sub={`${total} product${total === 1 ? "" : "s"}`} actions={<>
         <Link href="/admin/products/import" className="btn btn-outline btn-sm"><Upload className="size-4" />Import CSV</Link>
-        <a href="/admin/products/export" className="btn btn-outline btn-sm"><Download className="size-4" />Export CSV</a>
+        <ExportButton href="/admin/products/export" />
         <Link href="/admin/products/new" className="btn btn-primary btn-sm"><Plus className="size-4" />New product</Link></>} />
       <FilterBar>
         <FbItem grow><input name="q" defaultValue={sp.q} placeholder="Search name, SKU…" aria-label="Search" className="field" /></FbItem>
