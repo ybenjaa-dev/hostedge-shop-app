@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getEnv } from "@/lib/env";
+import { clearMemo } from "@/lib/mem-cache";
 import { ensureSchema } from "@/db/ensure-schema";
 import { createSession, createUser, hasAnyUser, logActivity } from "@/lib/auth";
 import { DEFAULT_SETTINGS, saveSettings } from "@/lib/settings";
@@ -49,6 +50,7 @@ export async function runSetup(_prev: SetupState, form: FormData): Promise<Setup
       slides: [{ image: "uploads/sample-hero.svg", title: { en: "Little things for little people", fr: "De petites merveilles pour les petits", ar: "أشياء صغيرة لأصحاب القلوب الصغيرة" }, sub: { en: "Toys, baby care, clothes and gear for every age. Safety-tested, and you pay when it arrives.", fr: "Jouets, puériculture, vêtements et équipement pour chaque âge. Testés pour la sécurité, payables à la livraison.", ar: "ألعاب وعناية بالطفل وملابس ومستلزمات لكل عمر. مختبرة للسلامة وتدفع عند الاستلام." }, cta: { en: "Shop by age", fr: "Acheter par âge", ar: "تسوّق حسب العمر" }, href: "/shop" }],
     });
   }
+  clearMemo();
   await createSession(userId);
   await logActivity({ id: userId, name: d.name }, "setup.completed", "store", undefined, { country: country.code });
   redirect("/admin");
