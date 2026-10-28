@@ -35,6 +35,7 @@ const en = {
   "bk.tagline": "Books worth the wait — pay when they arrive", "bk.searchPh": "A title, an author…", "bk.allBooks": "All books", "bk.genres": "Genres", "bk.allGenres": "All genres", "bk.footerQuote": "Read widely, and pay only at the door.",
   "bk.byline": "by {name}", "bk.browse": "Browse the shelves", "bk.details": "Book details", "bk.author": "Author", "bk.genre": "Genre", "bk.sample": "A taste of the book", "bk.readers": "Reader notes",
   "bk.contents": "Contents", "bk.titles": "{n} titles", "bk.newSub": "Fresh on our shelves this season", "bk.listSub": "What our readers keep reaching for", "bk.pick": "The bookseller's pick", "bk.readSample": "Read a sample",
+  "err.notFoundSub": "The page you're looking for doesn't exist or may have moved.", "err.errorSub": "An unexpected problem occurred on our side. Please try again in a moment.", "err.ref": "Reference: {ref}", "err.shop": "Browse the shop", "err.track": "Track my order", "err.searchPh": "Search products…", "err.popular": "Popular categories", "err.contact": "Need help? Contact us",
 } as const;
 
 export type DictKey = keyof typeof en;
@@ -74,6 +75,7 @@ const fr: D = {
   "bk.tagline": "Des livres qui valent l'attente — payez à la réception", "bk.searchPh": "Un titre, un auteur…", "bk.allBooks": "Tous les livres", "bk.genres": "Genres", "bk.allGenres": "Tous les genres", "bk.footerQuote": "Lisez sans compter, ne payez qu'à la porte.",
   "bk.byline": "de {name}", "bk.browse": "Parcourir les rayons", "bk.details": "Fiche du livre", "bk.author": "Auteur", "bk.genre": "Genre", "bk.sample": "Un avant-goût du livre", "bk.readers": "Mots de lecteurs",
   "bk.contents": "Sommaire", "bk.titles": "{n} titres", "bk.newSub": "Fraîchement arrivés sur nos étagères", "bk.listSub": "Ce que nos lecteurs ne lâchent plus", "bk.pick": "Le coup de cœur du libraire", "bk.readSample": "Lire un extrait",
+  "err.notFoundSub": "La page que vous cherchez n'existe pas ou a été déplacée.", "err.errorSub": "Un problème inattendu est survenu de notre côté. Réessayez dans un instant.", "err.ref": "Référence : {ref}", "err.shop": "Parcourir la boutique", "err.track": "Suivre ma commande", "err.searchPh": "Rechercher un produit…", "err.popular": "Catégories populaires", "err.contact": "Besoin d'aide ? Contactez-nous",
 };
 
 const ar: D = {
@@ -110,6 +112,7 @@ const ar: D = {
   "bk.tagline": "كتب تستحق الانتظار — ادفع عند الاستلام", "bk.searchPh": "عنوان أو مؤلف…", "bk.allBooks": "كل الكتب", "bk.genres": "التصنيفات", "bk.allGenres": "كل التصنيفات", "bk.footerQuote": "اقرأ بلا حدود، ولا تدفع إلا عند الباب.",
   "bk.byline": "تأليف {name}", "bk.browse": "تصفّح الرفوف", "bk.details": "بطاقة الكتاب", "bk.author": "المؤلف", "bk.genre": "التصنيف", "bk.sample": "مقتطف من الكتاب", "bk.readers": "آراء القرّاء",
   "bk.contents": "الفهرس", "bk.titles": "{n} عناوين", "bk.newSub": "وصل حديثاً إلى رفوفنا", "bk.listSub": "ما يعود إليه قرّاؤنا دائماً", "bk.pick": "اختيار صاحب المكتبة", "bk.readSample": "اقرأ مقتطفاً",
+  "err.notFoundSub": "الصفحة التي تبحث عنها غير موجودة أو تم نقلها.", "err.errorSub": "حدثت مشكلة غير متوقعة من جانبنا. حاول مرة أخرى بعد قليل.", "err.ref": "المرجع: {ref}", "err.shop": "تصفح المتجر", "err.track": "تتبع طلبي", "err.searchPh": "ابحث عن منتج…", "err.popular": "فئات شائعة", "err.contact": "تحتاج مساعدة؟ تواصل معنا",
 };
 
 export const DICT: Record<Lang, D> = { en: en as unknown as D, fr, ar };
