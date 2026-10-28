@@ -1,8 +1,24 @@
+/** The three languages the interface ships with. More can be added in Admin → Languages. */
 export const LANGS = ["ar", "fr", "en"] as const;
-export type Lang = (typeof LANGS)[number];
-export const LANG_LABEL: Record<Lang, string> = { ar: "العربية", fr: "Français", en: "English" };
-export const isLang = (s: unknown): s is Lang => typeof s === "string" && (LANGS as readonly string[]).includes(s);
-export const dirOf = (l: Lang) => (l === "ar" ? "rtl" : "ltr");
+export type Lang = string;
+
+export type LangMeta = { code: string; name: string; native: string; dir: "ltr" | "rtl"; flag: string; custom?: boolean };
+const BUILTIN: Record<string, LangMeta> = {
+  ar: { code: "ar", name: "Arabic", native: "العربية", dir: "rtl", flag: "MA" },
+  fr: { code: "fr", name: "French", native: "Français", dir: "ltr", flag: "FR" },
+  en: { code: "en", name: "English", native: "English", dir: "ltr", flag: "GB" },
+};
+let custom: LangMeta[] = [];
+/** Called by the language loader (src/lib/languages.ts) whenever the saved list changes. */
+export function setCustomLangs(list: LangMeta[]) { custom = list.filter((l) => !BUILTIN[l.code]); }
+export const customLangs = (): LangMeta[] => custom;
+export const allLangs = (): Lang[] => [...LANGS, ...custom.map((c) => c.code)];
+export const langMeta = (code: string): LangMeta | undefined => BUILTIN[code] ?? custom.find((c) => c.code === code);
+export const allLangMetas = (): LangMeta[] => [...LANGS.map((c) => BUILTIN[c]!), ...custom];
+export const labelOf = (code: string): string => langMeta(code)?.native ?? code;
+export const LANG_LABEL: Record<string, string> = new Proxy({} as Record<string, string>, { get: (_t, k) => (typeof k === "string" ? labelOf(k) : undefined) });
+export const isLang = (s: unknown): s is Lang => typeof s === "string" && allLangs().includes(s);
+export const dirOf = (l: Lang): "ltr" | "rtl" => langMeta(l)?.dir ?? "ltr";
 
 export type I18n = Partial<Record<Lang, string>>;
 

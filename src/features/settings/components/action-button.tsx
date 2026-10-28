@@ -3,6 +3,7 @@ import { useTransition, type ReactNode } from "react";
 import { Loader2 } from "lucide-react";
 import type { ActionState } from "@/features/admin/run";
 import { useToast } from "@/components/toast";
+import { useConfirm } from "@/components/confirm";
 
 /** A one-click server action (approve, delete, toggle…) with confirm, pending state and toast feedback. */
 export function ActionButton({ action, fields = {}, children, confirm, className = "btn btn-outline btn-sm", title, onDone }: {
@@ -11,10 +12,11 @@ export function ActionButton({ action, fields = {}, children, confirm, className
 }) {
   const [pending, start] = useTransition();
   const toast = useToast();
+  const ask = useConfirm();
   return (
     <button type="button" className={className} disabled={pending} aria-busy={pending} title={title} aria-label={title}
-      onClick={() => {
-        if (confirm && !window.confirm(confirm)) return;
+      onClick={async () => {
+        if (confirm && !(await ask(confirm))) return;
         const fd = new FormData();
         for (const [k, v] of Object.entries(fields)) fd.set(k, v);
         start(async () => {

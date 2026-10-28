@@ -1,4 +1,7 @@
+import { requirePerm } from "@/lib/auth";
+import { can, canSetStatus } from "@/lib/permissions";
 import Link from "next/link";
+import { OrderTimeline } from "@/features/orders/components/order-timeline";
 import { notFound } from "next/navigation";
 import { ArrowLeft, MessageCircle, Phone, Printer, FileText, AlertTriangle } from "lucide-react";
 import { getOrderFull } from "@/features/orders/queries";
@@ -19,17 +22,20 @@ export const metadata = { title: "Order" };
 const fill = (tpl: string, v: Record<string, string>) => Object.entries(v).reduce((s, [k, x]) => s.replaceAll(`{${k}}`, x), tpl);
 
 export default async function OrderDetail({ params }: { params: Promise<{ id: string }> }) {
+  const me = await requirePerm("orders.view");
+  const mayStatus = (TRANSITIONS_FILTER: string[]) => TRANSITIONS_FILTER.filter((x) => canSetStatus(me.role, x));
   const { id } = await params;
   const data = await getOrderFull(id);
   if (!data) notFound();
   const { o, items, history, notes, blocked, prior } = data;
+  const vis = o.visitor_id ? await getEnv().DB.prepare("SELECT v.id, v.fp, v.country, v.city, v.browser, v.os, v.device, v.ip, v.visits, (SELECT 1 FROM blocked_fingerprints b WHERE b.fp = v.fp) AS blocked, (SELECT COUNT(*) FROM visitors x WHERE x.fp = v.fp AND x.id != v.id) AS others FROM visitors v WHERE v.id = ?").bind(o.visitor_id).first<{ id: string; fp: string | null; country: string | null; city: string | null; browser: string | null; os: string | null; device: string | null; ip: string | null; visits: number; blocked: number | null; others: number }>() : null;
   const s = await getSettings();
   const cur = o.currency as string;
   const fmt = (n: number) => formatMoney(n, cur, "en");
   const status = o.status as OrderStatus;
   const labels = Object.fromEntries(ORDER_STATUSES.map((x) => [x, statusInfo(s, x, "en").label]));
   const info = statusInfo(s, status, "en");
-  const lang = (o.lang as "ar" | "fr" | "en" | null) ?? s.store.defaultLang;
+  const lang = (o.lang as string | null) ?? s.store.defaultLang;
   const vars = { name: o.name as string, store: s.store.name, order: `#${o.number}`, total: formatMoney(o.total as number, cur, lang), tracking: (o.tracking_number as string) ?? "" };
   const confirmMsg = fill(tr(s.templates.confirm, lang), vars);
   const shippedMsg = fill(tr(s.templates.shipped, lang), vars);
@@ -79,29 +85,15 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
           </Panel>
 
           <Panel title="Status">
-            <StatusPanel id={o.id as string} allowed={TRANSITIONS[status] ?? []} labels={labels} current={status} />
+            {mayStatus(TRANSITIONS[status] ?? []).length > 0 ? <StatusPanel id={o.id as string} allowed={mayStatus(TRANSITIONS[status] ?? [])} labels={labels} current={status} /> : <p className="text-sm text-muted">Your role can’t change the status of this order.</p>}
             {status === "postponed" && o.postpone_until && <p className="mt-3 text-sm text-muted">Postponed until {new Date(o.postpone_until as number).toLocaleString("en-GB")}</p>}
             {(o.attempts as number) > 0 && <p className="mt-3 text-sm font-semibold">No-answer attempts: <span className="num">{o.attempts as number}</span></p>}
           </Panel>
 
-          <Panel title="Timeline">
-            <ol className="relative space-y-4 border-s-2 border-line ps-5">
-              {history.map((h) => {
-                const i = statusInfo(s, h.to_status, "en");
-                return (
-                  <li key={h.id} className="relative">
-                    <span className="absolute -start-[1.65rem] top-1 size-3 rounded-full ring-4 ring-surface" style={{ background: i.color }} />
-                    <p className="text-sm"><b>{i.label}</b>{h.from_status && <span className="text-muted"> ← {labels[h.from_status]}</span>}</p>
-                    <p className="text-xs text-muted">{new Date(h.created_at).toLocaleString("en-GB")} · {h.user_name ?? "system"}</p>
-                    {h.note && <p className="mt-0.5 text-sm">“{h.note}”</p>}
-                  </li>
-                );
-              })}
-            </ol>
-          </Panel>
+          <Panel title="Timeline"><OrderTimeline history={history} current={status} s={s} /></Panel>
 
           <Panel title="Internal notes">
-            <NoteForm id={o.id as string} />
+            {can(me.role, "orders.note") && <NoteForm id={o.id as string} />}
             <ul className="mt-4 space-y-3">{notes.map((n) => <li key={n.id} className="rounded-lg bg-sunken p-3 text-sm"><p>{n.body}</p><p className="mt-1 text-xs text-muted">{n.user_name} · {new Date(n.created_at).toLocaleString("en-GB")}</p></li>)}</ul>
           </Panel>
         </div>
@@ -119,14 +111,22 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
               <a className="btn btn-sm bg-[#25D366] text-white hover:opacity-90" target="_blank" rel="noopener noreferrer" href={whatsappLink(o.phone as string, confirmMsg)}><MessageCircle className="size-4" />WhatsApp: confirm order</a>
               {status === "shipped" || status === "out_for_delivery" ? <a className="btn btn-outline btn-sm" target="_blank" rel="noopener noreferrer" href={whatsappLink(o.phone as string, shippedMsg)}><MessageCircle className="size-4" />WhatsApp: shipped</a> : null}
               {status === "delivered" ? <a className="btn btn-outline btn-sm" target="_blank" rel="noopener noreferrer" href={whatsappLink(o.phone as string, deliveredMsg)}><MessageCircle className="size-4" />WhatsApp: thank you</a> : null}
-              <BlockPhone phone={o.phone as string} blocked={blocked} />
+              {can(me.role, "customers.block") && <BlockPhone phone={o.phone as string} blocked={blocked} />}
             </div>
-            <details className="mt-4"><summary className="cursor-pointer text-sm font-semibold text-brand">Edit address</summary><div className="mt-3"><EditOrderForm o={{ id: o.id as string, name: o.name as string, address: o.address as string, city: o.city as string, notes: (o.notes as string) ?? "" }} /></div></details>
+            {can(me.role, "orders.confirm") && <details className="mt-4"><summary className="cursor-pointer text-sm font-semibold text-brand">Edit address</summary><div className="mt-3"><EditOrderForm o={{ id: o.id as string, name: o.name as string, address: o.address as string, city: o.city as string, notes: (o.notes as string) ?? "" }} /></div></details>}
           </Panel>
-          <Panel title="Shipping">
+          {vis && can(me.role, "visitors.view") && <Panel title="Visitor">
+            <p className="text-sm font-semibold">{[vis.city, vis.country].filter(Boolean).join(", ") || "Location unknown"}</p>
+            <p className="text-sm text-muted">{[vis.browser, vis.os, vis.device].filter(Boolean).join(" · ")}</p>
+            <p className="mt-1 text-xs text-muted">IP <span dir="ltr">{vis.ip ?? "—"}</span> · {vis.visits} visit{vis.visits === 1 ? "" : "s"}</p>
+            {vis.others > 0 && <p className="mt-2 rounded-lg bg-warn/10 p-2 text-xs font-semibold">This device also appears under {vis.others} other visitor id{vis.others === 1 ? "" : "s"}.</p>}
+            {vis.blocked ? <p className="mt-2"><Badge color="#dc2626">Device blocked</Badge></p> : null}
+            <Link href={`/admin/visitors/${vis.id}`} className="mt-3 inline-block text-sm font-semibold text-brand underline">Open visitor profile</Link>
+          </Panel>}
+          {(can(me.role, "orders.fulfil") || !!o.tracking_number) && <Panel title="Shipping">
             {o.tracking_number && <p className="mb-3 text-sm">Carrier <b className="capitalize">{o.carrier_id as string}</b> · <span dir="ltr" className="num font-bold">{o.tracking_number as string}</span>{o.label_key ? <> · <a className="font-semibold text-brand underline" href={`/api/carriers/labels/${o.number}`}>Label PDF</a></> : null}</p>}
-            <CarrierPanel orderId={o.id as string} status={status} carrierId={o.carrier_id as string | null} tracking={o.tracking_number as string | null} error={o.shipment_error as string | null} carriers={carriers.map((c) => ({ id: c.id, name: c.name, hasApi: c.hasApi }))} defaultCarrier={cityRow?.default_carrier ?? null} feeMajor={toMajorString(o.carrier_fee as number, cur)} />
-          </Panel>
+            {can(me.role, "orders.fulfil") && <CarrierPanel orderId={o.id as string} status={status} carrierId={o.carrier_id as string | null} tracking={o.tracking_number as string | null} error={o.shipment_error as string | null} carriers={carriers.map((c) => ({ id: c.id, name: c.name, hasApi: c.hasApi }))} defaultCarrier={cityRow?.default_carrier ?? null} feeMajor={toMajorString(o.carrier_fee as number, cur)} />}
+          </Panel>}
         </div>
       </div>
     </>

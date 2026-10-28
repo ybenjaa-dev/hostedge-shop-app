@@ -1,4 +1,5 @@
 "use server";
+import { sanitizeHtml } from "@/lib/rich-text";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
@@ -10,8 +11,8 @@ import { parse, refresh, fail } from "@/features/settings/lib";
 const slugRe = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 export async function savePage(_p: ActionState, form: FormData): Promise<ActionState> {
-  return run("staff", async (user) => {
-    const title = fdI18n(form, "title"), body = fdI18n(form, "body");
+  return run("pages.edit", async (user) => {
+    const title = fdI18n(form, "title"), body = Object.fromEntries(Object.entries(fdI18n(form, "body")).map(([k, v]) => [k, sanitizeHtml(v)]).filter(([, v]) => v)) as Record<string, string>;
     if (!Object.keys(title).length) return fail("Add a title in at least one language");
     const p = parse(
       z.object({
@@ -42,7 +43,7 @@ export async function savePage(_p: ActionState, form: FormData): Promise<ActionS
 }
 
 export async function deletePage(_p: ActionState, form: FormData): Promise<ActionState> {
-  return run("staff", async (user) => {
+  return run("pages.edit", async (user) => {
     const id = fd(form, "id");
     if (!id) return fail("Missing page");
     await getDb().delete(schema.pages).where(eq(schema.pages.id, id));
