@@ -7,14 +7,15 @@ import { getT } from "@/lib/i18n";
 import { tr } from "@/lib/i18n-core";
 import { orderToken } from "@/features/orders/service";
 import { Money } from "@/components/money";
+import { formatMoney } from "@/lib/money";
 import { whatsappLink } from "@/lib/phone";
 import { fileUrl } from "@/lib/storage";
 
 export const metadata = { title: "Order confirmed", robots: { index: false } };
 
-export default async function OrderDonePage({ params, searchParams }: { params: Promise<{ number: string }>; searchParams: Promise<{ t?: string }> }) {
+export default async function OrderDonePage({ params, searchParams }: { params: Promise<{ number: string }>; searchParams: Promise<{ t?: string; added?: string; free?: string }> }) {
   const { number } = await params;
-  const { t: token } = await searchParams;
+  const { t: token, added, free } = await searchParams;
   const db = getEnv().DB;
   const o = await db.prepare("SELECT * FROM orders WHERE number = ?").bind(number).first<Record<string, string | number | null>>();
   if (!o || !token || token !== (await orderToken(number, o.phone as string))) notFound();
@@ -30,6 +31,7 @@ export default async function OrderDonePage({ params, searchParams }: { params: 
       <div className="text-center">
         <span className="mx-auto grid size-20 place-items-center rounded-full bg-brand-soft text-brand"><CheckCircle2 className="size-11" /></span>
         <h1 className="display mt-5 text-3xl font-extrabold">{t("done.title")}</h1>
+        {added === "1" && <p className="mx-auto mt-4 max-w-sm rounded-xl bg-brand-soft px-4 py-2.5 text-sm font-bold text-brand">{t("upsell.added", { total: formatMoney(o.total as number, cur, lang) })}{free === "1" ? ` · ${t("upsell.freeShip")}` : ""}</p>}
         <p className="mt-2 text-muted">{t("done.pending")}</p>
         <p className="mt-6 text-sm text-muted">{t("done.number")}</p>
         <p className="display num text-4xl font-extrabold text-brand" dir="ltr">#{number}</p>

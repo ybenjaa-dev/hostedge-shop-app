@@ -1,6 +1,6 @@
 import { desc, eq, sql } from "drizzle-orm";
 import { MessageCircle, Check } from "lucide-react";
-import { requireUser } from "@/lib/auth";
+import { requirePerm } from "@/lib/auth";
 import { getDb, schema } from "@/db";
 import { getSettings } from "@/lib/settings";
 import { normalizePhone, whatsappLink, formatPhoneIntl } from "@/lib/phone";
@@ -21,7 +21,7 @@ function ago(ms: number) {
 }
 
 export default async function AbandonedPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  await requireUser();
+  await requirePerm("abandoned.view");
   const page = pageNum((await searchParams).page);
   const s = await getSettings();
   const db = getDb();

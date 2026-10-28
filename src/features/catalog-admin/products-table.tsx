@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { bulkProductsAction } from "./actions";
+import { useConfirm } from "@/components/confirm";
 import { useToast } from "@/components/toast";
 import { fileUrl } from "@/lib/storage";
 import { formatMoney } from "@/lib/money";
@@ -20,8 +21,9 @@ export function ProductsTable({ rows, currency, categories }: { rows: AdminProdu
   const router = useRouter();
   const ids = [...sel];
   const needsValue = ["category", "price_pct", "price_set", "stock_add", "stock_set"].includes(op);
-  const apply = () => {
-    if (op === "delete" && !confirm(`Delete ${ids.length} product(s)? This cannot be undone.`)) return;
+  const ask = useConfirm();
+  const apply = async () => {
+    if (op === "delete" && !(await ask({ title: "Delete products", message: `Delete ${ids.length} product${ids.length === 1 ? "" : "s"}? This cannot be undone.`, confirmLabel: "Delete" }))) return;
     start(async () => {
       const r = await bulkProductsAction({ ids, op, value: val });
       toast(r?.ok ? "success" : "error", r?.message ?? r?.error ?? "Failed");
