@@ -1,10 +1,11 @@
 import "server-only";
 import { revalidatePath } from "next/cache";
 import type { ZodError, ZodType } from "zod";
+import { clearMemo } from "@/lib/mem-cache";
 import type { ActionState } from "@/features/admin/run";
 
 /** Refresh the storefront and the admin after a change. */
-export const refresh = () => revalidatePath("/", "layout");
+export const refresh = () => { clearMemo(); revalidatePath("/", "layout"); };
 
 export function firstError(e: ZodError): string {
   const i = e.issues[0];

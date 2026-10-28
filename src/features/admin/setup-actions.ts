@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getEnv } from "@/lib/env";
+import { clearMemo } from "@/lib/mem-cache";
 import { ensureSchema } from "@/db/ensure-schema";
 import { createSession, createUser, hasAnyUser, logActivity } from "@/lib/auth";
 import { DEFAULT_SETTINGS, saveSettings } from "@/lib/settings";
@@ -49,6 +50,7 @@ export async function runSetup(_prev: SetupState, form: FormData): Promise<Setup
       slides: [{ image: "uploads/sample-hero.svg", title: { en: "Pieces made to be kept", fr: "Des pièces faites pour durer", ar: "قطع صُنعت لتدوم" }, sub: { en: "Rings, necklaces, earrings and watches in gold, silver and rose gold. Try it on at the door, pay only when you love it.", fr: "Bagues, colliers, boucles d'oreilles et montres en or, argent et or rose. Essayez à la porte, payez si vous l'aimez.", ar: "خواتم وقلائد وأقراط وساعات بالذهبي والفضي والذهبي الوردي. جرّبها عند الباب وادفع إن أعجبتك." }, cta: { en: "Discover the collection", fr: "Découvrir la collection", ar: "اكتشف المجموعة" }, href: "/shop" }],
     });
   }
+  clearMemo();
   await createSession(userId);
   await logActivity({ id: userId, name: d.name }, "setup.completed", "store", undefined, { country: country.code });
   redirect("/admin");
