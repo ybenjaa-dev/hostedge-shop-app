@@ -1,10 +1,11 @@
 "use server";
+import { saveCapiSecrets } from "@/features/tracking/capi";
 import { z } from "zod";
 import { run, audit, fd, fdI18n, type ActionState } from "@/features/admin/run";
 import { getSettings, saveSettings, type Settings } from "@/lib/settings";
 import { CURRENCIES, toMinor } from "@/lib/money";
 import { countryByCode, normalizePhone } from "@/lib/phone";
-import { LANGS, isLang, type Lang } from "@/lib/i18n-core";
+import { allLangs, isLang, type Lang } from "@/lib/i18n-core";
 import { DEFAULT_STATUS_DEFS, ORDER_STATUSES, type StatusDef } from "@/lib/order-status";
 import { isHex } from "@/lib/color";
 import { parse, refresh, fail } from "../lib";
@@ -21,7 +22,7 @@ export async function saveStore(_p: ActionState, form: FormData): Promise<Action
         name: z.string().min(1, "Store name is required").max(80),
         country: z.string().refine((c) => !!countryByCode(c), "Choose a valid country"),
         currency: z.string().refine((c) => c in CURRENCIES, "Unsupported currency"),
-        defaultLang: z.enum(LANGS),
+        defaultLang: z.string().refine(isLang, "Unknown language"),
         email: z.union([z.literal(""), z.email("Invalid email")]),
         whatsapp: z.string().max(30),
         tax: z.string().regex(/^\d{1,3}(\.\d{1,2})?$/, "Tax rate must be a number like 20 or 5.5"),
@@ -45,7 +46,7 @@ export async function saveStore(_p: ActionState, form: FormData): Promise<Action
     const store: Settings["store"] = {
       ...prev.store,
       name: d.name, tagline: fdI18n(form, "tagline"), country: d.country, currency: d.currency, defaultLang: d.defaultLang,
-      langs: LANGS.filter((l) => finalLangs.includes(l)), phones: d.phones, whatsapp, email: d.email,
+      langs: allLangs().filter((l) => finalLangs.includes(l)), phones: d.phones, whatsapp, email: d.email,
       address: fdI18n(form, "address"), hours: fdI18n(form, "hours"), countries: finalCountries,
       taxRateBp: Math.round(tax * 100), taxInclusive: form.get("taxInclusive") === "1",
     };
@@ -53,6 +54,23 @@ export async function saveStore(_p: ActionState, form: FormData): Promise<Action
     await audit(user, "settings.store", "settings", "store", { currency: d.currency });
     refresh();
     return { message: prev.store.currency !== d.currency ? "Saved. Existing prices were not converted." : "Store settings saved" };
+  });
+}
+
+export async function saveEngage(_p: ActionState, form: FormData): Promise<ActionState> {
+  return run("owner", async (user) => {
+    const cur = (await getSettings()).engage;
+    const delay = Math.round(Number(fd(form, "pushDelaySec")));
+    const subject = fd(form, "vapidSubject");
+    if (subject && !/^(mailto:[^\s@]+@[^\s@]+|https:\/\/[^\s]+)$/.test(subject)) return fail("Contact must be mailto:you@example.com or an https:// link.");
+    await saveSettings("engage", {
+      ...cur, pwa: form.get("pwa") === "1", visitors: form.get("visitors") === "1", push: form.get("push") === "1", langUrls: form.get("langUrls") === "1",
+      pushDelaySec: Number.isFinite(delay) ? Math.min(600, Math.max(5, delay)) : cur.pushDelaySec, vapidSubject: subject,
+    });
+    if (form.get("push") === "1") await (await import("@/features/push/server")).getVapid(); // creates the key pair on first use
+    await audit(user, "settings.engage", "settings", "engage");
+    refresh();
+    return { message: "Saved" };
   });
 }
 
@@ -90,7 +108,7 @@ export async function saveCheckout(_p: ActionState, form: FormData): Promise<Act
         return n;
       };
       const placement = fd(form, "formPlacement");
-      if (!["inline", "popup", "page"].includes(placement)) return fail("Choose a form placement");
+      if (!["inline", "inline-open", "popup", "page"].includes(placement)) return fail("Choose a form placement");
       const checkout: Settings["checkout"] = {
         codMode: form.get("codMode") === "1",
         codFee: money("codFee", "COD fee"),
@@ -125,10 +143,20 @@ export async function saveAnalytics(_p: ActionState, form: FormData): Promise<Ac
       if (v && !idRe.test(v)) return fail(`${k}: only letters, numbers, - and _ (3–40 characters)`);
       out[k] = v;
     }
+    const when = fd(form, "purchaseWhen");
+    out.capi = {
+      purchaseWhen: when === "confirmed" || when === "delivered" ? when : "placed",
+      statusEvents: form.get("statusEvents") === "1",
+      metaTestCode: fd(form, "metaTestCode").slice(0, 40), tiktokTestCode: fd(form, "tiktokTestCode").slice(0, 40),
+    };
+    const tok = (k: string) => { const v = fd(form, k); return v ? (/^[\w.\-|]{10,400}$/.test(v) ? v : "bad") : ""; };
+    const meta = tok("metaToken"), tt = tok("tiktokToken");
+    if (meta === "bad" || tt === "bad") return fail("Access token: letters, numbers and . - _ | only (10–400 characters).");
     await saveSettings("analytics", out);
+    await saveCapiSecrets({ meta: form.get("clearMeta") === "1" ? null : meta || undefined, tiktok: form.get("clearTiktok") === "1" ? null : tt || undefined });
     await audit(user, "settings.analytics", "settings", "analytics");
     refresh();
-    return { message: "Analytics IDs saved" };
+    return { message: "Tracking settings saved" };
   });
 }
 
@@ -140,7 +168,7 @@ export async function saveStatuses(_p: ActionState, form: FormData): Promise<Act
       const ov: Partial<StatusDef> = {};
       const label = fdI18n(form, `st.${st}.label`);
       const changed: Partial<StatusDef["label"]> = {};
-      for (const l of LANGS) if (label[l] && label[l] !== def.label[l]) { if (label[l]!.length > 60) return fail(`${st}: label too long`); changed[l] = label[l]; }
+      for (const l of allLangs()) if (label[l] && label[l] !== (def.label as Record<string, string>)[l]) { if (label[l]!.length > 60) return fail(`${st}: label too long`); (changed as Record<string, string>)[l] = label[l]!; }
       if (Object.keys(changed).length) ov.label = changed as StatusDef["label"];
       const color = fd(form, `st.${st}.color`);
       if (color) {

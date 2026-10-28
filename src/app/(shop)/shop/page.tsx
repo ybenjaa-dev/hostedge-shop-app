@@ -5,6 +5,7 @@ import { tr } from "@/lib/i18n-core";
 import { listCategories, listProducts, type ListParams } from "@/features/catalog/queries";
 import { ProductCard, ProductGrid } from "@/features/catalog/components/product-card";
 import { toMinor } from "@/lib/money";
+import { parseOptions } from "@/lib/shop-filters";
 import { CatalogFilters } from "@/features/catalog/components/filters";
 
 export const metadata = { title: "Shop" };
@@ -28,6 +29,7 @@ export async function Catalog({ sp, categorySlug }: { sp: Record<string, string 
     minPrice: Number.isFinite(min) ? min : undefined,
     maxPrice: Number.isFinite(max) ? max : undefined,
     inStock: sp.stock === "1",
+    options: parseOptions(sp.opt),
     sort: sortOk.find((x) => x === sp.sort) ?? "new",
     page: Math.max(1, parseInt(sp.page ?? "1", 10) || 1),
     perPage: 12,
@@ -49,9 +51,9 @@ export async function Catalog({ sp, categorySlug }: { sp: Record<string, string 
       <div className="grid gap-8 lg:grid-cols-[16rem_1fr]">
         <CatalogFilters
           action={base}
-          values={{ q: sp.q ?? "", category: cat?.slug ?? "", min: sp.min ?? "", max: sp.max ?? "", stock: sp.stock ?? "", sort: params.sort ?? "new" }}
+          values={{ q: sp.q ?? "", category: cat?.slug ?? "", min: sp.min ?? "", max: sp.max ?? "", stock: sp.stock ?? "", sort: params.sort ?? "new", opt: sp.opt ?? "" }}
           categories={categorySlug ? [] : cats.map((c) => ({ slug: c.slug, name: tr(c.name, lang) }))}
-          labels={{ filters: t("shop.filters"), category: t("shop.category"), all: t("shop.allCategories"), price: t("shop.price"), min: t("shop.min"), max: t("shop.max"), stock: t("shop.inStock"), apply: t("shop.apply"), clear: t("shop.clear"), sort: t("shop.sort"), search: t("shop.searchPh"), sorts: { new: t("shop.sort.new"), price_asc: t("shop.sort.price_asc"), price_desc: t("shop.sort.price_desc"), popular: t("shop.sort.popular") } }}
+          labels={{ filters: t("shop.filters"), category: t("shop.category"), all: t("shop.allCategories"), price: t("shop.price"), min: t("shop.min"), max: t("shop.max"), stock: t("shop.inStock"), active: t("shop.filter.active"), clearAll: t("shop.filter.clearAll"), apply: t("shop.apply"), clear: t("shop.clear"), sort: t("shop.sort"), search: t("shop.searchPh"), sorts: { new: t("shop.sort.new"), price_asc: t("shop.sort.price_asc"), price_desc: t("shop.sort.price_desc"), popular: t("shop.sort.popular") } }}
         />
         <div>
           {res.items.length === 0 ? (

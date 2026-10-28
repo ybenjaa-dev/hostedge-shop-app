@@ -1,5 +1,6 @@
 import { AdminForm } from "@/features/admin/components/admin-form";
 import { Field, I18nField, Toggle } from "@/features/admin/components/fields";
+import { RichTextField } from "@/features/admin/components/rich-text-field";
 import { Panel } from "@/features/admin/components/ui";
 import { parseI18n } from "@/lib/i18n-core";
 import { savePage } from "../pages-actions";
@@ -12,7 +13,7 @@ export function PageForm({ page, nextPosition = 0 }: { page?: Row; nextPosition?
       <Panel title="Content">
         <div className="space-y-5">
           <I18nField label="Title" name="title" value={page ? parseI18n(page.title) : {}} />
-          <I18nField label="Body" name="body" value={page ? parseI18n(page.body) : {}} textarea rows={10} hint="Plain text. Blank lines start a new paragraph." />
+          <RichTextField label="Body" name="body" value={page ? parseI18n(page.body) : {}} minHeight="16rem" />
         </div>
       </Panel>
       <Panel title="Settings">

@@ -122,7 +122,7 @@ function SectionTitle({ title, href, more }: { title: string; href?: string; mor
 
 const DIETS: [string, string, string][] = [["Vegan", "Vegan", "نباتي"], ["Gluten-free", "Sans gluten", "خالٍ من الغلوتين"], ["Organic", "Bio", "عضوي"], ["No added sugar", "Sans sucres ajoutés", "بدون سكر مضاف"]];
 
-function Hero({ s, lang, t, picks }: { s: Awaited<ReturnType<typeof getSettings>>; lang: "ar" | "fr" | "en"; t: ReturnType<typeof import("@/lib/dict").makeT>; picks: { id: string; slug: string; image: string | null }[] }) {
+function Hero({ s, lang, t, picks }: { s: Awaited<ReturnType<typeof getSettings>>; lang: string; t: ReturnType<typeof import("@/lib/dict").makeT>; picks: { id: string; slug: string; image: string | null }[] }) {
   const sl = s.hero.slides[0];
   const title = sl ? tr(sl.title, lang) : s.store.name;
   const sub = sl ? tr(sl.sub, lang) : tr(s.store.tagline, lang);
