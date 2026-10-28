@@ -1,3 +1,4 @@
+import { RichText } from "@/components/rich-text";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -27,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = tr(p.seoTitle, lang) || tr(p.name, lang);
   const desc = tr(p.seoDesc, lang) || tr(p.shortDesc, lang);
   const img = p.images[0] ? fileUrl(p.images[0].key) : undefined;
-  return { title, description: desc, openGraph: { title, description: desc, images: img ? [img] : undefined, type: "website" }, alternates: { canonical: `/p/${p.slug}` } };
+  return { title, description: desc, openGraph: { title, description: desc, images: img ? [img] : undefined, type: "website" } };
 }
 
 export default async function ProductPage({ params, searchParams }: Props) {
@@ -131,7 +132,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
         <section id="description" aria-labelledby="desc-h" className="min-w-0">
           <p className="eyebrow">{t("bk.sample")}</p>
           <h2 id="desc-h" className="sr-only">{t("p.description")}</h2>
-          <div className="sample mt-4 max-w-2xl"><p>{sample || author}</p></div>
+          <RichText html={sample || author} className="sample mt-4 max-w-2xl" />
           <p className="display mt-2 text-center text-2xl tracking-[0.5em] text-brand" aria-hidden>❦</p>
         </section>
       </div>
@@ -146,7 +147,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
           <ul className="space-y-6">
             {reviews.map((r) => (
               <li key={r.id} className="border-s-2 border-brand ps-5">
-                <span className="flex" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`size-3.5 ${i < r.rating ? "fill-accent text-accent" : "text-rule"}`} />)}</span>
+                <span className="flex" role="img" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`size-3.5 ${i < r.rating ? "fill-accent text-accent" : "text-rule"}`} />)}</span>
                 <p className="serif mt-1.5 text-lg italic leading-relaxed">“{r.body}”</p>
                 <p className="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-muted rtl:tracking-normal">{r.name}{r.city && <span className="font-normal normal-case tracking-normal"> — {r.city}</span>}</p>
               </li>

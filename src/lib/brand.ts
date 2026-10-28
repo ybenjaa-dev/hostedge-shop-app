@@ -4,4 +4,6 @@ export const BRAND = {
   /** Empty → the masthead sets the store name as a serif wordmark. */
   logo: "",
   icon: "/brand/marginalia-icon.svg",
+  /** Wrapper class of this storefront's theme (scopes its CSS); lets admin previews look like the real shop. */
+  themeClass: "v15",
 };

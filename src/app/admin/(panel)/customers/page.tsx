@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { desc, inArray, like, or, sql } from "drizzle-orm";
-import { requireUser } from "@/lib/auth";
+import { requirePerm } from "@/lib/auth";
 import { getDb, schema } from "@/db";
 import { getSettings } from "@/lib/settings";
 import { formatMoney } from "@/lib/money";
@@ -17,7 +17,7 @@ export const metadata = { title: "Customers" };
 const PER = 25;
 
 export default async function CustomersPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  await requireUser();
+  await requirePerm("customers.view");
   const sp = await searchParams;
   const tab = one(sp.tab) === "blocked" ? "blocked" : "customers";
   const s = await getSettings();

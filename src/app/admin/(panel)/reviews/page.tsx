@@ -1,7 +1,7 @@
 import { Tabs } from "@/features/settings/components/tabs";
 import { desc, eq, sql } from "drizzle-orm";
 import { Check, EyeOff, Star, Trash2 } from "lucide-react";
-import { requireUser } from "@/lib/auth";
+import { requirePerm } from "@/lib/auth";
 import { getDb, schema } from "@/db";
 import { tr } from "@/lib/i18n-core";
 import { AdminForm } from "@/features/admin/components/admin-form";
@@ -17,7 +17,7 @@ const FILTERS = [["pending", "Pending"], ["approved", "Approved"], ["hidden", "H
 const COLORS = { pending: "#d97706", approved: "#16a34a", hidden: "#64748b" } as const;
 
 export default async function ReviewsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  await requireUser();
+  await requirePerm("reviews.moderate");
   const sp = await searchParams;
   const status = FILTERS.some((f) => f[0] === one(sp.status)) ? one(sp.status) : "pending";
   const page = pageNum(sp.page);
@@ -35,7 +35,7 @@ export default async function ReviewsPage({ searchParams }: { searchParams: Prom
       <PageHeader title="Reviews" sub="Moderate customer reviews before they appear in the store." />
       <Tabs base="/admin/reviews" label="Filter reviews" current={status} items={FILTERS.map(([id, label]) => ({ id, href: `/admin/reviews?status=${id}`, label: <>{label}{id !== "all" && <span className="num ms-1.5 rounded-full bg-sunken px-1.5 text-xs">{cnt[id] ?? 0}</span>}</> }))} />
       <Panel className="mb-6">
-        <details>
+        <details data-keep-open>
           <summary className="flex min-h-11 cursor-pointer items-center gap-2 font-bold"><Star className="size-4" aria-hidden />Add a review manually</summary>
           <div className="mt-4"><AdminForm action={addReview} submitLabel="Add review" resetOnSuccess>
             <div className="grid gap-4 sm:grid-cols-2">

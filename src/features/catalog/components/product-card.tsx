@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Star } from "lucide-react";
 import type { ProductCard as P } from "../queries";
 import { tr, type Lang } from "@/lib/i18n-core";
-import { fileUrl } from "@/lib/storage";
+import { imgProps } from "@/lib/image-sizes";
 import { Money } from "@/components/money";
 import type { TFn } from "@/lib/dict";
 
@@ -23,7 +23,7 @@ export function ProductCard({ p, lang, t, currency, codMode, priority }: { p: P;
         <Link href={`/p/${p.slug}`} className="cover" aria-label={name}>
           {p.image ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={fileUrl(p.image, "md")} alt={name} width={400} height={600} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={p.inStock ? "" : "opacity-50 grayscale"} />
+            <img {...imgProps(p.image, "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw")} alt={name} width={400} height={600} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={p.inStock ? "" : "opacity-50 grayscale"} />
           ) : <span className="grid size-full place-items-center text-3xl text-muted">❦</span>}
           {!p.inStock && <span className="absolute inset-x-0 bottom-3 z-10 bg-ink/85 py-1 text-center text-[0.65rem] font-bold uppercase tracking-[0.2em] text-bg">{t("p.soldOut")}</span>}
         </Link>
@@ -52,7 +52,7 @@ export function ProductRow({ p, lang, t, currency, codMode, categoryName }: { p:
     <article className="cover-lift grid grid-cols-[5.5rem_1fr] items-start gap-x-5 gap-y-3 border-b border-line py-5 sm:grid-cols-[6.5rem_1fr_11rem]">
       <Link href={`/p/${p.slug}`} className="cover" aria-label={name}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        {p.image ? <img src={fileUrl(p.image, "md")} alt={name} loading="lazy" className={p.inStock ? "" : "opacity-50 grayscale"} /> : null}
+        {p.image ? <img {...imgProps(p.image, "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw")} alt={name} loading="lazy" className={p.inStock ? "" : "opacity-50 grayscale"} /> : null}
       </Link>
       <div className="min-w-0">
         {categoryName && <p className="eyebrow">{categoryName}</p>}

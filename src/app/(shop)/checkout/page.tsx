@@ -8,10 +8,11 @@ import { CartCheckout } from "@/features/checkout/components/cart-view";
 import { OrderForm } from "@/features/checkout/components/order-form";
 import { formatMoney } from "@/lib/money";
 import { fileUrl } from "@/lib/storage";
+import { resolveExtras } from "@/features/catalog/links";
 
 export const metadata = { title: "Checkout" };
 
-export default async function CheckoutPage({ searchParams }: { searchParams: Promise<{ p?: string; v?: string; q?: string; coupon?: string }> }) {
+export default async function CheckoutPage({ searchParams }: { searchParams: Promise<{ p?: string; v?: string; q?: string; x?: string; coupon?: string }> }) {
   const sp = await searchParams;
   const s = await getSettings();
   const { lang, t } = await getT();
@@ -27,17 +28,18 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
     if (p.variants.length && !v) redirect(`/p/${p.slug}`);
     const qty = Math.max(1, Math.min(99, parseInt(sp.q ?? "1", 10) || 1));
     const unit = v?.price ?? p.price;
+    const extras = await resolveExtras(sp.x, p.id);
     return (
       <div className="mx-auto max-w-xl px-4 py-8">
         <h1 className="display mb-6 text-3xl font-extrabold">{t("cod.title")}</h1>
         <OrderForm
           source="checkout-page" productName={tr(p.name, lang)} bundles={bundles} cities={cities}
-          lines={[{ productId: p.id, variantId: v?.id ?? null, name: p.name, variantName: v?.name ?? null, unitPrice: unit, qty, image: p.images[0]?.key ?? null }]}
+          lines={[{ productId: p.id, variantId: v?.id ?? null, name: p.name, variantName: v?.name ?? null, unitPrice: unit, qty, image: p.images[0]?.key ?? null }, ...extras]}
           header={
             <div className="card flex items-center gap-3 p-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               {p.images[0] && <img src={fileUrl(p.images[0].key, "thumb")} alt="" className="size-16 rounded-lg object-cover" />}
-              <div className="min-w-0"><p className="truncate font-bold">{tr(p.name, lang)}</p><p className="text-sm text-muted">{v?.name} · {qty} × <bdi dir="ltr">{formatMoney(unit, s.store.currency, lang)}</bdi></p></div>
+              <div className="min-w-0"><p className="truncate font-bold">{tr(p.name, lang)}</p><p className="text-sm text-muted">{v?.name} · {qty} × <bdi dir="ltr">{formatMoney(unit, s.store.currency, lang)}</bdi></p>{extras.length > 0 && <p className="mt-0.5 truncate text-xs text-muted">+ {extras.map((e) => tr(e.name, lang)).join(" · ")}</p>}</div>
             </div>
           }
         />
