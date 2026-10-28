@@ -16,7 +16,7 @@ function prefixed(lang: string, href: string): string {
   return href === "/" ? `/${lang}` : `/${lang}${href}`;
 }
 
-async function handle(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+async function serve(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
   const url = new URL(request.url);
   const m = LANG.exec(url.pathname);
   const lang = m?.[1];
@@ -45,6 +45,62 @@ async function handle(request: Request, env: Env, ctx: ExecutionContext): Promis
     .on("a[href]", { element(e) { const h = e.getAttribute("href"); if (h) e.setAttribute("href", prefixed(lang, h)); } })
     .on("form[action]", { element(e) { const h = e.getAttribute("action"); if (h) e.setAttribute("action", prefixed(lang, h)); } })
     .transform(base);
+}
+
+
+/* ───────── edge cache for anonymous page views ─────────
+ * A first visit renders the page on demand (database queries, ~1–3 s on a cold start). Visitors without a login or
+ * visitor cookie get the same HTML for everyone in the same language, so we keep a copy for 60 s and refresh it in the
+ * background after 20 s. Anything personal (cookies, carts, orders, tracking, RSC/action requests) is never cached. */
+const FRESH_MS = 20_000, TTL_S = 60;
+const PRIVATE_PATH = /^\/(order|checkout|cart|track|offline|blocked|admin|api|setup|accept-invite)(\/|$)/;
+const edge = (): Cache | null => { try { return (globalThis as unknown as { caches?: { default?: Cache } }).caches?.default ?? null; } catch { return null; } };
+
+function cacheKey(request: Request): Request | null {
+  if (request.method !== "GET") return null;
+  const h = request.headers;
+  if (h.get("rsc") || h.get("next-action") || h.get("next-router-state-tree") || h.get("x-nextjs-data") || h.get("next-router-prefetch")) return null;
+  if (!(h.get("accept") ?? "").includes("text/html")) return null;
+  if (/no-cache|max-age=0/.test(h.get("cache-control") ?? "")) return null; // a hard refresh always sees the newest page
+  const cookie = h.get("cookie") ?? "";
+  if (/(^|;\s*)(he_session|he_vid)=/.test(cookie)) return null;
+  const url = new URL(request.url);
+  if (url.searchParams.has("_rsc") || PRIVATE_PATH.test(url.pathname.replace(/^\/[a-z]{2}(?=\/|$)/, "") || "/")) return null;
+  const lang = /(?:^|;\s*)lang=([a-z]{2})/.exec(cookie)?.[1] ?? `a:${(h.get("accept-language") ?? "").slice(0, 2).toLowerCase()}`;
+  return new Request(`https://edge-cache.internal/${url.host}${url.pathname}${url.search}|${lang}`);
+}
+
+async function handle(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  const key = cacheKey(request), c = key ? edge() : null;
+  if (!key || !c) return serve(request, env, ctx);
+  const store = async (res: Response) => {
+    if (res.status !== 200 || !(res.headers.get("content-type") ?? "").includes("text/html")) return;
+    const sc = res.headers.getSetCookie?.() ?? [];
+    if (sc.some((x) => !x.startsWith("lang="))) return; // anything that sets a real cookie is personal
+    const copy = new Response(res.body, res); // `res` is already a private clone
+    copy.headers.delete("set-cookie");
+    copy.headers.set("cache-control", `public, max-age=${TTL_S}`);
+    copy.headers.set("x-edge-cached-at", String(Date.now()));
+    await c.put(key, copy);
+  };
+  try {
+    const hit = await c.match(key);
+    if (hit) {
+      const age = Date.now() - Number(hit.headers.get("x-edge-cached-at") ?? 0);
+      if (age > FRESH_MS) ctx.waitUntil((async () => { const r = await serve(request, env, ctx); await store(r.clone()); })().catch(() => {}));
+      const out = new Response(hit.body, hit);
+      out.headers.set("cache-control", "no-cache");
+      out.headers.set("x-edge-cache", "HIT");
+      const m = LANG.exec(new URL(request.url).pathname)?.[1];
+      if (m) out.headers.append("set-cookie", `lang=${m}; Path=/; Max-Age=31536000; SameSite=Lax`);
+      return out;
+    }
+  } catch { /* cache unavailable: just render */ }
+  const res = await serve(request, env, ctx);
+  ctx.waitUntil(store(res.clone()).catch(() => {}));
+  const out = new Response(res.body, res);
+  out.headers.set("x-edge-cache", "MISS");
+  return out;
 }
 
 export default {

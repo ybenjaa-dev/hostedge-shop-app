@@ -1,12 +1,14 @@
 "use client";
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 import { CheckCircle2, AlertCircle, X } from "lucide-react";
-import { ClientBoot } from "@/components/boot/client-boot";
+import dynamic from "next/dynamic";
 import { ConfirmProvider } from "@/components/confirm";
 import { DismissMenus } from "@/components/dismiss-menus";
 
 type Toast = { id: number; kind: "success" | "error"; text: string };
 const Ctx = createContext<(kind: Toast["kind"], text: string) => void>(() => {});
+// search suggestions, install prompt, consent and push load after the page is interactive, not before
+const ClientBoot = dynamic(() => import("@/components/boot/client-boot").then((m) => m.ClientBoot), { ssr: false });
 export const useToast = () => useContext(Ctx);
 
 export function ToastProvider({ children }: { children: ReactNode }) {

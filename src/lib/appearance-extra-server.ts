@@ -1,7 +1,9 @@
 import "server-only";
 import { cache } from "react";
-import { getRaw, setRaw } from "@/lib/settings";
+import { setRaw } from "@/lib/settings";
 import { parseExtra, type Extra } from "@/lib/appearance-extra";
+import { ensureLangs, getExtraRaw } from "@/lib/languages";
 
-export const getExtra = cache(async (): Promise<Extra> => parseExtra(await getRaw("appearance_extra")));
-export const saveExtra = (e: Extra) => setRaw("appearance_extra", JSON.stringify(e));
+/** Read together with the language settings (one query), so the storefront pays for it once. */
+export const getExtra = cache(async (): Promise<Extra> => parseExtra(await getExtraRaw()));
+export const saveExtra = async (e: Extra) => { await setRaw("appearance_extra", JSON.stringify(e)); await ensureLangs(true); };
