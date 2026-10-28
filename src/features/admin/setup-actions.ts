@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getEnv } from "@/lib/env";
+import { clearMemo } from "@/lib/mem-cache";
 import { ensureSchema } from "@/db/ensure-schema";
 import { createSession, createUser, hasAnyUser, logActivity } from "@/lib/auth";
 import { DEFAULT_SETTINGS, saveSettings } from "@/lib/settings";
@@ -49,6 +50,7 @@ export async function runSetup(_prev: SetupState, form: FormData): Promise<Setup
       slides: [{ image: "uploads/sample-hero.svg", title: { en: "Make every room feel like home", fr: "Chaque pièce mérite de vous ressembler", ar: "اجعل كل غرفة تشبهك" }, sub: { en: "Tableware, textiles and storage in natural materials. Delivered to your door — pay when it arrives.", fr: "Vaisselle, textiles et rangements en matières naturelles. Livrés chez vous — payez à la réception.", ar: "أدوات مائدة ومنسوجات وحلول تخزين بخامات طبيعية. تصلك إلى بابك وتدفع عند الاستلام." }, cta: { en: "Shop by room", fr: "Acheter par pièce", ar: "تسوّق حسب الغرفة" }, href: "/shop" }],
     });
   }
+  clearMemo();
   await createSession(userId);
   await logActivity({ id: userId, name: d.name }, "setup.completed", "store", undefined, { country: country.code });
   redirect("/admin");
