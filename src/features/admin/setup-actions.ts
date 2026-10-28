@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getEnv } from "@/lib/env";
+import { clearMemo } from "@/lib/mem-cache";
 import { ensureSchema } from "@/db/ensure-schema";
 import { createSession, createUser, hasAnyUser, logActivity } from "@/lib/auth";
 import { DEFAULT_SETTINGS, saveSettings } from "@/lib/settings";
@@ -49,6 +50,7 @@ export async function runSetup(_prev: SetupState, form: FormData): Promise<Setup
       slides: [{ image: "uploads/sample-hero.svg", title: { en: "Time, worn quietly", fr: "Le temps, porté en silence", ar: "الوقت، بأناقة هادئة" }, sub: { en: "Swiss-made timepieces and fine leather accessories. Inspect in person, pay on delivery.", fr: "Montres suisses et accessoires en cuir fin. Examinez en main propre, payez à la livraison.", ar: "ساعات سويسرية وإكسسوارات جلدية فاخرة. افحصها بنفسك وادفع عند الاستلام." }, cta: { en: "Enter the collection", fr: "Entrer dans la collection", ar: "ادخل المجموعة" }, href: "/shop" }],
     });
   }
+  clearMemo();
   await createSession(userId);
   await logActivity({ id: userId, name: d.name }, "setup.completed", "store", undefined, { country: country.code });
   redirect("/admin");
