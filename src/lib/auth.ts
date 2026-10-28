@@ -87,19 +87,24 @@ export async function destroySession() {
   jar.delete(COOKIE);
 }
 
-let dummyHash: Promise<string> | null = null;
+// A fixed hash of a throwaway password: verifying against it when the email is unknown keeps the timing the same
+// without computing a second PBKDF2 on every cold start.
+const DUMMY_HASH = "pbkdf2$100000$vXphNymrLgV95gF1JiXteA==$x7C2nZX/L/aNFbjektv9paK12QNm9GgKsvAHFNELVzE=";
 
 export async function login(email: string, password: string): Promise<{ ok: true } | { ok: false; error: string }> {
   await ensureSchema();
   const ip = await clientIp();
   const e = email.trim().toLowerCase();
-  const [byIp, byEmail] = await Promise.all([rateLimit(`login:ip:${ip}`, 20, 900), rateLimit(`login:em:${e}`, 6, 900)]);
+  // the two rate-limit counters and the user lookup are independent: one round of D1 trips instead of two
+  const [byIp, byEmail, user] = await Promise.all([
+    rateLimit(`login:ip:${ip}`, 20, 900),
+    rateLimit(`login:em:${e}`, 6, 900),
+    getDb().select().from(schema.users).where(eq(schema.users.email, e)).get(),
+  ]);
   if (!byIp.ok || !byEmail.ok) return { ok: false, error: "Too many attempts. Try again in a few minutes." };
-  const user = await getDb().select().from(schema.users).where(eq(schema.users.email, e)).get();
-  dummyHash ??= hashPassword("dummy-password");
-  const valid = await verifyPassword(password, user?.passwordHash ?? (await dummyHash));
+  const valid = await verifyPassword(password, user?.passwordHash ?? DUMMY_HASH);
   if (!user || !valid || !user.active) return { ok: false, error: "Invalid email or password." };
-  await createSession(user.id);
+  await Promise.all([createSession(user.id), logActivity({ id: user.id, name: user.name }, "auth.login")]);
   return { ok: true };
 }
 
