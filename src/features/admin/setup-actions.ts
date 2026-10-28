@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getEnv } from "@/lib/env";
+import { clearMemo } from "@/lib/mem-cache";
 import { ensureSchema } from "@/db/ensure-schema";
 import { createSession, createUser, hasAnyUser, logActivity } from "@/lib/auth";
 import { DEFAULT_SETTINGS, saveSettings } from "@/lib/settings";
@@ -49,6 +50,7 @@ export async function runSetup(_prev: SetupState, form: FormData): Promise<Setup
       slides: [{ image: "uploads/sample-hero.svg", title: { en: "Tech you can check before you pay.", fr: "Du high-tech à vérifier avant de payer.", ar: "تقنية تفحصها قبل أن تدفع." }, sub: { en: "Phones, audio, wearables and accessories. Open the parcel with the courier, pay only if you are happy.", fr: "Téléphones, audio, objets connectés et accessoires. Ouvrez le colis devant le livreur, payez si vous êtes satisfait.", ar: "هواتف وصوتيات وأجهزة ذكية وإكسسوارات. افتح الطرد أمام المندوب وادفع فقط إن كنت راضياً." }, cta: { en: "Shop the latest", fr: "Voir les nouveautés", ar: "تسوّق الجديد" }, href: "/shop" }],
     });
   }
+  clearMemo();
   await createSession(userId);
   await logActivity({ id: userId, name: d.name }, "setup.completed", "store", undefined, { country: country.code });
   redirect("/admin");
