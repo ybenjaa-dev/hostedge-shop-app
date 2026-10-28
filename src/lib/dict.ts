@@ -69,6 +69,7 @@ const en = {
   "search.suggest.recent": "Recent searches",
   "search.suggest.none": "No match — try another word",
   "search.suggest.clear": "Clear",
+  "err.notFoundSub": "The page you're looking for doesn't exist or may have moved.", "err.errorSub": "An unexpected problem occurred on our side. Please try again in a moment.", "err.ref": "Reference: {ref}", "err.shop": "Browse the shop", "err.track": "Track my order", "err.searchPh": "Search products…", "err.popular": "Popular categories", "err.contact": "Need help? Contact us",
 } as const;
 
 export type DictKey = keyof typeof en;
@@ -142,6 +143,7 @@ const fr: D = {
   "search.suggest.recent": "Recherches récentes",
   "search.suggest.none": "Aucun résultat — essayez un autre mot",
   "search.suggest.clear": "Effacer",
+  "err.notFoundSub": "La page que vous cherchez n'existe pas ou a été déplacée.", "err.errorSub": "Un problème inattendu est survenu de notre côté. Réessayez dans un instant.", "err.ref": "Référence : {ref}", "err.shop": "Parcourir la boutique", "err.track": "Suivre ma commande", "err.searchPh": "Rechercher un produit…", "err.popular": "Catégories populaires", "err.contact": "Besoin d'aide ? Contactez-nous",
 };
 
 const ar: D = {
@@ -212,6 +214,7 @@ const ar: D = {
   "search.suggest.recent": "عمليات البحث الأخيرة",
   "search.suggest.none": "لا نتائج — جرّب كلمة أخرى",
   "search.suggest.clear": "مسح",
+  "err.notFoundSub": "الصفحة التي تبحث عنها غير موجودة أو تم نقلها.", "err.errorSub": "حدثت مشكلة غير متوقعة من جانبنا. حاول مرة أخرى بعد قليل.", "err.ref": "المرجع: {ref}", "err.shop": "تصفح المتجر", "err.track": "تتبع طلبي", "err.searchPh": "ابحث عن منتج…", "err.popular": "فئات شائعة", "err.contact": "تحتاج مساعدة؟ تواصل معنا",
 };
 
 export const DICT: Record<Lang, D> = { en: en as unknown as D, fr, ar };
