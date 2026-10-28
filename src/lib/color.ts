@@ -23,3 +23,11 @@ export function onColor(bg: string) {
   return contrastRatio(bg, "#ffffff") >= contrastRatio(bg, "#111827") ? "#ffffff" : "#111827";
 }
 export const isHex = (s: string) => /^#[0-9a-f]{6}$/i.test(s);
+
+/** The brand colour, darkened (never lightened) just enough to read as 4.5:1 text on white — keeps stores AA-compliant whatever colour the owner picks. */
+export function readableOnWhite(hex: string, min = 4.5): string {
+  if (!isHex(hex)) return hex;
+  let [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  for (let k = 0; k < 40 && contrastRatio(`#${[r, g, b].map((v) => v!.toString(16).padStart(2, "0")).join("")}`, "#ffffff") < min; k++) { r = Math.round(r! * 0.96); g = Math.round(g! * 0.96); b = Math.round(b! * 0.96); }
+  return `#${[r, g, b].map((v) => v!.toString(16).padStart(2, "0")).join("")}`;
+}

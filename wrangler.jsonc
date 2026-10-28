@@ -14,5 +14,7 @@
     // HostEdge: add a file storage with binding "FILES".
     { "binding": "FILES", "bucket_name": "files" }
   ],
+  // Cloudflare Images binding: resizes and converts to AVIF/WebP on the fly for `/files/…?w=`. Optional — remove it if your plan has no Images transformations; the shop then serves the stored sizes.
+  "images": { "binding": "IMAGES" },
   "triggers": { "crons": ["*/15 * * * *"] }
 }

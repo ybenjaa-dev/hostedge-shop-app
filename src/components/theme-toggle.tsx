@@ -1,10 +1,12 @@
 "use client";
 import { Moon, Sun } from "lucide-react";
 
-export function ThemeToggle({ className = "btn btn-ghost btn-sm" }: { className?: string }) {
+export function ThemeToggle({ className = "btn btn-ghost btn-sm", admin }: { className?: string; admin?: boolean }) {
   return (
     <button
       type="button"
+      data-theme-toggle
+      data-admin={admin ? "" : undefined}
       aria-label="Toggle dark mode"
       className={className}
       onClick={() => {

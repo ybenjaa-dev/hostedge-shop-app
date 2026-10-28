@@ -1,3 +1,4 @@
+import { RichText } from "@/components/rich-text";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -26,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = tr(p.seoTitle, lang) || tr(p.name, lang);
   const desc = tr(p.seoDesc, lang) || tr(p.shortDesc, lang);
   const img = p.images[0] ? fileUrl(p.images[0].key) : undefined;
-  return { title, description: desc, openGraph: { title, description: desc, images: img ? [img] : undefined, type: "website" }, alternates: { canonical: `/p/${p.slug}` } };
+  return { title, description: desc, openGraph: { title, description: desc, images: img ? [img] : undefined, type: "website" } };
 }
 
 export default async function ProductPage({ params, searchParams }: Props) {
@@ -97,7 +98,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
               </details>
             )}
             <details className={acc} open><summary className={sum}>{t("p.composition")}{plus}</summary>
-              <div className="pb-5 text-sm text-muted"><p className="prose-lite">{tr(p.longDesc, lang)}</p>{careRows.length > 0 && <dl className="mt-3 space-y-1">{careRows.map((f, i) => <div key={i} className="flex gap-2"><dt className="font-semibold text-ink">{f.label}:</dt><dd>{f.value}</dd></div>)}</dl>}</div>
+              <div className="pb-5 text-sm text-muted"><RichText html={tr(p.longDesc, lang)} className="prose-lite" />{careRows.length > 0 && <dl className="mt-3 space-y-1">{careRows.map((f, i) => <div key={i} className="flex gap-2"><dt className="font-semibold text-ink">{f.label}:</dt><dd>{f.value}</dd></div>)}</dl>}</div>
             </details>
             <details className={acc}><summary className={sum}>{t("p.delivery")}{plus}</summary><div className="pb-5 text-sm text-muted"><p>{t("p.deliveryText")}</p>{wa && <a href={wa} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm mt-3">{t("p.shareWa")}</a>}</div></details>
           </div>

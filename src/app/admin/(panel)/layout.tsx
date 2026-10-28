@@ -10,5 +10,5 @@ export default async function PanelLayout({ children }: { children: React.ReactN
   if (!(await hasAnyUser())) redirect("/setup");
   const user = await requireUser();
   const s = await getSettings();
-  return <AdminChrome role={user.role} userName={user.name} storeName={s.store.name} logout={logoutAction}>{children}</AdminChrome>;
+  return <AdminChrome role={user.role} userName={user.name} email={user.email} avatar={user.avatar} storeName={s.store.name} logout={logoutAction}>{children}</AdminChrome>;
 }

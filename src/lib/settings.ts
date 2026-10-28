@@ -45,7 +45,8 @@ export type Settings = {
     codFee: number;
     freeShippingThreshold: number;
     defaultShippingFee: number;
-    formPlacement: "inline" | "popup" | "page";
+    /** inline = opens under the product when the customer taps Order · inline-open = the form is always visible on the page · popup · page */
+    formPlacement: "inline" | "inline-open" | "popup" | "page";
     confirmationStep: boolean;
     duplicateWindowMin: number;
     ratePerHourPerIp: number;
@@ -54,13 +55,31 @@ export type Settings = {
     reviewsAutoApprove: boolean;
   };
   /** Default layout of the quantity-offer cards; a product can override it. */
-  offers: { template: OfferTemplate };
+  /** Engagement features. */
+  engage: {
+    pwa: boolean;           // installable app + offline pages
+    visitors: boolean;      // anonymous visitor registry (after the visitor accepts the notice)
+    push: boolean;          // Web Push opt-in and sending
+    pushDelaySec: number;   // wait this long on the site before offering notifications
+    vapidPublic: string;    // public VAPID key (the private one is stored encrypted)
+    vapidSubject: string;   // mailto: / https: contact for push services
+    langUrls: boolean;      // /ar /fr /en URLs + hreflang + a sitemap per language
+  };
+  offers: {
+    template: OfferTemplate;
+    /** One-click add-on offered right after the order is placed (before the thank-you page). */
+    upsell: { enabled: boolean; discountPct: number; windowMin: number };
+  };
   announcement: { enabled: boolean; text: I18n; href: string };
   hero: { slides: HeroSlide[] };
   home: { sections: HomeSection[]; banner: { image: string; title: I18n; sub: I18n; href: string } };
   trust: TrustBadge[];
   footer: { text: I18n };
-  analytics: { metaPixel: string; tiktokPixel: string; ga: string; snapPixel: string };
+  analytics: {
+    metaPixel: string; tiktokPixel: string; ga: string; snapPixel: string;
+    /** Server-side (Conversions API) behaviour. The access tokens themselves are stored encrypted, never here. */
+    capi: { purchaseWhen: "placed" | "confirmed" | "delivered"; statusEvents: boolean; metaTestCode: string; tiktokTestCode: string };
+  };
   statuses: Partial<Record<OrderStatus, Partial<StatusDef>>>;
   templates: { confirm: I18n; shipped: I18n; delivered: I18n; followup: I18n };
 };
@@ -108,7 +127,8 @@ export const DEFAULT_SETTINGS: Settings = {
     reviewsAutoApprove: false,
   },
   announcement: { enabled: true, text: { en: "Free delivery · Pay when you receive", fr: "Livraison rapide · Paiement à la livraison", ar: "الدفع عند الاستلام · توصيل سريع" }, href: "" },
-  offers: { template: "list" },
+  engage: { pwa: true, visitors: true, push: true, pushDelaySec: 25, vapidPublic: "", vapidSubject: "", langUrls: true },
+  offers: { template: "list", upsell: { enabled: true, discountPct: 10, windowMin: 30 } },
   hero: { slides: [] },
   home: {
     sections: [
@@ -128,7 +148,7 @@ export const DEFAULT_SETTINGS: Settings = {
     { icon: "delivery", title: { en: "Fast delivery", fr: "Livraison rapide", ar: "توصيل سريع" }, text: { en: "2–4 days across the country", fr: "2 à 4 jours partout", ar: "من 2 إلى 4 أيام لكل المدن" } },
   ],
   footer: { text: {} },
-  analytics: { metaPixel: "", tiktokPixel: "", ga: "", snapPixel: "" },
+  analytics: { metaPixel: "", tiktokPixel: "", ga: "", snapPixel: "", capi: { purchaseWhen: "placed", statusEvents: false, metaTestCode: "", tiktokTestCode: "" } },
   statuses: {},
   templates: {
     confirm: {

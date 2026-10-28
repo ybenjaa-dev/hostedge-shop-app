@@ -1,3 +1,5 @@
+import { ensureSearchIndex } from "./search";
+import { likeEsc, tokens } from "@/lib/search-fold";
 import type { BundleRule } from "@/lib/pricing";
 import { resolveOfferTemplate } from "@/lib/offer-templates";
 import { getSettings } from "@/lib/settings";
@@ -68,6 +70,8 @@ export type ListParams = {
   featured?: boolean;
   bestsellers?: boolean;
   excludeId?: string;
+  /** Variant-option filters: { Size: ["M","L"], Color: ["Black"] } — a product matches when one of its variants satisfies every key. */
+  options?: Record<string, string[]>;
 };
 
 export async function listProducts(p: ListParams = {}): Promise<{ items: ProductCard[]; total: number; page: number; perPage: number }> {
@@ -77,9 +81,16 @@ export async function listProducts(p: ListParams = {}): Promise<{ items: Product
   const where: string[] = ["p.status = 'published'"];
   const args: unknown[] = [];
   if (p.q) {
-    where.push("(p.name LIKE ? ESCAPE '\\' OR p.sku LIKE ? ESCAPE '\\' OR p.short_desc LIKE ? ESCAPE '\\' OR p.specs LIKE ? ESCAPE '\\')");
-    const like = `%${p.q.replace(/[\\%_]/g, (m) => "\\" + m)}%`;
-    args.push(like, like, like, like);
+    await ensureSearchIndex();
+    const words = tokens(p.q);
+    if (words.length) for (const w of words) { where.push("p.search_text LIKE ? ESCAPE '\\'"); args.push(`%${likeEsc(w)}%`); }
+    else { where.push("(p.name LIKE ? ESCAPE '\\' OR p.sku LIKE ? ESCAPE '\\')"); const like = `%${likeEsc(p.q)}%`; args.push(like, like); }
+  }
+  const optEntries = Object.entries(p.options ?? {}).filter(([k, v]) => k && v.length).slice(0, 4);
+  if (optEntries.length) {
+    const conds = optEntries.map(([, vals]) => `json_extract(v.options, ?) IN (${vals.slice(0, 12).map(() => "?").join(",")})`).join(" AND ");
+    where.push(`EXISTS (SELECT 1 FROM product_variants v WHERE v.product_id = p.id AND ${conds})`);
+    for (const [k, vals] of optEntries) args.push(`$."${k.replace(/["\\]/g, "")}"`, ...vals.slice(0, 12));
   }
   if (p.categoryId) (where.push("p.category_id = ?"), args.push(p.categoryId));
   if (p.minPrice != null) (where.push("p.price >= ?"), args.push(p.minPrice));

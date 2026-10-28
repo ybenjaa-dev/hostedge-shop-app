@@ -1,9 +1,14 @@
 "use client";
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 import { CheckCircle2, AlertCircle, X } from "lucide-react";
+import dynamic from "next/dynamic";
+import { ConfirmProvider } from "@/components/confirm";
+import { DismissMenus } from "@/components/dismiss-menus";
 
 type Toast = { id: number; kind: "success" | "error"; text: string };
 const Ctx = createContext<(kind: Toast["kind"], text: string) => void>(() => {});
+// search suggestions, install prompt, consent and push load after the page is interactive, not before
+const ClientBoot = dynamic(() => import("@/components/boot/client-boot").then((m) => m.ClientBoot), { ssr: false });
 export const useToast = () => useContext(Ctx);
 
 export function ToastProvider({ children }: { children: ReactNode }) {
@@ -15,7 +20,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, []);
   return (
     <Ctx.Provider value={push}>
-      {children}
+      <ConfirmProvider>{children}</ConfirmProvider>
+      <ClientBoot />
+      <DismissMenus />
       <div className="pointer-events-none fixed inset-x-0 bottom-20 z-[100] flex flex-col items-center gap-2 px-4 md:bottom-6" role="status" aria-live="polite">
         {items.map((t) => (
           <div key={t.id} className="pointer-events-auto flex max-w-sm animate-fade items-center gap-2 rounded-xl bg-secondary px-4 py-3 text-sm font-medium text-white shadow-xl">
