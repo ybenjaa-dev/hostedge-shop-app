@@ -3,6 +3,7 @@ import { decimalsOf } from "@/lib/money";
 import { newId } from "@/lib/id";
 import { COUNTRIES } from "@/lib/phone";
 import type { AppEnv } from "@/lib/env";
+import { productSvg, svg, HERO_SVG, type Art } from "./sample-art";
 
 type Env = Pick<AppEnv, "DB" | "FILES">;
 const i18n = (en: string, fr: string, ar: string) => JSON.stringify({ en, fr, ar });
@@ -37,18 +38,7 @@ export async function seedPages(env: Env) {
   );
 }
 
-const xml = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-export function svg(c1: string, c2: string, rawLabel: string, shape: number) {
-  const label = xml(rawLabel);
-  const shapes = [
-    `<circle cx="300" cy="300" r="150" fill="rgba(255,255,255,.22)"/><circle cx="300" cy="300" r="90" fill="rgba(255,255,255,.35)"/>`,
-    `<rect x="170" y="170" width="260" height="260" rx="40" fill="rgba(255,255,255,.25)" transform="rotate(12 300 300)"/>`,
-    `<path d="M300 150 L440 410 L160 410 Z" fill="rgba(255,255,255,.28)"/>`,
-    `<rect x="150" y="230" width="300" height="140" rx="70" fill="rgba(255,255,255,.28)"/>`,
-  ];
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient></defs><rect width="600" height="600" fill="url(#g)"/>${shapes[shape % 4]}<text x="300" y="520" text-anchor="middle" font-family="sans-serif" font-size="34" font-weight="700" fill="rgba(255,255,255,.9)">${label}</text></svg>`;
-}
+export { svg };
 
 async function putSvg(env: Env, key: string, body: string) {
   await env.FILES.put(key, body, { httpMetadata: { contentType: "image/svg+xml", cacheControl: "public, max-age=31536000, immutable" } });
@@ -62,20 +52,27 @@ export async function seedSampleData(env: Env, currency: string) {
   if (has) return;
 
   const cats = [
-    { id: newId(), slug: "home", name: i18n("Home & Kitchen", "Maison & Cuisine", "المنزل والمطبخ"), c: ["#0f766e", "#14b8a6"] },
-    { id: newId(), slug: "beauty", name: i18n("Beauty & Care", "Beauté & Soins", "الجمال والعناية"), c: ["#be185d", "#f472b6"] },
-    { id: newId(), slug: "gadgets", name: i18n("Gadgets", "Gadgets", "إلكترونيات"), c: ["#1d4ed8", "#60a5fa"] },
+    { id: newId(), slug: "running", name: i18n("Running", "Course à pied", "الجري"), c: ["#c6ff00", ""] },
+    { id: newId(), slug: "gym", name: i18n("Gym & Strength", "Musculation", "كمال الأجسام"), c: ["#ff5a1f", ""] },
+    { id: newId(), slug: "yoga", name: i18n("Yoga & Mobility", "Yoga & Mobilité", "اليوغا والمرونة"), c: ["#b46bff", ""] },
+    { id: newId(), slug: "cycling", name: i18n("Cycling", "Cyclisme", "الدراجات"), c: ["#18d2ff", ""] },
+    { id: newId(), slug: "football", name: i18n("Football", "Football", "كرة القدم"), c: ["#ffd400", ""] },
   ];
-  type PD = { cat: number; slug: string; n: [string, string, string]; s: [string, string, string]; p: number; cmp: number; stock: number; feat: number; best: number; v: [string, number, number][] };
+  type PD = { cat: number; art: Art; slug: string; n: [string, string, string]; s: [string, string, string]; p: number; cmp: number; stock: number; feat: number; best: number; v: [string, number, number][] };
   const products: PD[] = [
-    { cat: 0, slug: "ceramic-pan-set", n: ["Ceramic non-stick pan set", "Set de poêles céramique", "طقم مقالي سيراميك"], s: ["Even heating, easy to clean.", "Chauffe uniforme, facile à nettoyer.", "تسخين متساوٍ وسهل التنظيف."], p: 249, cmp: 349, stock: 40, feat: 1, best: 1, v: [] },
-    { cat: 0, slug: "electric-grinder", n: ["Rechargeable spice grinder", "Moulin électrique rechargeable", "مطحنة توابل قابلة للشحن"], s: ["USB-C, stainless blades.", "USB-C, lames inox.", "شحن USB-C وشفرات ستانلس."], p: 129, cmp: 179, stock: 25, feat: 1, best: 0, v: [] },
-    { cat: 1, slug: "argan-hair-oil", n: ["Pure argan hair oil 100ml", "Huile d'argan cheveux 100ml", "زيت الأرغان للشعر 100مل"], s: ["Cold-pressed, nourishing.", "Pressée à froid, nourrissante.", "معصور على البارد ومغذٍّ."], p: 89, cmp: 119, stock: 80, feat: 1, best: 1, v: [] },
-    { cat: 1, slug: "face-serum", n: ["Vitamin C face serum", "Sérum visage vitamine C", "سيروم فيتامين سي للوجه"], s: ["Brightens and evens skin tone.", "Éclat et teint uniforme.", "يمنح إشراقة ويوحّد لون البشرة."], p: 149, cmp: 0, stock: 0, feat: 0, best: 1, v: [["30 ml", 149, 30], ["50 ml", 219, 18]] },
-    { cat: 2, slug: "smart-watch", n: ["Smart fitness watch", "Montre connectée sport", "ساعة ذكية رياضية"], s: ["Heart-rate, sleep, 7-day battery.", "Cardio, sommeil, 7 jours d'autonomie.", "نبض ونوم وبطارية 7 أيام."], p: 299, cmp: 449, stock: 0, feat: 1, best: 1, v: [["Black", 299, 20], ["Silver", 299, 12], ["Rose", 319, 0]] },
-    { cat: 2, slug: "wireless-earbuds", n: ["Wireless earbuds Pro", "Écouteurs sans fil Pro", "سماعات لاسلكية برو"], s: ["Noise reduction, 24h with case.", "Réduction de bruit, 24h avec boîtier.", "عزل ضوضاء و24 ساعة مع العلبة."], p: 199, cmp: 279, stock: 60, feat: 1, best: 0, v: [] },
-    { cat: 2, slug: "phone-stand", n: ["Foldable phone stand", "Support téléphone pliable", "حامل هاتف قابل للطي"], s: ["Aluminium, adjustable angle.", "Aluminium, angle réglable.", "ألمنيوم بزاوية قابلة للتعديل."], p: 49, cmp: 0, stock: 30, feat: 0, best: 0, v: [] },
-    { cat: 0, slug: "storage-baskets", n: ["Woven storage baskets (3 pcs)", "Paniers de rangement tressés (3)", "سلال تخزين منسوجة (3 قطع)"], s: ["Natural fibre, three sizes.", "Fibre naturelle, trois tailles.", "ألياف طبيعية بثلاثة مقاسات."], p: 119, cmp: 159, stock: 15, feat: 0, best: 0, v: [] },
+    { cat: 0, art: "shoe", slug: "velocity-pro-running-shoes", n: ["Velocity Pro running shoes", "Chaussures de running Velocity Pro", "حذاء الجري فيلوسيتي برو"], s: ["Carbon-plated energy return, 240 g.", "Retour d'énergie carbone, 240 g.", "إرجاع طاقة بالكربون ووزن 240 غ."], p: 690, cmp: 890, stock: 0, feat: 1, best: 1, v: [["40", 690, 8], ["42", 690, 14], ["44", 690, 6], ["46", 690, 0]] },
+    { cat: 0, art: "shorts", slug: "aeroflex-running-shorts", n: ["AeroFlex 2-in-1 running shorts", "Short de running AeroFlex 2-en-1", "شورت الجري إيروفلكس 2 في 1"], s: ["Featherweight, with phone pocket.", "Ultra léger, avec poche téléphone.", "خفيف جداً مع جيب للهاتف."], p: 189, cmp: 249, stock: 0, feat: 1, best: 0, v: [["S", 189, 20], ["M", 189, 30], ["L", 189, 24], ["XL", 189, 10]] },
+    { cat: 0, art: "bottle", slug: "hydro-flask-750", n: ["Hydro insulated bottle 750 ml", "Gourde isotherme Hydro 750 ml", "قارورة حرارية هيدرو 750 مل"], s: ["Cold 24 h, hot 12 h, leak-proof.", "Froid 24 h, chaud 12 h, étanche.", "باردة 24 ساعة وساخنة 12 ساعة وبلا تسرب."], p: 149, cmp: 0, stock: 70, feat: 0, best: 1, v: [] },
+    { cat: 1, art: "dumbbell", slug: "hex-dumbbell-pair-10kg", n: ["Hex dumbbell pair 2 × 10 kg", "Paire d'haltères hexagonaux 2 × 10 kg", "زوج دمبل سداسي 2 × 10 كغ"], s: ["Rubber-coated, knurled steel grip.", "Revêtement caoutchouc, poignée moletée.", "مطاطي مع قبضة فولاذية مخرّشة."], p: 449, cmp: 549, stock: 22, feat: 1, best: 1, v: [] },
+    { cat: 1, art: "kettlebell", slug: "cast-iron-kettlebell-16kg", n: ["Cast-iron kettlebell 16 kg", "Kettlebell fonte 16 kg", "كيتل بيل حديد 16 كغ"], s: ["Wide handle, flat base, powder coat.", "Poignée large, base plate, peinture poudre.", "مقبض عريض وقاعدة مسطحة."], p: 329, cmp: 399, stock: 18, feat: 1, best: 1, v: [] },
+    { cat: 1, art: "bands", slug: "resistance-bands-set", n: ["Resistance bands set (5 levels)", "Set de bandes de résistance (5 niveaux)", "طقم أحزمة مقاومة (5 مستويات)"], s: ["Latex loops with handles and a carry bag.", "Boucles latex, poignées et sac.", "حلقات لاتكس مع مقابض وحقيبة."], p: 119, cmp: 159, stock: 90, feat: 0, best: 0, v: [] },
+    { cat: 2, art: "mat", slug: "grip-yoga-mat-6mm", n: ["Grip yoga mat 6 mm", "Tapis de yoga Grip 6 mm", "سجادة يوغا جريب 6 مم"], s: ["Non-slip, cushioned, alignment lines.", "Antidérapant, épais, lignes d'alignement.", "غير قابلة للانزلاق مع خطوط محاذاة."], p: 229, cmp: 289, stock: 0, feat: 1, best: 1, v: [["Violet", 229, 16], ["Black", 229, 22], ["Teal", 249, 0]] },
+    { cat: 2, art: "blocks", slug: "cork-yoga-blocks", n: ["Cork yoga blocks (set of 2)", "Briques de yoga en liège (x2)", "مكعبات يوغا من الفلين (2)"], s: ["Firm, light and naturally grippy.", "Fermes, légères et adhérentes.", "صلبة وخفيفة وذات تماسك طبيعي."], p: 139, cmp: 0, stock: 35, feat: 0, best: 0, v: [] },
+    { cat: 3, art: "helmet", slug: "aero-road-cycling-helmet", n: ["Aero road cycling helmet", "Casque de vélo route Aero", "خوذة دراجات إيرو للطرق"], s: ["In-mould shell, 18 vents, 260 g.", "Coque in-mould, 18 aérations, 260 g.", "هيكل مصبوب و18 فتحة تهوية و260 غ."], p: 389, cmp: 490, stock: 0, feat: 1, best: 0, v: [["M (55-59)", 389, 12], ["L (59-63)", 389, 9]] },
+    { cat: 3, art: "bottle", slug: "cycling-bidon-700", n: ["Cycling bidon 700 ml", "Bidon cyclisme 700 ml", "قارورة دراجة 700 مل"], s: ["Soft squeeze, valve cap, BPA-free.", "Souple, bouchon à valve, sans BPA.", "ضغط ناعم وغطاء بصمام بدون BPA."], p: 59, cmp: 79, stock: 120, feat: 0, best: 0, v: [] },
+    { cat: 4, art: "ball", slug: "match-football-size-5", n: ["Match football size 5", "Ballon de football match taille 5", "كرة قدم المباراة مقاس 5"], s: ["Thermo-bonded, true flight, all pitches.", "Thermocollé, trajectoire précise.", "ملتصقة حرارياً بمسار دقيق."], p: 259, cmp: 329, stock: 45, feat: 1, best: 1, v: [] },
+    { cat: 4, art: "shin", slug: "carbon-shin-guards", n: ["Carbon shin guards", "Protège-tibias carbone", "واقيات ساق من الكربون"], s: ["Ultra-light shell with soft ankle pad.", "Coque ultra légère, protège-cheville.", "هيكل خفيف جداً مع حماية للكاحل."], p: 129, cmp: 0, stock: 40, feat: 0, best: 0, v: [] },
+    { cat: 4, art: "glove", slug: "pro-goalkeeper-gloves", n: ["Pro goalkeeper gloves", "Gants de gardien Pro", "قفازات حارس مرمى برو"], s: ["Latex palm, finger-save spines.", "Paume latex, renforts doigts.", "كف لاتكس مع دعامات للأصابع."], p: 199, cmp: 259, stock: 28, feat: 1, best: 0, v: [] },
   ];
 
   const stmts: D1PreparedStatement[] = [];
@@ -91,7 +88,7 @@ export async function seedSampleData(env: Env, currency: string) {
     pids.push(id);
     const cat = cats[p.cat]!;
     const key = `uploads/sample-${p.slug}.svg`;
-    await putSvg(env, key, svg(cat.c[0]!, cat.c[1]!, p.n[0].slice(0, 26), i));
+    await putSvg(env, key, productSvg(p.art, cat.c[0]!, p.n[0].slice(0, 26), i));
     const totalStock = p.v.length ? 0 : p.stock;
     stmts.push(
       db.prepare("INSERT INTO products (id, slug, name, short_desc, long_desc, category_id, sku, price, compare_at, stock, track_stock, status, featured, bestseller, sold_count, seo_title, seo_desc, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,1,'published',?,?,?,'{}','{}',?,?)").bind(
@@ -106,10 +103,10 @@ export async function seedSampleData(env: Env, currency: string) {
     );
   }
   const reviews: [number, string, string, number, string][] = [
-    [0, "Salma", "Casablanca", 5, "Livraison rapide et produit conforme. Merci !"],
-    [2, "Youssef", "Rabat", 5, "Great quality, I paid the courier when it arrived."],
-    [4, "Fatima", "Marrakech", 4, "ممتازة وسعرها مناسب، والتوصيل كان سريع."],
-    [5, "Omar", "Tanger", 5, "Son très clair, très bon rapport qualité-prix."],
+    [0, "Salma", "Casablanca", 5, "Super légères, j'ai battu mon record sur 10 km. Livraison rapide !"],
+    [3, "Youssef", "Rabat", 5, "Solid build, great grip. Paid the courier on delivery, zero hassle."],
+    [6, "Fatima", "Marrakech", 4, "سجادة ممتازة وما تنزلقش، والتوصيل كان سريع."],
+    [10, "Omar", "Tanger", 5, "Ballon top pour le foot du week-end, très bon rapport qualité-prix."],
   ];
   for (const [pi, name, city, rating, body] of reviews)
     stmts.push(db.prepare("INSERT INTO reviews (id, product_id, name, city, rating, body, status, created_at) VALUES (?,?,?,?,?,?, 'approved', ?)").bind(newId(), pids[pi]!, name, city, rating, body, now));
@@ -127,8 +124,8 @@ export async function seedSampleData(env: Env, currency: string) {
   });
   for (let i = 0; i < stmts.length; i += 40) await db.batch(stmts.slice(i, i + 40));
 
-  // hero slide image
-  await putSvg(env, "uploads/sample-hero.svg", `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#134e4a"/><stop offset="1" stop-color="#f59e0b"/></linearGradient></defs><rect width="1600" height="900" fill="url(#g)"/><circle cx="1250" cy="450" r="330" fill="rgba(255,255,255,.12)"/><circle cx="1250" cy="450" r="200" fill="rgba(255,255,255,.18)"/></svg>`);
+  // hero slide cutout (transparent: it sits on the lime block)
+  await putSvg(env, "uploads/sample-hero.svg", HERO_SVG);
 }
 
 export function countryCurrency(country: string) {

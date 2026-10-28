@@ -87,12 +87,12 @@ export const DEFAULT_SETTINGS: Settings = {
   branding: {
     logo: BRAND.logo,
     favicon: BRAND.icon,
-    primary: "#d9480f",
-    secondary: "#232f3e",
-    accent: "#ffb703",
+    primary: "#c6ff00",
+    secondary: "#0b0b0d",
+    accent: "#ffffff",
     buttonStyle: "square",
-    fontLatin: "Roboto",
-    fontArabic: "Cairo",
+    fontLatin: "Inter",
+    fontArabic: "Tajawal",
   },
   checkout: {
     codMode: true,

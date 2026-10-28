@@ -3,9 +3,11 @@ import { getPlatformProxy } from "wrangler";
 import { svg } from "../src/features/admin/seed";
 
 const C: [string, string, string, string, number][] = [
-  ["home", "#0f766e", "#14b8a6", "Home & Kitchen", 0],
-  ["beauty", "#be185d", "#f472b6", "Beauty & Care", 1],
-  ["gadgets", "#1d4ed8", "#60a5fa", "Gadgets", 2],
+  ["running", "#c6ff00", "", "Running", 0],
+  ["gym", "#ff5a1f", "", "Gym & Strength", 1],
+  ["yoga", "#b46bff", "", "Yoga & Mobility", 2],
+  ["cycling", "#18d2ff", "", "Cycling", 3],
+  ["football", "#ffd400", "", "Football", 4],
 ];
 async function main() {
 const { env, dispose } = await getPlatformProxy<{ FILES: R2Bucket }>({ configPath: "wrangler.jsonc" });

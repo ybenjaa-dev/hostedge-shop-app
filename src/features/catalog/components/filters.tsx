@@ -8,48 +8,39 @@ type Props = {
   labels: { filters: string; category: string; all: string; price: string; min: string; max: string; stock: string; apply: string; clear: string; search: string };
 };
 
-/** Classic left sidebar: category tree with counts, price range, availability. Plain GET forms — no client JS. */
+/** Horizontal toolbar: scrolling category chips + a collapsible price/search/stock form. Plain GET forms — no client JS. */
 export function CatalogFilters({ action, values, categories, labels }: Props) {
   const keep = (extra: Record<string, string>) => { const u = new URLSearchParams(); for (const [k, v] of Object.entries({ q: values.q, min: values.min, max: values.max, stock: values.stock, sort: values.sort === "new" ? "" : values.sort, view: values.view === "grid" ? "" : values.view, ...extra })) if (v) u.set(k, v); const s = u.toString(); return s ? `?${s}` : ""; };
-  const body = (p: string) => (
-    <div className="divide-y divide-line">
-      {categories.length > 0 && (
-        <div className="p-4">
-          <h3 className="mb-2 text-sm font-extrabold uppercase tracking-wide">{labels.category}</h3>
-          <ul className="space-y-0.5 text-sm">
-            <li><Link href={`/shop${keep({})}`} className={`flex justify-between py-1 hover:text-brand hover:underline ${!values.category ? "font-extrabold text-brand" : ""}`}>{labels.all}</Link></li>
-            {categories.map((c) => (
-              <li key={c.slug}><Link href={`/category/${c.slug}${keep({})}`} className={`flex justify-between py-1 hover:text-brand hover:underline ${values.category === c.slug ? "font-extrabold text-brand" : ""}`}><span>{c.name}</span><span className="num text-muted">({c.count})</span></Link></li>
-            ))}
-          </ul>
-        </div>
-      )}
-      <form action={action} method="get" className="space-y-4 p-4" id={`${p}search`}>
-        {values.sort && values.sort !== "new" && <input type="hidden" name="sort" value={values.sort} />}
-        {values.view === "list" && <input type="hidden" name="view" value="list" />}
-        <div>
-          <label className="label" htmlFor={`${p}q`}>{labels.search}</label>
-          <input id={`${p}q`} name="q" type="search" defaultValue={values.q} className="field" />
-        </div>
-        <div>
-          <span className="label">{labels.price}</span>
-          <div className="grid grid-cols-2 gap-2">
-            <input name="min" inputMode="decimal" placeholder={labels.min} defaultValue={values.min} className="field" aria-label={labels.min} />
-            <input name="max" inputMode="decimal" placeholder={labels.max} defaultValue={values.max} className="field" aria-label={labels.max} />
-          </div>
-        </div>
-        <label className="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" name="stock" value="1" defaultChecked={values.stock === "1"} className="size-4 accent-[var(--brand)]" />{labels.stock}</label>
-        <div className="flex gap-2"><button className="btn btn-primary flex-1">{labels.apply}</button><a href={action} className="btn btn-outline">{labels.clear}</a></div>
-      </form>
-    </div>
-  );
+  const chip = (on: boolean) => `skew shrink-0 px-4 py-1.5 text-sm font-black uppercase tracking-wider transition-colors ${on ? "lime" : "bg-sunken hover:bg-[var(--ink)] hover:text-[var(--bg)]"}`;
+  const active = !!(values.q || values.min || values.max || values.stock);
   return (
-    <aside>
-      <details className="panel lg:hidden">
-        <summary className="bar bar-brand cursor-pointer list-none [&::-webkit-details-marker]:hidden"><span className="inline-flex items-center gap-2"><SlidersHorizontal className="size-4" />{labels.filters}</span></summary>
-        {body("m-")}
+    <aside className="space-y-3">
+      <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar" role="list">
+        <Link role="listitem" href={`/shop${keep({})}`} className={chip(!values.category)}><span>{labels.all}</span></Link>
+        {categories.map((c) => (
+          <Link role="listitem" key={c.slug} href={`/category/${c.slug}${keep({})}`} className={chip(values.category === c.slug)}><span>{c.name} <span className="num opacity-60">{c.count}</span></span></Link>
+        ))}
+      </div>
+      <details className="group bg-surface" open={active}>
+        <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-2.5 text-xs font-black uppercase tracking-[0.18em] hover:text-[var(--brand)]"><SlidersHorizontal className="size-4" />{labels.filters}{active && <span className="size-2 bg-[var(--brand)]" />}</summary>
+        <form action={action} method="get" className="grid gap-4 border-t border-line p-4 sm:grid-cols-[1.4fr_1fr_auto_auto] sm:items-end">
+          {values.sort && values.sort !== "new" && <input type="hidden" name="sort" value={values.sort} />}
+          {values.view === "list" && <input type="hidden" name="view" value="list" />}
+          <div>
+            <label className="label" htmlFor="f-q">{labels.search}</label>
+            <input id="f-q" name="q" type="search" defaultValue={values.q} className="field" />
+          </div>
+          <div>
+            <span className="label">{labels.price}</span>
+            <div className="grid grid-cols-2 gap-2">
+              <input name="min" inputMode="decimal" placeholder={labels.min} defaultValue={values.min} className="field" aria-label={labels.min} />
+              <input name="max" inputMode="decimal" placeholder={labels.max} defaultValue={values.max} className="field" aria-label={labels.max} />
+            </div>
+          </div>
+          <label className="flex min-h-11 items-center gap-2 text-sm font-bold"><input type="checkbox" name="stock" value="1" defaultChecked={values.stock === "1"} className="size-4 accent-[var(--brand)]" />{labels.stock}</label>
+          <div className="flex gap-2"><button className="btn btn-primary flex-1">{labels.apply}</button><a href={action} className="btn btn-outline">{labels.clear}</a></div>
+        </form>
       </details>
-      <div className="panel hidden lg:block"><div className="bar"><h2>{labels.filters}</h2></div>{body("d-")}</div>
     </aside>
   );
 }

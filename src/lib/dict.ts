@@ -32,6 +32,7 @@ const en = {
   "home.clear": "Clear labels, no guesswork", "home.clearD": "Every product page shows the serving size, the dose of each ingredient and how to take it.",
   "p.shade": "Shade", "p.shades": "{n} shades", "p.pickShade": "Choose your shade", "p.ritual": "The ritual", "p.pickedFor": "Our pick", "home.concern": "Shop by concern",
   "offer.title": "Choose your pack", "offer.one": "1 item", "offer.many": "{n} items", "offer.popular": "Most popular", "offer.best": "Best value", "offer.save": "Save {pct}%", "offer.each": "{price} each", "offer.normal": "Regular price", "offer.youSave": "You save {amount}", "offer.same": "Every item has the options you chose above.", "offer.other": "Need another quantity?", "offer.unitOne": "item", "offer.unitMany": "items",
+  "sp.new": "New", "sp.ticker": "Run · Lift · Flow · Ride · Play", "sp.drops": "New drops", "sp.dropsSub": "Fresh gear. Built for the next rep.", "sp.rank": "Top performers", "sp.spec": "Spec sheet", "sp.grip": "Grip", "sp.lightness": "Lightness", "sp.durability": "Durability", "sp.comfort": "Comfort", "sp.profile": "Performance profile", "sp.explore": "Explore", "sp.heroKicker": "Season 26 · Performance gear", "sp.gear": "Gear up", "sp.search": "Search gear", "sp.back": "Back to top", "sp.all": "All gear", "sp.sortBy": "Sort by", "sp.viewGrid": "Grid view", "sp.viewList": "List view", "sp.step": "Step", "sp.filtersOpen": "Filters & price",
 } as const;
 
 export type DictKey = keyof typeof en;
@@ -68,6 +69,7 @@ const fr: D = {
   "home.clear": "Des étiquettes claires, sans devinettes", "home.clearD": "Chaque fiche produit indique la portion, la dose de chaque ingrédient et le mode d'emploi.",
   "p.shade": "Teinte", "p.shades": "{n} teintes", "p.pickShade": "Choisissez votre teinte", "p.ritual": "Le rituel", "p.pickedFor": "Notre coup de cœur", "home.concern": "Acheter par besoin",
   "offer.title": "Choisissez votre pack", "offer.one": "1 article", "offer.many": "{n} articles", "offer.popular": "Le plus populaire", "offer.best": "Meilleur prix", "offer.save": "Économisez {pct} %", "offer.each": "{price} l'unité", "offer.normal": "Prix normal", "offer.youSave": "Vous économisez {amount}", "offer.same": "Chaque article aura les options choisies ci-dessus.", "offer.other": "Besoin d'une autre quantité ?", "offer.unitOne": "article", "offer.unitMany": "articles",
+  "sp.new": "Nouveau", "sp.ticker": "Courir · Soulever · Souffler · Rouler · Jouer", "sp.drops": "Nouveautés", "sp.dropsSub": "Équipement frais. Conçu pour la prochaine série.", "sp.rank": "Top performances", "sp.spec": "Fiche technique", "sp.grip": "Adhérence", "sp.lightness": "Légèreté", "sp.durability": "Durabilité", "sp.comfort": "Confort", "sp.profile": "Profil de performance", "sp.explore": "Explorer", "sp.heroKicker": "Saison 26 · Équipement performance", "sp.gear": "Équipez-vous", "sp.search": "Rechercher un article", "sp.back": "Haut de page", "sp.all": "Tout l'équipement", "sp.sortBy": "Trier par", "sp.viewGrid": "Vue grille", "sp.viewList": "Vue liste", "sp.step": "Étape", "sp.filtersOpen": "Filtres et prix",
 };
 
 const ar: D = {
@@ -101,6 +103,7 @@ const ar: D = {
   "home.clear": "ملصقات واضحة دون تخمين", "home.clearD": "تعرض كل صفحة منتج الحصة والجرعة لكل مكوّن وطريقة الاستعمال.",
   "p.shade": "اللون", "p.shades": "{n} ألوان", "p.pickShade": "اختاري لونك", "p.ritual": "الروتين", "p.pickedFor": "اختيارنا لكِ", "home.concern": "تسوّقي حسب احتياجك",
   "offer.title": "اختر باقتك", "offer.one": "قطعة واحدة", "offer.many": "{n} قطع", "offer.popular": "الأكثر طلباً", "offer.best": "أفضل قيمة", "offer.save": "وفّر {pct}٪", "offer.each": "{price} للقطعة", "offer.normal": "السعر العادي", "offer.youSave": "توفّر {amount}", "offer.same": "كل القطع بنفس الخيارات المختارة أعلاه.", "offer.other": "تحتاج كمية أخرى؟", "offer.unitOne": "قطعة", "offer.unitMany": "قطع",
+  "sp.new": "جديد", "sp.ticker": "اركض · ارفع · تمدّد · انطلق · العب", "sp.drops": "وصل حديثاً", "sp.dropsSub": "معدات جديدة. جاهزة للتمرين القادم.", "sp.rank": "الأفضل أداءً", "sp.spec": "المواصفات", "sp.grip": "التماسك", "sp.lightness": "الخفة", "sp.durability": "المتانة", "sp.comfort": "الراحة", "sp.profile": "ملف الأداء", "sp.explore": "استكشف", "sp.heroKicker": "موسم 26 · معدات الأداء", "sp.gear": "جهّز نفسك", "sp.search": "ابحث عن معدات", "sp.back": "إلى الأعلى", "sp.all": "كل المعدات", "sp.sortBy": "ترتيب حسب", "sp.viewGrid": "عرض شبكي", "sp.viewList": "عرض قائمة", "sp.step": "خطوة", "sp.filtersOpen": "التصفية والسعر",
 };
 
 export const DICT: Record<Lang, D> = { en: en as unknown as D, fr, ar };
