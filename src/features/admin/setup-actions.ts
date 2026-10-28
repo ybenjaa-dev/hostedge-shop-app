@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getEnv } from "@/lib/env";
+import { clearMemo } from "@/lib/mem-cache";
 import { ensureSchema } from "@/db/ensure-schema";
 import { createSession, createUser, hasAnyUser, logActivity } from "@/lib/auth";
 import { DEFAULT_SETTINGS, saveSettings } from "@/lib/settings";
@@ -49,6 +50,7 @@ export async function runSetup(_prev: SetupState, form: FormData): Promise<Setup
       slides: [{ image: "uploads/sample-hero.svg", title: { en: "Good food, honestly made", fr: "De bons produits, faits honnêtement", ar: "طعام جيد، يُصنع بصدق" }, sub: { en: "Olive oil, honey, coffee, snacks and pantry staples from small producers. Open the parcel, then pay.", fr: "Huile d'olive, miel, café, snacks et épicerie de petits producteurs. Ouvrez le colis, puis payez.", ar: "زيت زيتون وعسل وقهوة ووجبات خفيفة ومواد غذائية من منتجين صغار. افتح الطرد ثم ادفع." }, cta: { en: "Shop the pantry", fr: "Voir l'épicerie", ar: "تسوّق المؤونة" }, href: "/shop" }],
     });
   }
+  clearMemo();
   await createSession(userId);
   await logActivity({ id: userId, name: d.name }, "setup.completed", "store", undefined, { country: country.code });
   redirect("/admin");
