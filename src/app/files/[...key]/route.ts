@@ -20,7 +20,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ key: str
 
   const stored = width ? storedVariantFor(key, width) : key;
   const etag = `"${stored}${width ? `.${width}` : ""}${width && env.IMAGES ? `.${fmt}` : ""}"`;
-  if (req.headers.get("if-none-match") === etag) return new Response(null, { status: 304, headers: { ETag: etag } });
+  if (req.headers.get("if-none-match") === etag) return new Response(null, { status: 304, headers: { ETag: etag, "Cache-Control": IMMUTABLE, Vary: "Accept" } });
 
   let obj = await env.FILES.get(stored);
   // a missing compressed variant (older upload) falls back to the full-size file

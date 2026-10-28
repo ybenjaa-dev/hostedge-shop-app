@@ -1,7 +1,5 @@
 import "server-only";
-import { setRaw } from "@/lib/settings";
-import { getEnv } from "@/lib/env";
-import { ensureSchema } from "@/db/ensure-schema";
+import { setRaw, loadSettingRows } from "@/lib/settings";
 import { DICT } from "@/lib/dict";
 import { LANGS, setCustomLangs, customLangs, type LangMeta } from "@/lib/i18n-core";
 
@@ -27,9 +25,8 @@ const parse = <T,>(raw: string | null, d: T): T => { try { return raw ? { ...d, 
 /** Load the saved languages once every few seconds and push them into the dictionaries (so every `t()` in the app sees them). */
 export async function ensureLangs(force = false) {
   if (!force && cache && Date.now() - cache.at < 10_000) return cache;
-  await ensureSchema();
-  const rows = await getEnv().DB.prepare("SELECT key, value FROM settings WHERE key IN (?, ?, ?, ?)").bind(K_CFG, K_STR, K_UI, K_EXTRA).all<{ key: string; value: string }>(); // one query for everything the storefront needs on each page
-  const raw: Record<string, string> = Object.fromEntries((rows.results ?? []).map((r) => [r.key, r.value]));
+  const rows = await loadSettingRows(); // shared with getSettings: one query serves both
+  const raw: Record<string, string> = Object.fromEntries([K_CFG, K_STR, K_UI, K_EXTRA].flatMap((k) => (rows.has(k) ? [[k, rows.get(k)!]] : [])));
   const [c, s, u] = [raw[K_CFG] ?? null, raw[K_STR] ?? null, raw[K_UI] ?? null];
   const cfg = parse<Stored>(c, { custom: [], fallback: {} });
   const strings = parse<Strings>(s, {});
