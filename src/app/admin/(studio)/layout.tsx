@@ -7,5 +7,5 @@ export const metadata = { robots: { index: false, follow: false } };
 export default async function StudioLayout({ children }: { children: React.ReactNode }) {
   if (!(await hasAnyUser())) redirect("/setup");
   await requireUser();
-  return <div className="min-h-dvh bg-bg">{children}</div>;
+  return <div className="relative h-dvh overflow-hidden bg-bg">{children}</div>;
 }
