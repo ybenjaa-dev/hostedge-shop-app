@@ -85,8 +85,52 @@ Every upload goes through one library, WordPress-style: a searchable grid with a
 - **No duplicates:** the file's SHA-256 is checked before upload (and again on the server); re-uploading the same picture reuses the existing entry. Table: `media` (migration `0005`). Files uploaded before the library existed (and seeded placeholders) are registered automatically.
 - *Match photos to products* tab keeps the bulk "name the file after the product" importer.
 
+### Server-side ad tracking (Meta & TikTok Conversions API)
+Settings → *Analytics & ads*. Paste the pixel IDs and the **access tokens** (stored encrypted, never shown again) and every order is also sent from the server — hashed phone/name/city, IP, user agent and the ad-click ids (`_fbp`, `_fbc`, `ttclid`…) captured at checkout — with the same `event_id` as the browser pixel, so platforms de-duplicate instead of double counting.
+- **Count a sale when…** *placed* (default), *confirmed* or *delivered*. For the last two the browser fires a **Lead** at checkout and the server sends the **Purchase** later, when the order really is confirmed/delivered (also from carrier tracking updates).
+- Optional custom events `OrderConfirmed / OrderDelivered / OrderReturned` for audiences and delivery-rate reporting.
+- Every send is logged (*Server events* panel) with the platform's answer; failures are retried by the 15-minute cron or the *Retry* button; a *Test* button uses your test event code. Code: `src/features/tracking/`.
+
+### Upsells & cross-sells
+- **Frequently bought together** (up to 3 per product): companions under the price with tick boxes; ticked ones join the same COD order.
+- **One-tap add-on after checkout** (up to 2): the screen right after the order is placed offers a companion at a special price; one tap appends it to the same order (totals recomputed, free delivery unlocked if the new total passes the threshold, history note added). Closes when the order is confirmed or the window (default 30 min) ends.
+- Set per product under *Cross-sell*; discount, window and on/off in Settings → Offers. Table `product_links`, `order_items.addon`.
+
+### Team roles & performance
+Roles: **Owner**, **Manager**, **Confirmer** (phone confirmation: confirm / no answer / postpone / cancel), **Packer** (ready to ship → delivered/returned, carriers, tracking), **Accountant** (read-only orders, COD cash, dashboard, performance). The menu, every page, every server action and every export/API checks the same permission table (`src/lib/permissions.ts`); a role can only move orders to the statuses it owns. *Team performance* (owner, manager, accountant) shows per teammate: orders handled, confirmed / cancelled / no answer / postponed, **confirmation rate**, first-response time, **delivered rate of the orders they confirmed** and cash delivered — built from the order history.
+
+### Search, filters, language URLs, app & push
+
+- **Instant search** — typing in any storefront search box shows matching products (picture + price) and categories, with keyboard navigation and recent searches. Matching ignores accents, Arabic diacritics and alef/ya variants, and every word must match (`src/lib/search-fold.ts`, a `products.search_text` column kept up to date on save/import).
+- **Filters** — the shop page gets a price slider and variant-option chips (Size, Color… with counts) that apply instantly; they live in the URL (`?min=&max=&opt=Size:M|Color:Black`) so results can be shared. Without JavaScript the plain form still works.
+- **Language URLs** (Settings → App, push & SEO → on by default) — every page is also served at `/ar/…`, `/fr/…`, `/en/…`. `worker.ts` strips the prefix, selects the language and rewrites internal links; each page gets a canonical URL and `hreflang` links (+ `x-default`), and `/sitemap.xml` becomes an index of `/sitemap/ar.xml`, `/sitemap/fr.xml`, `/sitemap/en.xml`, each URL listing its translations. Visiting an unprefixed URL still works (cookie-based) and canonicalises to the prefixed one.
+- **Installable app (PWA)** — dynamic `/manifest.webmanifest` from your branding, a service worker (`/sw.js`: cached static assets, network-first pages, offline page), an install prompt after the second page view (iOS gets “Add to Home Screen” instructions).
+- **Push notifications** — visitors are asked after a delay (never on cart/checkout); **Admin → Push notifications** sends a message to everyone or to a filtered audience (language, country, city, ordered / never ordered) with a live count and preview, and shows delivered/failed/opened. Web Push is implemented with WebCrypto only (RFC 8291/8292); the VAPID key pair is created on first use and the private half is stored encrypted. On the free Workers plan one request can send ~45 messages; the cron trigger keeps delivering large campaigns, or press **Continue** on the history row.
+- **Visitor registry** (Admin → Visitors) — after the visitor accepts the privacy notice we store country, city, IP, device, browser, referrer/campaign and a device fingerprint (hash of browser traits). Orders are linked to the visitor; **Block this device** stops that fingerprint from ordering even with a new phone number. Nothing is recorded before consent. This is personal data (Morocco law 09-08, GDPR): keep your privacy page accurate.
+
+### Languages & header switchers (Admin → Languages)
+
+- **Add any language** — pick one of 25 presets (Español, Deutsch, Türkçe, Русский, 中文, اردو, فارسی…) or enter your own two-letter code, name, direction (LTR/RTL) and flag. It instantly gets its own tab on every translated field (products, categories, pages, hero…), its own `/xx` URLs, hreflang tags and sitemap, and a flag in the switcher.
+- **Translate the interface** — **Translate** opens a table of every shop text (source on the left, your translation on the right, search / "not translated yet" filter) or work in a spreadsheet (download CSV → translator → import). Untranslated texts show in the language you chose to start from. **Edit wording** does the same for Arabic, French and English.
+- **Switchers** — show or hide the language switcher and the light/dark button, separately on desktop and phones; flag + code / flag only / code / language name; default appearance (device / always light / always dark); optional detection of the visitor's browser language on the first visit. Settings are stored in the database, so no rebuild is needed.
+
+### Responsive images
+`/files/<key>?w=640` serves the best stored size (thumbnail 320 / medium 800 / full 1600). When the optional Cloudflare **Images binding** (`IMAGES` in `wrangler.jsonc`) is present, the file is resized to the requested width and converted to **AVIF/WebP** on the fly (cached at the edge, one transform per size). Product cards and galleries use `srcset`/`sizes` (`imgProps()` in `src/lib/image-sizes.ts`). No binding? Nothing breaks — remove the line from `wrangler.jsonc` and the stored sizes are served.
+
+### Order form on the product page
+Settings → Checkout → *Form placement*: **Inline — opens when the customer taps "Order now"**, **Inline — always visible** (the form sits on the page; the big button is replaced by it, and asks for a variant first if needed), **Popup** (bottom sheet) or **Separate checkout page**. On phones the sticky "Order now" bar slides away whenever the form is on screen (or the sheet is open) and comes back when it scrolls out of view.
+
 ### Admin UI kit
 One look everywhere: `DataTable` (card that scrolls sideways *inside* itself), `Tabs`, `FilterBar` (filters and the Filter button always stay inside their card), and custom `DateField` / `DateRangeField` pickers (presets, keyboard support, bottom-sheet on phones) instead of the browser's native date input.
+
+- **Rows with side sheets:** categories and coupons are tables like products; *New / Edit* opens a drawer that closes after saving. Coupons show a live "what customers see" ticket while you type.
+- **Language tabs everywhere:** translated fields (name, descriptions, page body, appearance texts…) use one tab bar — FR / AR / EN with flags and a dot for "has content". Long descriptions and page bodies use a built-in rich-text editor (headings, lists, quotes, links); HTML is sanitised on save *and* on render (`src/lib/rich-text.ts`), older plain-text content still renders as paragraphs.
+- **Offers:** fixed-price quantity offers are set on each product (with a live preview of the real offer cards in the shop's theme). The store-wide default layout and optional "buy N, save %" rule live in Settings → Offers.
+- **Appearance studio:** big live preview next to the editor — click any part of the preview to jump to its settings, type straight onto texts, reorder/hide homepage sections from the preview, switch phone/tablet/desktop and language.
+- **New-order alerts:** the admin polls for orders; a soft double "pip" (synthesised, no audio file), a toast, a bell toggle, a pending count on *Orders* and an optional desktop notification.
+- **Order timeline:** progress tracker (New → Confirmed → Shipped → Delivered) plus an event feed with who changed what, how long each step took, and notes.
+- **Language switcher:** soft-rounded colourful flags (Arabic → Morocco, French → France, English → United Kingdom); closes on outside click / Esc.
+- **Anti-spam honeypot:** neutral field name with no label, so browsers/password managers can't auto-fill it and turn a real order into a fake one.
 
 ### Storefront
 Mobile-first and light on JS: server-rendered pages, scroll-snap swipe gallery, native `<dialog>` for sheets/drawers, GET-form filters, localized RTL-safe layout (logical CSS properties).

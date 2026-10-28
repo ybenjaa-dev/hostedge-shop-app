@@ -4,4 +4,6 @@ export const BRAND = {
   /** Static files under /public/brand. Empty → the header shows the store name as text. */
   logo: "/brand/heritage.svg",
   icon: "/brand/heritage-icon.svg",
+  /** Wrapper class of this storefront's theme (scopes its CSS); lets admin previews look like the real shop. */
+  themeClass: "",
 };

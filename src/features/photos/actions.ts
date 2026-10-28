@@ -10,7 +10,7 @@ const itemsSchema = z.array(z.object({ productId: z.string().min(1).max(40), key
 
 /** Attach uploaded photos to products. "main" puts the photo first (and drops the placeholder illustration); "add" appends. */
 export async function attachProductPhotos(_p: ActionState, form: FormData): Promise<ActionState> {
-  return run("staff", async (user) => {
+  return run("products.edit", async (user) => {
     const items = itemsSchema.parse(JSON.parse(fd(form, "items") || "[]"));
     const db = getEnv().DB;
     let n = 0;
@@ -37,7 +37,7 @@ export async function attachProductPhotos(_p: ActionState, form: FormData): Prom
 }
 
 export async function setCategoryPhoto(_p: ActionState, form: FormData): Promise<ActionState> {
-  return run("staff", async (user) => {
+  return run("categories.manage", async (user) => {
     const id = fd(form, "id");
     const key = fd(form, "key");
     if (!id || !KEY.test(key)) return { ok: false, error: "Invalid image." };

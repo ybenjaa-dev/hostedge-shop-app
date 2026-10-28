@@ -1,3 +1,4 @@
+import { RichText } from "@/components/rich-text";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -26,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = tr(p.seoTitle, lang) || tr(p.name, lang);
   const desc = tr(p.seoDesc, lang) || tr(p.shortDesc, lang);
   const img = p.images[0] ? fileUrl(p.images[0].key) : undefined;
-  return { title, description: desc, openGraph: { title, description: desc, images: img ? [img] : undefined, type: "website" }, alternates: { canonical: `/p/${p.slug}` } };
+  return { title, description: desc, openGraph: { title, description: desc, images: img ? [img] : undefined, type: "website" } };
 }
 
 export default async function ProductPage({ params, searchParams }: Props) {
@@ -112,7 +113,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
 
       <section id="description" className="panel mt-3 scroll-mt-48 p-4">
         <h2 className="mb-2 text-lg font-extrabold">{t("p.description")}</h2>
-        <div className="prose-lite max-w-3xl"><p>{tr(p.longDesc, lang) || tr(p.shortDesc, lang)}</p></div>
+        <RichText html={tr(p.longDesc, lang) || tr(p.shortDesc, lang)} className="prose-lite max-w-3xl" />
       </section>
 
       <section id="details" className="panel mt-3 scroll-mt-48 p-4">

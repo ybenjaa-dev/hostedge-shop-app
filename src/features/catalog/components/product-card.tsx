@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Star, Check } from "lucide-react";
 import type { ProductCard as P } from "../queries";
 import { tr, type Lang } from "@/lib/i18n-core";
-import { fileUrl } from "@/lib/storage";
+import { imgProps } from "@/lib/image-sizes";
 import { Money } from "@/components/money";
 import type { TFn } from "@/lib/dict";
 
@@ -19,7 +19,7 @@ export function ProductCard({ p, lang, t, currency, codMode, priority, rank }: {
       <Link href={`/p/${p.slug}`} className="relative block aspect-square overflow-hidden bg-white" aria-label={name}>
         {p.image ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={fileUrl(p.image, "md")} alt={name} width={400} height={400} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={`size-full object-cover ${p.inStock ? "" : "opacity-50 grayscale"}`} />
+          <img {...imgProps(p.image, "(min-width: 1024px) 20vw, (min-width: 768px) 25vw, 50vw")} alt={name} width={400} height={400} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={`size-full object-cover ${p.inStock ? "" : "opacity-50 grayscale"}`} />
         ) : <div className="grid size-full place-items-center bg-sunken text-3xl text-muted">▢</div>}
         {discount > 0 && p.inStock && <span className="num absolute start-0 top-2 bg-danger px-2 py-0.5 text-xs font-extrabold text-white">−{discount}%</span>}
         {rank != null && <span className="num absolute end-0 top-0 bg-secondary px-2 py-0.5 text-xs font-extrabold text-white">#{rank}</span>}
@@ -49,7 +49,7 @@ export function ProductRow({ p, lang, t, currency, codMode, categoryName }: { p:
     <article className="grid grid-cols-[7.5rem_1fr] gap-3 border border-line bg-surface p-3 hover:border-ink sm:grid-cols-[10rem_1fr_13rem]">
       <Link href={`/p/${p.slug}`} className="relative block aspect-square self-start overflow-hidden bg-white" aria-label={name}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        {p.image ? <img src={fileUrl(p.image, "md")} alt={name} loading="lazy" className={`size-full object-cover ${p.inStock ? "" : "opacity-50 grayscale"}`} /> : <span className="grid size-full place-items-center bg-sunken text-muted">▢</span>}
+        {p.image ? <img {...imgProps(p.image, "(min-width: 1024px) 20vw, (min-width: 768px) 25vw, 50vw")} alt={name} loading="lazy" className={`size-full object-cover ${p.inStock ? "" : "opacity-50 grayscale"}`} /> : <span className="grid size-full place-items-center bg-sunken text-muted">▢</span>}
         {discount > 0 && p.inStock && <span className="num absolute start-0 top-1 bg-danger px-1.5 py-0.5 text-xs font-extrabold text-white">−{discount}%</span>}
       </Link>
       <div className="min-w-0">

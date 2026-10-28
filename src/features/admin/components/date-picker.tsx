@@ -86,10 +86,10 @@ function usePopover() {
   const trigger = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     if (!open) return;
-    const down = (e: MouseEvent) => { if (!root.current?.contains(e.target as Node)) setOpen(false); };
+    const down = (e: Event) => { if (!root.current?.contains(e.target as Node)) setOpen(false); };
     const key = (e: globalThis.KeyboardEvent) => { if (e.key === "Escape") { setOpen(false); trigger.current?.focus(); } };
-    document.addEventListener("mousedown", down); document.addEventListener("keydown", key);
-    return () => { document.removeEventListener("mousedown", down); document.removeEventListener("keydown", key); };
+    document.addEventListener("pointerdown", down, true); document.addEventListener("touchstart", down, true); document.addEventListener("keydown", key);
+    return () => { document.removeEventListener("pointerdown", down, true); document.removeEventListener("touchstart", down, true); document.removeEventListener("keydown", key); };
   }, [open]);
   return { open, setOpen, root, trigger, alignEnd };
 }

@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { SlidersHorizontal } from "lucide-react";
+import { FilterExtras } from "./filter-extras";
 
 type Props = {
   action: string;
-  values: { q: string; category: string; min: string; max: string; stock: string; sort: string; view: string };
+  values: { q: string; category: string; min: string; max: string; stock: string; sort: string; view: string; opt?: string };
   categories: { slug: string; name: string; count: number }[];
-  labels: { filters: string; category: string; all: string; price: string; min: string; max: string; stock: string; apply: string; clear: string; search: string };
+  labels: { filters: string; category: string; all: string; price: string; min: string; max: string; stock: string; active?: string; clearAll?: string; apply: string; clear: string; search: string };
 };
 
 /** Classic left sidebar: category tree with counts, price range, availability. Plain GET forms — no client JS. */
@@ -38,6 +39,7 @@ export function CatalogFilters({ action, values, categories, labels }: Props) {
             <input name="max" inputMode="decimal" placeholder={labels.max} defaultValue={values.max} className="field" aria-label={labels.max} />
           </div>
         </div>
+        <FilterExtras q={values.q} category={values.category} min={values.min} max={values.max} opt={values.opt ?? ""} labels={{ price: labels.price, active: labels.active ?? "Active filters", clearAll: labels.clearAll ?? "Clear all" }} />
         <label className="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" name="stock" value="1" defaultChecked={values.stock === "1"} className="size-4 accent-[var(--brand)]" />{labels.stock}</label>
         <div className="flex gap-2"><button className="btn btn-primary flex-1">{labels.apply}</button><a href={action} className="btn btn-outline">{labels.clear}</a></div>
       </form>
