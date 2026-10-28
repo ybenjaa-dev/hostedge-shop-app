@@ -1,0 +1,3 @@
+public/brand/heritage-icon.svg
+public/brand/heritage.svg
+scripts/repair-sample-images.ts

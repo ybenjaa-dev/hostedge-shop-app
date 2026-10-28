@@ -1,0 +1,20 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "hostedge-shop",
+  "main": "worker.ts",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  "observability": { "enabled": true },
+  "d1_databases": [
+    // HostEdge: add a database named "main" with binding "DB". Locally wrangler emulates it.
+    { "binding": "DB", "database_name": "main", "database_id": "local-main", "migrations_dir": "migrations" }
+  ],
+  "r2_buckets": [
+    // HostEdge: add a file storage with binding "FILES".
+    { "binding": "FILES", "bucket_name": "files" }
+  ],
+  // Cloudflare Images binding: resizes and converts to AVIF/WebP on the fly for `/files/…?w=`. Optional — remove it if your plan has no Images transformations; the shop then serves the stored sizes.
+  "images": { "binding": "IMAGES" },
+  "triggers": { "crons": ["*/15 * * * *"] }
+}

@@ -1,0 +1,20 @@
+import type { CarrierAdapter } from "./types";
+import { adapter as ozoneExpress } from "./carriers/ozone-express";
+import { adapter as sendit } from "./carriers/sendit";
+import { adapter as onessta } from "./carriers/onessta";
+import { adapter as amana } from "./carriers/amana";
+import { adapter as cathedis } from "./carriers/cathedis";
+import { adapter as livo } from "./carriers/livo";
+import { adapter as digylog } from "./carriers/digylog";
+import { adapter as forcelog } from "./carriers/forcelog";
+import { adapter as speedex } from "./carriers/speedex";
+import { adapter as kingexpress } from "./carriers/kingexpress";
+import { adapter as chronopost } from "./carriers/chronopost";
+import { adapter as aramex } from "./carriers/aramex";
+import { adapter as smsa } from "./carriers/smsa";
+import { adapter as jt } from "./carriers/jt";
+import { adapter as naqel } from "./carriers/naqel";
+
+export const ADAPTERS: CarrierAdapter[] = [ozoneExpress, sendit, onessta, amana, cathedis, livo, digylog, forcelog, speedex, kingexpress, chronopost, aramex, smsa, jt, naqel];
+const BY_ID = new Map(ADAPTERS.map((a) => [a.id, a]));
+export const getAdapter = (id: string): CarrierAdapter | undefined => BY_ID.get(id);

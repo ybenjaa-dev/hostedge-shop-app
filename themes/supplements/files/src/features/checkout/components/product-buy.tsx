@@ -1,0 +1,269 @@
+"use client";
+import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { Minus, Plus, ShoppingBag, X, Zap } from "lucide-react";
+import type { ProductDetail } from "@/features/catalog/queries";
+import type { BundleRule } from "@/lib/pricing";
+import { bestBundlePercent, bundleLineTotal, offersFor } from "@/lib/pricing";
+import { formatMoney } from "@/lib/money";
+import { tr } from "@/lib/i18n-core";
+import { useStore, useT, type CityOpt } from "../store-context";
+import { OrderForm } from "./order-form";
+import { OfferCards } from "./offer-cards";
+import { TogetherCard } from "./together-card";
+import { getTogether } from "@/features/catalog/together";
+import type { Companion } from "@/features/catalog/links";
+import { cart, setDrawer } from "../cart-store";
+import { useToast } from "@/components/toast";
+import { track } from "@/lib/track";
+
+type Variant = ProductDetail["variants"][number];
+type P = Pick<ProductDetail, "id" | "slug" | "name" | "price" | "compareAt" | "stock" | "trackStock" | "variants"> & { image: string | null };
+
+export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P; bundles: BundleRule[]; cities: CityOpt[]; autoOpen: boolean }) {
+  const st = useStore();
+  const t = useT();
+  const toast = useToast();
+  const fmt = (n: number) => formatMoney(n, st.currency, st.lang);
+  const hasVariants = product.variants.length > 0;
+
+  // option groups, e.g. { Size: ["S","M"], Color: ["Red"] }
+  const groups = useMemo(() => {
+    const g: Record<string, string[]> = {};
+    for (const v of product.variants) for (const [k, val] of Object.entries(v.options)) if (!g[k]?.includes(val)) (g[k] ??= []).push(val);
+    return g;
+  }, [product.variants]);
+  const groupKeys = Object.keys(groups);
+  const simple = groupKeys.length <= 1; // one chip row of variant names
+
+  const [sel, setSel] = useState<Record<string, string>>({});
+  const [variantId, setVariantId] = useState<string | null>(hasVariants && product.variants.length === 1 ? product.variants[0]!.id : null);
+  const [qty, setQty] = useState(1);
+  const [open, setOpen] = useState(false);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [shake, setShake] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [formEl, setFormEl] = useState<HTMLElement | null>(null);
+  const [formInView, setFormInView] = useState(false);
+  const always = st.codMode && st.placement === "inline-open";
+
+  const variant: Variant | null = useMemo(() => {
+    if (!hasVariants) return null;
+    if (simple) return product.variants.find((v) => v.id === variantId) ?? null;
+    return product.variants.find((v) => groupKeys.every((k) => v.options[k] === sel[k])) ?? null;
+  }, [hasVariants, simple, variantId, sel, product.variants, groupKeys]);
+
+  const unit = variant?.price ?? product.price;
+  const available = hasVariants ? (variant ? variant.stock : null) : product.stock;
+  const tracked = product.trackStock;
+  const anyInStock = !tracked || (hasVariants ? product.variants.some((v) => v.stock > 0) : product.stock > 0);
+  const maxQty = tracked && available != null ? Math.max(1, Math.min(99, available)) : 99;
+  const soldOutSelected = tracked && available != null && available <= 0;
+  const needsChoice = hasVariants && !variant;
+
+  useEffect(() => { if (qty > maxQty) setQty(maxQty); }, [maxQty, qty]);
+
+  // The sticky "Order now" bar has no business on screen while the order form is: hide it when the form is in view (or the sheet is open).
+  useEffect(() => {
+    if (!formEl) { setFormInView(false); return; }
+    // threshold 0: the form is taller than a phone screen, so a ratio would never be reached; any visible part counts
+    let visible = false, focused = false;
+    const sync = () => setFormInView(visible || focused);
+    const io = new IntersectionObserver(([e]) => { visible = !!e?.isIntersecting; sync(); }, { threshold: 0 });
+    io.observe(formEl);
+    // typing in the form (keyboard open) always hides the bar
+    const fin = () => { focused = true; sync(); };
+    const fout = () => { focused = false; setTimeout(sync, 0); };
+    formEl.addEventListener("focusin", fin); formEl.addEventListener("focusout", fout);
+    return () => { io.disconnect(); formEl.removeEventListener("focusin", fin); formEl.removeEventListener("focusout", fout); };
+  }, [formEl]);
+
+  const bundleTiers = useMemo(() => {
+    const tiers = new Map<number, number>();
+    for (const b of bundles) if ((b.productId === null || b.productId === product.id) && (!tiers.has(b.minQty) || tiers.get(b.minQty)! < b.percent)) tiers.set(b.minQty, b.percent);
+    return [...tiers.entries()].sort((a, b) => a[0] - b[0]);
+  }, [bundles, product.id]);
+  const pct = bestBundlePercent(product.id, qty, bundles);
+  const offers = useMemo(() => offersFor(product.id, unit, bundles), [product.id, unit, bundles]);
+  const hasOffers = offers.length > 1;
+  const lineTotal = bundleLineTotal(product.id, unit, qty, bundles);
+  const [customQty, setCustomQty] = useState(false);
+
+  // "Frequently bought together": companions the owner linked in the admin; ticked ones join the order.
+  const [together, setTogether] = useState<Companion[]>([]);
+  const [skipped, setSkipped] = useState<string[]>([]);
+  useEffect(() => { let live = true; getTogether(product.id).then((c) => { if (live) setTogether(c); }).catch(() => {}); return () => { live = false; }; }, [product.id]);
+  const extras = together.filter((c) => !skipped.includes(c.id));
+
+  function requireChoice(): boolean {
+    if (!needsChoice) return true;
+    toast("error", t("cod.err.variant"));
+    setShake(true);
+    setTimeout(() => setShake(false), 500);
+    document.getElementById("variant-picker")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    return false;
+  }
+
+  function openOrder() {
+    if (!anyInStock || soldOutSelected) return; // sold out: never open the form
+    if (!requireChoice()) return;
+    track("AddToCart", { value: unit * qty, currency: st.currency, ids: [product.id] });
+    if (st.placement === "popup") { dialogRef.current?.showModal(); setSheetOpen(true); }
+    else {
+      setOpen(true);
+      setTimeout(() => {
+        document.getElementById("order")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        document.getElementById("of-name")?.focus({ preventScroll: true });
+      }, 60);
+    }
+  }
+  useEffect(() => { if (autoOpen && st.placement !== "page" && !always && !hasVariants) setTimeout(openOrder, 200); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+  useEffect(() => { if (autoOpen && always) setTimeout(() => document.getElementById("order")?.scrollIntoView({ behavior: "smooth", block: "start" }), 300); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+
+  function addToCart() {
+    if (!requireChoice()) return;
+    cart.add({ productId: product.id, variantId: variant?.id ?? null, qty, name: product.name, variantName: variant?.name ?? null, price: unit, image: product.image, slug: product.slug });
+    track("AddToCart", { value: unit * qty, currency: st.currency, ids: [product.id] });
+    setDrawer(true);
+  }
+
+  const lines = [{ productId: product.id, variantId: variant?.id ?? null, name: product.name, variantName: variant?.name ?? null, unitPrice: unit, qty, image: product.image }, ...extras.map((c) => ({ productId: c.id, variantId: c.variantId, name: tr(c.name, st.lang) || c.slug, variantName: c.variantName, unitPrice: c.price, qty: 1, image: c.image }))];
+  const pageHref = `/checkout?p=${product.id}${variant ? `&v=${variant.id}` : ""}&q=${qty}${extras.length ? `&x=${extras.map((c) => `${c.id}${c.variantId ? `.${c.variantId}` : ""}`).join(",")}` : ""}`;
+  const productLabel = tr(product.name, st.lang);
+
+  const picker = (
+    <div className="space-y-5">
+      {hasVariants && (
+        <div id="variant-picker" className={shake ? "animate-[wiggle_.4s]" : ""}>
+          {simple ? (
+            <fieldset>
+              <legend className="label">{t("p.chooseOptions")}</legend>
+              <div className="flex flex-wrap gap-2">
+                {product.variants.map((v) => {
+                  const out = tracked && v.stock <= 0;
+                  return (
+                    <button key={v.id} type="button" disabled={out} aria-pressed={variantId === v.id} onClick={() => setVariantId(v.id)}
+                      className={`rounded-2xl border-2 px-4 py-2.5 text-sm font-bold transition ${variantId === v.id ? "border-secondary bg-secondary text-white" : "border-line bg-surface hover:border-brand"} ${out ? "cursor-not-allowed line-through opacity-40" : ""}`}>
+                      {v.name}
+                      {v.price !== product.price && <span className="num ms-2 text-xs opacity-70">{fmt(v.price)}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </fieldset>
+          ) : (
+            groupKeys.map((k) => (
+              <fieldset key={k} className="mb-4">
+                <legend className="label">{t("p.select", { opt: k })}</legend>
+                <div className="flex flex-wrap gap-2">
+                  {groups[k]!.map((val) => {
+                    const possible = product.variants.some((v) => v.options[k] === val && groupKeys.every((g) => g === k || !sel[g] || v.options[g] === sel[g]) && (!tracked || v.stock > 0));
+                    return (
+                      <button key={val} type="button" disabled={!possible} aria-pressed={sel[k] === val} onClick={() => setSel((s) => ({ ...s, [k]: val }))}
+                        className={`rounded-2xl border-2 px-4 py-2.5 text-sm font-bold transition ${sel[k] === val ? "border-secondary bg-secondary text-white" : "border-line bg-surface hover:border-brand"} ${!possible ? "cursor-not-allowed line-through opacity-40" : ""}`}>{val}</button>
+                    );
+                  })}
+                </div>
+              </fieldset>
+            ))
+          )}
+        </div>
+      )}
+      {hasOffers && <OfferCards offers={offers} qty={qty} setQty={setQty} maxQty={maxQty} fmt={fmt} customQty={customQty} setCustomQty={setCustomQty} template={bundles.find((b) => b.template)?.template} fallbackImage={product.image} />}
+      {(!hasOffers || customQty || !offers.some((o) => o.qty === qty)) && <div>
+        <span className="label" id="qty-l">{t("p.qty")}</span>
+        <div className="flex items-center gap-3">
+          <div role="group" aria-labelledby="qty-l" className="inline-flex items-center rounded-2xl border-2 border-line bg-surface">
+            <button type="button" aria-label="−" className="grid size-11 place-items-center rounded-s-2xl hover:bg-sunken disabled:opacity-40" onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={qty <= 1}><Minus className="size-4" /></button>
+            <output className="num w-10 text-center font-bold" aria-live="polite">{qty}</output>
+            <button type="button" aria-label="+" className="grid size-11 place-items-center rounded-e-2xl hover:bg-sunken disabled:opacity-40" onClick={() => setQty((q) => Math.min(maxQty, q + 1))} disabled={qty >= maxQty}><Plus className="size-4" /></button>
+          </div>
+          {tracked && available != null && available > 0 && available <= 5 && <span className="text-sm font-semibold text-danger">{t("p.onlyLeft", { n: available })}</span>}
+        </div>
+      </div>}
+      {st.bundlesInForm && !hasOffers && bundleTiers.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {bundleTiers.map(([n, p]) => (
+            <button key={n} type="button" onClick={() => setQty(Math.min(maxQty, n))} className={`rounded-full border px-3 py-1.5 text-xs font-extrabold transition ${qty >= n ? "border-transparent bg-accent text-secondary" : "border-dashed border-brand/50 text-brand hover:bg-mint"}`}>
+              🎁 {t("cod.bundle", { n, pct: p })}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const canOrder = anyInStock && !soldOutSelected;
+  const ctaLabel = !anyInStock || soldOutSelected ? t("p.soldOut") : st.codMode ? t("cod.orderNow") : t("cart.add");
+  const cta = (cls: string, sticky = false) => {
+    if (st.codMode && st.placement === "page" && canOrder && !needsChoice) {
+      return <Link href={pageHref} className={`btn btn-primary ${cls}`}><Zap className="size-5" aria-hidden />{sticky ? t("cod.orderNowShort") : ctaLabel}</Link>;
+    }
+    if (always) {
+      return <button type="button" disabled={!canOrder} onClick={() => { if (!requireChoice()) return; document.getElementById("order")?.scrollIntoView({ behavior: "smooth", block: "start" }); setTimeout(() => document.getElementById("of-name")?.focus({ preventScroll: true }), 450); }} className={`btn btn-primary ${cls}`}><Zap className="size-5" aria-hidden />{sticky ? t("cod.orderNowShort") : ctaLabel}</button>;
+    }
+    return (
+      <button type="button" disabled={!canOrder} onClick={st.codMode ? openOrder : addToCart} className={`btn btn-primary ${cls}`}>
+        {st.codMode ? <Zap className="size-5" aria-hidden /> : <ShoppingBag className="size-5" aria-hidden />}
+        {sticky && st.codMode ? t("cod.orderNowShort") : ctaLabel}
+      </button>
+    );
+  };
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <span dir="ltr" className="num display text-4xl font-extrabold text-brand">{fmt(unit)}</span>
+        {product.compareAt && product.compareAt > unit && <span dir="ltr" className="num text-lg text-muted line-through">{fmt(product.compareAt)}</span>}
+        {product.compareAt && product.compareAt > unit && <span className="tag">{t("p.save", { pct: Math.round(((product.compareAt - unit) / product.compareAt) * 100) })}</span>}
+      </div>
+      {pct > 0 && !hasOffers && <p className="mt-1 text-sm font-semibold text-ok">🎁 {t("cod.bundle", { n: qty, pct })}</p>}
+
+      <div className="mt-6">{picker}</div>
+
+      {together.length > 0 && <TogetherCard items={together} skipped={skipped} onToggle={(id) => setSkipped((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]))} mainName={tr(product.name, st.lang)} mainImage={product.image} mainTotal={lineTotal} fmt={fmt} />}
+
+      {(!always || !canOrder) && <div className="mt-6">{cta("btn-lg w-full text-base")}</div>}
+      {st.codMode && (!always || !canOrder) && <p className="mt-2 text-center text-xs text-muted">{t("cod.payOnDelivery")}</p>}
+
+      {/* inline placement */}
+      {st.codMode && ((st.placement === "inline" && open) || (always && canOrder)) && (
+        <section id="order" ref={setFormEl} className="card mt-6 scroll-mt-24 animate-fade p-5" aria-label={t("cod.title")}>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="display text-xl font-extrabold">{t("cod.title")}</h2>
+            {!always && <button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(false)} aria-label={t("cod.close")}><X className="size-4" /></button>}
+          </div>
+          {always && needsChoice ? (
+            <p className="rounded-xl bg-sunken p-4 text-center text-sm font-semibold text-muted">{t("cod.err.variant")}</p>
+          ) : (
+            <OrderForm lines={lines} bundles={bundles} cities={cities} source="product-inline" productName={productLabel} />
+          )}
+          {always && <p className="mt-3 text-center text-xs text-muted">{t("cod.payOnDelivery")}</p>}
+        </section>
+      )}
+
+      {/* popup placement: bottom sheet on mobile, modal on desktop */}
+      {st.codMode && st.placement === "popup" && (
+        <dialog ref={dialogRef} aria-label={t("cod.title")} onClose={() => setSheetOpen(false)}
+          className="m-0 mt-auto max-h-[94dvh] w-full max-w-none overflow-y-auto overscroll-contain rounded-t-3xl bg-bg p-0 text-ink backdrop:bg-black/55 backdrop:backdrop-blur-[2px] open:animate-sheet-up md:m-auto md:max-w-lg md:rounded-3xl"
+          onClick={(e) => { if (e.target === dialogRef.current) dialogRef.current?.close(); }}>
+          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-bg/95 px-5 py-3 backdrop-blur">
+            <div className="min-w-0"><h2 className="display text-lg font-extrabold">{t("cod.title")}</h2><p className="truncate text-xs text-muted">{productLabel}</p></div>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={() => dialogRef.current?.close()} aria-label={t("cod.close")}><X className="size-5" /></button>
+          </div>
+          <div className="p-5 pb-8">
+            <OrderForm lines={lines} bundles={bundles} cities={cities} source="product-popup" productName={productLabel} header={<div className="rounded-xl bg-sunken p-4">{picker}</div>} />
+          </div>
+        </dialog>
+      )}
+
+      {/* sticky mobile bar */}
+      <div aria-hidden={formInView || sheetOpen} className={`fixed inset-x-0 bottom-0 z-30 border-t border-line bg-bg/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur transition duration-200 md:hidden ${formInView || sheetOpen ? "pointer-events-none translate-y-full opacity-0" : ""}`}>
+        <div className="mx-auto flex max-w-lg items-center gap-3">
+          <div className="min-w-0 leading-tight"><p className="truncate text-xs text-muted">{productLabel}</p><p dir="ltr" className="num text-lg font-extrabold">{fmt(lineTotal)}</p></div>
+          {cta("btn-lg ms-auto flex-1 !text-base", true)}
+        </div>
+      </div>
+    </div>
+  );
+}
