@@ -135,13 +135,56 @@ export async function convertAbandoned(_p: ActionState, form: FormData): Promise
       const f = res.fields && Object.keys(res.fields).length ? ` (${Object.keys(res.fields).join(", ")})` : "";
       return fail((ERRORS[res.code] ?? "Couldn't create the order. Please try again.") + (res.code === "validation" ? f : ""));
     }
-    const o = await getEnv().DB.prepare("SELECT id FROM orders WHERE number = ?").bind(res.number).first<{ id: string }>();
-    if (!o) return fail("Order created but could not be opened. Check the Orders page.");
     // createOrder already converts every checkout of this phone; make sure this exact row is linked too.
-    await getEnv().DB.prepare("UPDATE abandoned_orders SET status = 'converted', recovered = 1, converted_order_id = ? WHERE id = ?").bind(o.id, d.id).run();
+    await getEnv().DB.prepare("UPDATE abandoned_orders SET status = 'converted', recovered = 1, converted_order_id = ? WHERE id = ?").bind(res.orderId, d.id).run();
     await audit(user, "abandoned.convert", "abandoned", d.id, { order: res.number });
     bump(d.id);
     revalidatePath("/admin/orders");
-    redirect(`/admin/orders/${o.id}?converted=1`);
+    redirect(`/admin/orders/${res.orderId}?converted=1`);
   });
+}
+
+export type ConvertQuote =
+  | { ok: true; currency: string; lines: { key: string; qty: number; unitPrice: number; lineTotal: number; image: string | null; available: number | null }[];
+      subtotal: number; discount: number; shipping: number; shippingFree: boolean; cod: number; total: number;
+      couponStatus: "none" | "ok" | "invalid" | "expired" | "min_subtotal" | "exhausted"; problems: string[] }
+  | { ok: false; error: string };
+
+const quoteDraftSchema = z.object({
+  lines: z.array(z.object({ productId: z.string().min(1).max(40), variantId: z.string().max(40).nullable(), qty: z.number().int().min(1).max(99) })).max(30),
+  cityId: z.string().max(40).optional(),
+  coupon: z.string().trim().max(40).optional(),
+  shippingFee: z.string().trim().max(14).optional(),
+});
+
+/** Live price preview for the convert form: the same server-side pricing the real order will use (offers, coupon, shipping, stock). Creates nothing. */
+export async function quoteConvertDraft(input: unknown): Promise<ConvertQuote> {
+  try {
+    const { assertUser } = await import("@/lib/auth");
+    await assertUser("orders.confirm");
+    const p = quoteDraftSchema.safeParse(input);
+    if (!p.success) return { ok: false, error: "Invalid cart" };
+    const s = await getSettings();
+    const d = p.data;
+    if (!d.lines.length) return { ok: true, currency: s.store.currency, lines: [], subtotal: 0, discount: 0, shipping: 0, shippingFree: false, cod: 0, total: 0, couponStatus: "none", problems: [] };
+    let shippingFee: number | undefined;
+    if (d.shippingFee) {
+      shippingFee = toMinor(d.shippingFee, s.store.currency);
+      if (!Number.isFinite(shippingFee) || shippingFee < 0) shippingFee = undefined;
+    }
+    const { buildQuote } = await import("@/features/orders/pricing-service");
+    const q = await buildQuote({ items: d.lines, cityId: d.cityId || null, couponCode: d.coupon || undefined }, { applyCodFee: true, shippingFee });
+    const problems: string[] = q.errors.map((e) => {
+      return e.reason === "stock" ? "Not enough stock for a product — lower the quantity." : "A product is unavailable or its variant is missing.";
+    });
+    if (q.city && !q.city.codAvailable) problems.push("Cash on delivery isn't available for this city.");
+    return {
+      ok: true, currency: q.currency,
+      lines: q.lines.map((l, i) => ({ key: `${l.productId}:${l.variantId ?? ""}`, qty: l.qty, unitPrice: l.unitPrice, lineTotal: q.totals.lineTotals[i] ?? l.unitPrice * l.qty, image: l.image, available: l.available })),
+      subtotal: q.totals.subtotal, discount: q.totals.discount, shipping: q.totals.shipping, shippingFree: q.totals.freeShippingApplied, cod: q.totals.codFee, total: q.totals.total,
+      couponStatus: q.couponStatus, problems,
+    };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error && e.message ? e.message : "Could not price this order." };
+  }
 }

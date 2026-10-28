@@ -13,7 +13,7 @@ import { orderInputSchema } from "./schema";
 import { canTransition, isStatus, stockAction, type OrderStatus } from "@/lib/order-status";
 
 export type CreateOrderResult =
-  | { ok: true; number: string; token: string; total: number; currency: string; duplicate?: boolean; pixelEvent?: "Purchase" | "Lead"; items: { productId: string; name: string; qty: number; price: number }[]; status: string }
+  | { ok: true; orderId: string; number: string; token: string; total: number; currency: string; duplicate?: boolean; pixelEvent?: "Purchase" | "Lead"; items: { productId: string; name: string; qty: number; price: number }[]; status: string }
   | { ok: false; code: "validation" | "phone" | "blocked" | "rate_limit" | "stock" | "unavailable" | "cod_unavailable" | "city" | "error"; message?: string; fields?: Record<string, string> };
 
 async function nextOrderNumber(): Promise<string> {
@@ -40,7 +40,7 @@ export async function createOrder(raw: unknown, ctx: { ip: string; ua?: string |
   const s = await getSettings();
 
   // Honeypot: pretend success so bots learn nothing.
-  if (input.hp && !ctx.admin) return { ok: true, number: "0000", token: "x", total: 0, currency: s.store.currency, items: [], status: "new" };
+  if (input.hp && !ctx.admin) return { ok: true, orderId: "", number: "0000", token: "x", total: 0, currency: s.store.currency, items: [], status: "new" };
 
   const ph = normalizePhone(input.phone, input.phoneCountry);
   if (!ph.ok) return { ok: false, code: "phone", fields: { phone: "invalid" } };
@@ -48,7 +48,11 @@ export async function createOrder(raw: unknown, ctx: { ip: string; ua?: string |
   const db = getEnv().DB;
 
   // Idempotency: the same key always returns the same order.
-  const existingByKey = await db.prepare("SELECT id, number, total, currency, status FROM orders WHERE idem_key = ?").bind(input.idemKey).first<{ id: string; number: string; total: number; currency: string; status: string }>();
+  const [existingByKey, blocked, existingCustomer] = await Promise.all([
+    db.prepare("SELECT id, number, total, currency, status FROM orders WHERE idem_key = ?").bind(input.idemKey).first<{ id: string; number: string; total: number; currency: string; status: string }>(),
+    db.prepare("SELECT phone FROM blocked_phones WHERE phone = ?").bind(ph.e164).first(),
+    db.prepare("SELECT id FROM customers WHERE phone = ?").bind(ph.e164).first<{ id: string }>(),
+  ]);
   if (existingByKey) return await existingResult(existingByKey, true);
 
   // Staff-entered orders (admin context) skip the customer-facing throttles and the duplicate window.
@@ -60,11 +64,13 @@ export async function createOrder(raw: unknown, ctx: { ip: string; ua?: string |
     if (!ipRl.ok || !phoneRl.ok) return { ok: false, code: "rate_limit" };
   }
 
-  const blocked = await db.prepare("SELECT phone FROM blocked_phones WHERE phone = ?").bind(ph.e164).first();
+  if (blocked) return { ok: false, code: "blocked" };
   const reqHeaders = await headers().catch(() => null); // null outside a request (cron, scripts)
-  if (blocked || (reqHeaders && (await findBlock(reqHeaders, { fp: input.tracking?.fp, phone: ph.e164 })))) return { ok: false, code: "blocked" };
-
-  const quote = await buildQuote({ items: input.items, cityId: input.cityId, couponCode: input.couponCode }, ctx.shippingFee != null ? { shippingFee: ctx.shippingFee } : {});
+  const [signal, quote] = await Promise.all([
+    reqHeaders ? findBlock(reqHeaders, { fp: input.tracking?.fp, phone: ph.e164 }) : null,
+    buildQuote({ items: input.items, cityId: input.cityId, couponCode: input.couponCode }, ctx.shippingFee != null ? { shippingFee: ctx.shippingFee } : {}),
+  ]);
+  if (signal) return { ok: false, code: "blocked" };
   if (quote.errors.some((e) => e.reason === "stock")) return { ok: false, code: "stock" };
   if (quote.errors.length || !quote.lines.length) return { ok: false, code: "unavailable" };
   if (input.cityId && !quote.city) return { ok: false, code: "city" };
@@ -94,7 +100,6 @@ export async function createOrder(raw: unknown, ctx: { ip: string; ua?: string |
   const status: OrderStatus = s.checkout.confirmationStep ? "pending_confirmation" : "new";
   const t = quote.totals;
 
-  const existingCustomer = await db.prepare("SELECT id FROM customers WHERE phone = ?").bind(ph.e164).first<{ id: string }>();
   const customerId = existingCustomer?.id ?? newId();
 
   const stmts = [
@@ -135,6 +140,7 @@ export async function createOrder(raw: unknown, ctx: { ip: string; ua?: string |
   void import("@/features/tracking/capi").then((m) => m.dispatchInBackground(id, "placed")).catch(() => {});
   return {
     ok: true,
+    orderId: id,
     number,
     pixelEvent: browserEvent(s.analytics.capi.purchaseWhen),
     token: await orderToken(number, ph.e164),
@@ -151,7 +157,7 @@ async function existingResult(o: { id: string; number: string; total: number; cu
     db.prepare("SELECT product_id AS productId, name, qty, price FROM order_items WHERE order_id = ?").bind(o.id).all<{ productId: string; name: string; qty: number; price: number }>(),
     db.prepare("SELECT phone FROM orders WHERE id = ?").bind(o.id).first<{ phone: string }>(),
   ]);
-  return { ok: true, number: o.number, token: await orderToken(o.number, ord?.phone ?? ""), total: o.total, currency: o.currency, duplicate, items: items.results, status: o.status };
+  return { ok: true, orderId: o.id, number: o.number, token: await orderToken(o.number, ord?.phone ?? ""), total: o.total, currency: o.currency, duplicate, items: items.results, status: o.status };
 }
 
 /** Signed token so the confirmation page can show an order without exposing PII by guessing numbers. */

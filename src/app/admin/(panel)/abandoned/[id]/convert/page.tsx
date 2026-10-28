@@ -6,7 +6,7 @@ import { getEnv } from "@/lib/env";
 import { getSettings } from "@/lib/settings";
 import { tr } from "@/lib/i18n-core";
 import { formatPhoneIntl } from "@/lib/phone";
-import { Panel, PageHeader } from "@/features/admin/components/ui";
+import { PageHeader } from "@/features/admin/components/ui";
 import { ConvertForm, type ProductOption } from "@/features/abandoned/components/convert-form";
 import { getAbandoned } from "@/features/abandoned/queries";
 import { lineLabel } from "@/features/abandoned/lib";
@@ -43,13 +43,11 @@ export default async function ConvertPage({ params }: { params: Promise<{ id: st
   });
   const extra = (() => { try { return JSON.parse(r.extra ?? "{}") as { customerNotes?: string }; } catch { return {}; } })();
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-6xl">
       <Link href={`/admin/abandoned/${id}`} className="mb-3 inline-flex items-center gap-1.5 text-sm font-semibold text-muted hover:text-ink"><ArrowLeft className="size-4" aria-hidden />Back to the checkout</Link>
       <PageHeader title="Convert to order" sub={`Creates a real order for ${r.name || (e164 ? formatPhoneIntl(e164) : "this customer")} with the store's normal pricing, offers and stock checks.`} />
-      <Panel>
         <ConvertForm id={r.id} currency={s.store.currency} cities={cities!.results as { id: string; name: string }[]} products={products}
           initial={{ name: r.name ?? "", phone: e164 ? `+${e164}` : r.phone ?? "", city: r.city ?? "", address: r.address ?? "", notes: extra.customerNotes ?? "", coupon: r.coupon ?? "", lines }} />
-      </Panel>
     </div>
   );
 }
