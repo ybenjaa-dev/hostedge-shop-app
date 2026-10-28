@@ -8,7 +8,7 @@ import { Badge, Empty, PageHeader, Panel } from "@/features/admin/components/ui"
 import { DataTable, Td } from "@/features/settings/components/table";
 import { nowMs } from "@/features/settings/lib";
 import { ActionButton } from "@/features/settings/components/action-button";
-import { InviteForm } from "@/features/team/components/invite-form";
+import { InviteModal } from "@/features/team/components/invite-modal";
 import { revokeInvite, setUserActive } from "@/features/team/actions";
 import { RoleSelect } from "@/features/team/components/role-select";
 import { ROLES, ROLE_INFO, can, type Perm } from "@/lib/permissions";
@@ -26,8 +26,7 @@ export default async function TeamPage() {
   const now = nowMs();
   return (
     <div className="space-y-6">
-      <PageHeader title="Team" sub="Invite staff and owners, manage access." actions={<Link href="/admin/team/account" className="btn btn-outline btn-sm"><KeyRound className="size-4" aria-hidden />My profile</Link>} />
-      <Panel title="Invite a teammate"><InviteForm /></Panel>
+      <PageHeader title="Team" sub="Invite staff and owners, manage access." actions={<><Link href="/admin/team/account" className="btn btn-outline btn-sm"><KeyRound className="size-4" aria-hidden />My profile</Link><InviteModal /></>} />
       <DataTable head={["User", "Role", "Status", ""]}>
         {users.map((u) => (
           <tr key={u.id}>
