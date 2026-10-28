@@ -15,6 +15,19 @@ import { track, trackingContext } from "@/lib/track";
 
 export type FormLine = { productId: string; variantId: string | null; name: string; variantName: string | null; unitPrice: number; qty: number; image: string | null };
 
+/** Landing context for the abandoned-checkout record: referrer, utm_* params and click-id presence (ids themselves are not stored). */
+function pageContext() {
+  try {
+    const q = new URLSearchParams(location.search);
+    const utm: Record<string, string> = {};
+    q.forEach((v, k) => { if (/^utm_[a-z]+$/.test(k) && Object.keys(utm).length < 8) utm[k] = v.slice(0, 120); });
+    const clk = JSON.parse(localStorage.getItem("he_clk") ?? "{}") as { fbc?: string; ttclid?: string };
+    return { url: location.href.slice(0, 500), referrer: document.referrer.slice(0, 500) || undefined, utm: Object.keys(utm).length ? utm : undefined, fbclid: q.has("fbclid") || !!clk.fbc, ttclid: q.has("ttclid") || !!clk.ttclid };
+  } catch {
+    return { url: location.href.slice(0, 500) };
+  }
+}
+
 const newKey = () => (crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`).replace(/-/g, "").slice(0, 32);
 
 /**
@@ -85,10 +98,16 @@ export function OrderForm({ lines, bundles, cities, header, source, clearCartOnS
   useEffect(() => {
     if (!phoneRes.ok || status === "done") return;
     const h = setTimeout(() => {
-      void saveAbandoned({ id: abandonId.current, phone, phoneCountry: pc, name: name.trim() || undefined, city: city?.name, productId: lines[0]?.productId, productName });
+      void saveAbandoned({
+        id: abandonId.current, phone, phoneCountry: pc, name: name.trim() || undefined, city: city?.name, address: address.trim() || undefined, notes: notes.trim() || undefined,
+        productId: lines[0]?.productId, productName,
+        lines: lines.map((l) => ({ productId: l.productId, variantId: l.variantId, name: l.name, variantName: l.variantName, qty: l.qty, unitPrice: l.unitPrice })),
+        subtotal: totals.subtotal, total: totals.total, currency: cur, coupon: coupon?.code, lang: st.lang, page: pageContext(),
+      });
     }, 1500);
     return () => clearTimeout(h);
-  }, [phone, pc, name, cityId, phoneRes.ok, status, city, lines, productName]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phone, pc, name, cityId, address, notes, phoneRes.ok, status, city, lines, productName, coupon, totals.total]);
 
   useEffect(() => { track("InitiateCheckout", { value: totals.total, currency: cur, ids: lines.map((l) => l.productId) }); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
 
