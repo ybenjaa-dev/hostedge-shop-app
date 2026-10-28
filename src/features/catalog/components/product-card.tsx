@@ -1,82 +1,95 @@
 import Link from "next/link";
-import { Star, Check } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { ProductCard as P } from "../queries";
 import { tr, type Lang } from "@/lib/i18n-core";
 import { fileUrl } from "@/lib/storage";
 import { Money } from "@/components/money";
 import type { TFn } from "@/lib/dict";
 
-const Stars = ({ v }: { v: number }) => (
-  <span className="flex" aria-hidden>{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`size-3.5 ${i < Math.round(v) ? "fill-accent text-accent" : "text-rule"}`} />)}</span>
-);
+const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
+const pad = (n: number) => String(n).padStart(2, "0");
 
-/** Dense catalog card: white tile, thin border, contained photo, stars, bold price, full-width CTA. */
-export function ProductCard({ p, lang, t, currency, codMode, priority, rank }: { p: P; lang: Lang; t: TFn; currency: string; codMode: boolean; priority?: boolean; rank?: number }) {
-  const name = tr(p.name, lang);
-  const discount = p.compareAt && p.compareAt > p.price ? Math.round(((p.compareAt - p.price) / p.compareAt) * 100) : 0;
+function Photo({ p, name, priority, className = "aspect-[4/5]" }: { p: P; name: string; priority?: boolean; className?: string }) {
   return (
-    <article className="group relative flex flex-col border border-line bg-surface transition hover:z-10 hover:border-ink hover:shadow-md">
-      <Link href={`/p/${p.slug}`} className="relative block aspect-square overflow-hidden bg-white" aria-label={name}>
-        {p.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={fileUrl(p.image, "md")} alt={name} width={400} height={400} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={`size-full object-cover ${p.inStock ? "" : "opacity-50 grayscale"}`} />
-        ) : <div className="grid size-full place-items-center bg-sunken text-3xl text-muted">▢</div>}
-        {discount > 0 && p.inStock && <span className="num absolute start-0 top-2 bg-danger px-2 py-0.5 text-xs font-extrabold text-white">−{discount}%</span>}
-        {rank != null && <span className="num absolute end-0 top-0 bg-secondary px-2 py-0.5 text-xs font-extrabold text-white">#{rank}</span>}
-        {!p.inStock && <span className="absolute inset-x-0 bottom-0 bg-secondary/90 py-1 text-center text-xs font-bold uppercase text-white">{t("p.soldOut")}</span>}
+    <span className={`lx-spot block ${className}`}>
+      {p.image ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={fileUrl(p.image, "md")} alt={name} width={480} height={600} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={`size-full object-cover ${p.inStock ? "" : "opacity-40 grayscale"}`} />
+      ) : <span className="grid size-full place-items-center text-3xl text-muted">◇</span>}
+    </span>
+  );
+}
+
+/** Borderless catalogue card: spotlit photo, serif name, quiet price, gold hairline on hover. */
+export function ProductCard({ p, lang, t, currency, priority, rank }: { p: P; lang: Lang; t: TFn; currency: string; codMode?: boolean; priority?: boolean; rank?: number }) {
+  const name = tr(p.name, lang);
+  return (
+    <article className="group">
+      <Link href={`/p/${p.slug}`} aria-label={name} className="block">
+        <Photo p={p} name={name} priority={priority} />
+        <span className="mt-5 flex items-baseline justify-between gap-4">
+          <span className="display text-xl leading-tight md:text-2xl">{rank != null && <span className="lx-num me-2 text-sm text-brand">{ROMAN[rank - 1] ?? rank}</span>}{name}</span>
+        </span>
+        <span className="mt-1.5 flex flex-wrap items-baseline gap-x-3 text-sm text-muted">
+          {p.inStock ? <Money amount={p.minPrice} currency={currency} lang={lang} className="lx-num text-base text-ink" /> : <span className="caps text-[0.62rem]">{t("p.soldOut")}</span>}
+          {p.inStock && p.compareAt && p.compareAt > p.price && <Money amount={p.compareAt} currency={currency} lang={lang} className="text-xs line-through" />}
+        </span>
       </Link>
-      <div className="flex flex-1 flex-col gap-1 border-t border-line p-2.5">
-        <Link href={`/p/${p.slug}`} className="line-clamp-2 min-h-[2.5rem] text-[0.92rem] font-medium leading-snug hover:text-brand hover:underline">{name}</Link>
-        <div className="flex items-center gap-1.5 text-xs text-muted">
-          {p.rating != null ? <><Stars v={p.rating} /><span>({p.reviewCount})</span></> : <span>&nbsp;</span>}
-        </div>
-        <p className="mt-0.5 flex flex-wrap items-baseline gap-x-2">
-          <Money amount={p.minPrice} currency={currency} lang={lang} className="text-lg font-extrabold" />
-          {p.compareAt && p.compareAt > p.price && <Money amount={p.compareAt} currency={currency} lang={lang} className="text-xs text-muted line-through" />}
+    </article>
+  );
+}
+
+/** Editorial row used on the home page: one piece per row, alternating sides, large type. */
+export function ProductFeature({ p, lang, t, currency, index, categoryName }: { p: P; lang: Lang; t: TFn; currency: string; index: number; categoryName?: string }) {
+  const name = tr(p.name, lang);
+  const flip = index % 2 === 1;
+  return (
+    <article className="group lx-reveal grid items-center gap-8 md:grid-cols-2 md:gap-20 lg:gap-32">
+      <Link href={`/p/${p.slug}`} aria-label={name} className={`block ${flip ? "md:order-2" : ""}`}>
+        <Photo p={p} name={name} priority={index === 0} className="aspect-[4/5] md:aspect-[5/6]" />
+      </Link>
+      <div className={`${flip ? "md:order-1" : ""} md:max-w-md ${flip ? "md:ms-auto" : ""}`}>
+        <p className="eyebrow flex items-center gap-4"><span className="lx-num text-base tracking-normal">N° {pad(index + 1)}</span><span className="h-px w-10 bg-[var(--rule)]" />{categoryName}</p>
+        <h3 className="display mt-6 text-5xl md:text-6xl"><Link href={`/p/${p.slug}`}>{name}</Link></h3>
+        <p className="mt-5 leading-8 text-muted">{tr(p.shortDesc, lang)}</p>
+        <p className="mt-6 flex items-baseline gap-4">
+          <Money amount={p.minPrice} currency={currency} lang={lang} className="lx-num text-3xl" />
+          {p.compareAt && p.compareAt > p.price && <Money amount={p.compareAt} currency={currency} lang={lang} className="text-sm text-muted line-through" />}
         </p>
-        {p.inStock && <p className="flex items-center gap-1 text-xs font-semibold text-ok"><Check className="size-3.5" />{t("p.inStock")}</p>}
-        {codMode && p.inStock && <Link href={`/p/${p.slug}?order=1#order`} className="btn btn-primary btn-sm mt-1.5 w-full">{t("cod.orderNowShort")}</Link>}
+        <Link href={`/p/${p.slug}`} className="caps lx-link mt-10 inline-flex items-center gap-3">{t("lux.discover")}<ArrowRight className="lx-arrow size-4" strokeWidth={1.3} aria-hidden /></Link>
       </div>
     </article>
   );
 }
 
 /** Horizontal row used by the list view of the catalog. */
-export function ProductRow({ p, lang, t, currency, codMode, categoryName }: { p: P; lang: Lang; t: TFn; currency: string; codMode: boolean; categoryName?: string }) {
+export function ProductRow({ p, lang, t, currency, categoryName }: { p: P; lang: Lang; t: TFn; currency: string; codMode?: boolean; categoryName?: string }) {
   const name = tr(p.name, lang);
-  const discount = p.compareAt && p.compareAt > p.price ? Math.round(((p.compareAt - p.price) / p.compareAt) * 100) : 0;
   return (
-    <article className="grid grid-cols-[7.5rem_1fr] gap-3 border border-line bg-surface p-3 hover:border-ink sm:grid-cols-[10rem_1fr_13rem]">
-      <Link href={`/p/${p.slug}`} className="relative block aspect-square self-start overflow-hidden bg-white" aria-label={name}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        {p.image ? <img src={fileUrl(p.image, "md")} alt={name} loading="lazy" className={`size-full object-cover ${p.inStock ? "" : "opacity-50 grayscale"}`} /> : <span className="grid size-full place-items-center bg-sunken text-muted">▢</span>}
-        {discount > 0 && p.inStock && <span className="num absolute start-0 top-1 bg-danger px-1.5 py-0.5 text-xs font-extrabold text-white">−{discount}%</span>}
-      </Link>
+    <article className="group grid grid-cols-[6.5rem_1fr] items-center gap-6 py-6 sm:grid-cols-[9rem_1fr_auto] sm:gap-10">
+      <Link href={`/p/${p.slug}`} aria-label={name} className="block"><Photo p={p} name={name} /></Link>
       <div className="min-w-0">
-        <Link href={`/p/${p.slug}`} className="text-base font-bold hover:text-brand hover:underline">{name}</Link>
-        <div className="mt-1 flex items-center gap-1.5 text-xs text-muted">{p.rating != null ? <><Stars v={p.rating} /><span>({p.reviewCount})</span></> : null}{categoryName && <span>· {categoryName}</span>}</div>
-        <p className={`mt-1.5 flex items-center gap-1 text-xs font-bold ${p.inStock ? "text-ok" : "text-danger"}`}>{p.inStock ? <><Check className="size-3.5" />{t("p.inStock")}</> : t("p.soldOut")}</p>
+        {categoryName && <p className="eyebrow">{categoryName}</p>}
+        <Link href={`/p/${p.slug}`} className="display mt-2 block text-2xl md:text-3xl">{name}</Link>
+        <p className="mt-2 line-clamp-2 hidden text-muted sm:block">{tr(p.shortDesc, lang)}</p>
       </div>
-      <div className="col-span-2 flex items-center justify-between gap-3 border-t border-line pt-2 sm:col-span-1 sm:flex-col sm:items-stretch sm:justify-center sm:border-s sm:border-t-0 sm:ps-3 sm:pt-0">
-        <p className="flex flex-wrap items-baseline gap-x-2 sm:block">
-          <Money amount={p.minPrice} currency={currency} lang={lang} className="block text-xl font-extrabold" />
-          {p.compareAt && p.compareAt > p.price && <Money amount={p.compareAt} currency={currency} lang={lang} className="text-xs text-muted line-through" />}
-        </p>
-        {codMode && p.inStock ? <Link href={`/p/${p.slug}?order=1#order`} className="btn btn-primary btn-sm">{t("cod.orderNowShort")}</Link> : <Link href={`/p/${p.slug}`} className="btn btn-outline btn-sm">{t("home.shopNow")}</Link>}
+      <div className="col-span-2 flex items-center justify-between gap-6 sm:col-span-1 sm:flex-col sm:items-end">
+        {p.inStock ? <Money amount={p.minPrice} currency={currency} lang={lang} className="lx-num text-2xl" /> : <span className="caps text-[0.62rem] text-muted">{t("p.soldOut")}</span>}
+        <Link href={`/p/${p.slug}`} className="caps lx-link inline-flex items-center gap-2">{t("lux.discover")}<ArrowRight className="lx-arrow size-4" strokeWidth={1.3} aria-hidden /></Link>
       </div>
     </article>
   );
 }
 
 export function ProductGrid({ children }: { children: React.ReactNode }) {
-  return <div className="grid grid-cols-2 gap-px border border-line bg-line md:grid-cols-3 xl:grid-cols-4 [&>*]:border-0">{children}</div>;
+  return <div className="grid grid-cols-2 gap-x-4 gap-y-14 md:grid-cols-2 md:gap-x-16 md:gap-y-24 xl:grid-cols-3 md:[&>*:nth-child(2n)]:mt-20 xl:[&>*:nth-child(2n)]:mt-0 xl:[&>*:nth-child(3n+2)]:mt-24">{children}</div>;
 }
 
-export function ProductGridSkeleton({ n = 8 }: { n?: number }) {
+export function ProductGridSkeleton({ n = 6 }: { n?: number }) {
   return (
     <ProductGrid>
       {Array.from({ length: n }).map((_, i) => (
-        <div key={i} className="bg-surface p-2.5"><div className="skeleton aspect-square" /><div className="skeleton mt-2 h-4 w-3/4" /><div className="skeleton mt-2 h-5 w-1/3" /></div>
+        <div key={i}><div className="skeleton aspect-[4/5]" /><div className="skeleton mt-5 h-6 w-3/4" /><div className="skeleton mt-2 h-4 w-1/3" /></div>
       ))}
     </ProductGrid>
   );

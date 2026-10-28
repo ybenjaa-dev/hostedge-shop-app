@@ -2,15 +2,17 @@
 import { getPlatformProxy } from "wrangler";
 import { svg } from "../src/features/admin/seed";
 
-const C: [string, string, string, string, number][] = [
-  ["home", "#0f766e", "#14b8a6", "Home & Kitchen", 0],
-  ["beauty", "#be185d", "#f472b6", "Beauty & Care", 1],
-  ["gadgets", "#1d4ed8", "#60a5fa", "Gadgets", 2],
+const C: [string, string, number][] = [
+  ["watches", "Timepieces", 0],
+  ["straps", "Straps & Bracelets", 1],
+  ["wallets", "Leather Goods", 2],
+  ["sunglasses", "Sunglasses", 3],
+  ["cufflinks", "Cufflinks", 4],
 ];
 async function main() {
 const { env, dispose } = await getPlatformProxy<{ FILES: R2Bucket }>({ configPath: "wrangler.jsonc" });
-for (const [slug, a, b, label, shape] of C) {
-  await env.FILES.put(`uploads/sample-cat-${slug}.svg`, svg(a, b, label, shape), { httpMetadata: { contentType: "image/svg+xml", cacheControl: "public, max-age=31536000, immutable" } });
+for (const [slug, label, shape] of C) {
+  await env.FILES.put(`uploads/sample-cat-${slug}.svg`, svg("", "", label, shape), { httpMetadata: { contentType: "image/svg+xml", cacheControl: "public, max-age=31536000, immutable" } });
 }
 await dispose();
 console.log("repaired");

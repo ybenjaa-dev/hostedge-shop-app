@@ -69,7 +69,7 @@ export const DEFAULT_SETTINGS: Settings = {
   setupDone: false,
   store: {
     name: BRAND.name,
-    tagline: {},
+    tagline: { en: "Timepieces & fine accessories", fr: "Horlogerie & accessoires d’exception", ar: "ساعات وإكسسوارات فاخرة" },
     country: "MA",
     currency: "MAD",
     defaultLang: "fr",
@@ -87,12 +87,12 @@ export const DEFAULT_SETTINGS: Settings = {
   branding: {
     logo: BRAND.logo,
     favicon: BRAND.icon,
-    primary: "#d9480f",
-    secondary: "#232f3e",
-    accent: "#ffb703",
+    primary: "#c9a96a",
+    secondary: "#0e0e0f",
+    accent: "#c9a96a",
     buttonStyle: "square",
-    fontLatin: "Roboto",
-    fontArabic: "Cairo",
+    fontLatin: "Jost",
+    fontArabic: "Tajawal",
   },
   checkout: {
     codMode: true,
@@ -107,7 +107,7 @@ export const DEFAULT_SETTINGS: Settings = {
     bundlesInForm: true,
     reviewsAutoApprove: false,
   },
-  announcement: { enabled: true, text: { en: "Free delivery · Pay when you receive", fr: "Livraison rapide · Paiement à la livraison", ar: "الدفع عند الاستلام · توصيل سريع" }, href: "" },
+  announcement: { enabled: true, text: { en: "Complimentary gift box · Pay on delivery", fr: "Écrin offert · Paiement à la livraison", ar: "علبة هدايا مجانية · الدفع عند الاستلام" }, href: "" },
   offers: { template: "list" },
   hero: { slides: [] },
   home: {
@@ -124,8 +124,8 @@ export const DEFAULT_SETTINGS: Settings = {
   },
   trust: [
     { icon: "cod", title: { en: "Pay on delivery", fr: "Paiement à la livraison", ar: "الدفع عند الاستلام" }, text: { en: "Inspect first, then pay the courier", fr: "Vérifiez puis payez au livreur", ar: "افحص طلبك ثم ادفع للمندوب" } },
-    { icon: "delivery", title: { en: "Fast delivery", fr: "Livraison rapide", ar: "توصيل سريع" }, text: { en: "2–4 days across the country", fr: "2 à 4 jours partout", ar: "من 2 إلى 4 أيام لكل المدن" } },
-    { icon: "returns", title: { en: "Free returns", fr: "Retours gratuits", ar: "إرجاع مجاني" }, text: { en: "Not happy? Send it back", fr: "Pas satisfait ? Retournez-le", ar: "غير راضٍ؟ أرجعه لنا" } },
+    { icon: "delivery", title: { en: "Insured delivery", fr: "Livraison assurée", ar: "توصيل مؤمَّن" }, text: { en: "2–4 days, signed on receipt", fr: "2 à 4 jours, remise en main propre", ar: "من 2 إلى 4 أيام مع توقيع الاستلام" } },
+    { icon: "quality", title: { en: "Signature gift box", fr: "Écrin signature", ar: "علبة هدايا فاخرة" }, text: { en: "Every piece, beautifully presented", fr: "Chaque pièce, joliment présentée", ar: "كل قطعة بتغليف أنيق" } },
   ],
   footer: { text: {} },
   analytics: { metaPixel: "", tiktokPixel: "", ga: "", snapPixel: "" },
