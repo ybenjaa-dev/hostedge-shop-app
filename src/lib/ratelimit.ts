@@ -32,5 +32,6 @@ export function ipFromRequest(req: Request): string {
 
 /** Housekeeping: drop expired counters (called opportunistically from cron). */
 export async function purgeRateLimits() {
-  await getEnv().DB.prepare("DELETE FROM rate_limits WHERE reset_at < ?").bind(Date.now()).run();
+  const { DB } = getEnv(), now = Date.now();
+  await DB.batch([DB.prepare("DELETE FROM rate_limits WHERE reset_at < ?").bind(now), DB.prepare("DELETE FROM sessions WHERE expires_at < ?").bind(now)]);
 }

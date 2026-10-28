@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getEnv } from "@/lib/env";
+import { clearMemo } from "@/lib/mem-cache";
 import { ensureSchema } from "@/db/ensure-schema";
 import { createSession, createUser, hasAnyUser, logActivity } from "@/lib/auth";
 import { DEFAULT_SETTINGS, saveSettings } from "@/lib/settings";
@@ -49,6 +50,7 @@ export async function runSetup(_prev: SetupState, form: FormData): Promise<Setup
       slides: [{ image: "uploads/sample-hero.svg", title: { en: "Find the scent that is yours", fr: "Trouvez le parfum qui vous ressemble", ar: "اعثر على العطر الذي يشبهك" }, sub: { en: "Eau de parfum, cologne and gift sets. Open the box with the courier, pay only when you love it.", fr: "Eaux de parfum, colognes et coffrets. Ouvrez le colis devant le livreur, payez quand vous êtes conquis.", ar: "عطور وكولونيا وأطقم هدايا. افتح العلبة أمام المندوب وادفع عندما تحبه." }, cta: { en: "Discover the collection", fr: "Découvrir la collection", ar: "اكتشف المجموعة" }, href: "/shop" }],
     });
   }
+  clearMemo();
   await createSession(userId);
   await logActivity({ id: userId, name: d.name }, "setup.completed", "store", undefined, { country: country.code });
   redirect("/admin");
