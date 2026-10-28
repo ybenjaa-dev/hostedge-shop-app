@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getEnv } from "@/lib/env";
+import { clearMemo } from "@/lib/mem-cache";
 import { ensureSchema } from "@/db/ensure-schema";
 import { createSession, createUser, hasAnyUser, logActivity } from "@/lib/auth";
 import { DEFAULT_SETTINGS, saveSettings } from "@/lib/settings";
@@ -49,6 +50,7 @@ export async function runSetup(_prev: SetupState, form: FormData): Promise<Setup
       slides: [{ image: "uploads/sample-hero.svg", title: { en: "Glow, naturally.", fr: "Un éclat naturel.", ar: "إشراقة طبيعية." }, sub: { en: "Skincare, makeup and fragrance picked with care. Order in 20 seconds, pay when it arrives.", fr: "Soins, maquillage et parfums choisis avec soin. Commandez en 20 secondes, payez à la livraison.", ar: "عناية ومكياج وعطور مختارة بعناية. اطلبي في 20 ثانية وادفعي عند الاستلام." }, cta: { en: "Discover the collection", fr: "Découvrir la collection", ar: "اكتشفي المجموعة" }, href: "/shop" }],
     });
   }
+  clearMemo();
   await createSession(userId);
   await logActivity({ id: userId, name: d.name }, "setup.completed", "store", undefined, { country: country.code });
   redirect("/admin");
