@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ProductCard as P } from "../queries";
 import { tr, type Lang } from "@/lib/i18n-core";
-import { fileUrl } from "@/lib/storage";
+import { imgProps } from "@/lib/image-sizes";
 import { Money } from "@/components/money";
 import type { TFn } from "@/lib/dict";
 
@@ -17,7 +17,7 @@ export function ProductCard({ p, lang, t, currency, codMode, priority, rank, i =
       <Link href={`/p/${p.slug}`} className={`nh-img ${fixed ? "aspect-[4/5]" : RATIOS[i % RATIOS.length]}`} aria-label={name}>
         {p.image ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={fileUrl(p.image, "md")} alt={name} width={800} height={1000} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={`absolute inset-0 size-full object-cover ${p.inStock ? "" : "opacity-50 grayscale"}`} />
+          <img {...imgProps(p.image, "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw")} alt={name} width={800} height={1000} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={`absolute inset-0 size-full object-cover ${p.inStock ? "" : "opacity-50 grayscale"}`} />
         ) : <span className="absolute inset-0 grid place-items-center text-3xl text-muted">▢</span>}
         {rank != null && <span className="display num absolute start-3 top-2 text-4xl text-ink/70">{String(rank).padStart(2, "0")}</span>}
         {!p.inStock ? <span className="micro absolute bottom-3 start-3 bg-bg px-2 py-1 text-ink">{t("p.soldOut")}</span> : discount > 0 && <span className="micro num absolute bottom-3 start-3 bg-bg px-2 py-1 !text-brand">−{discount}%</span>}
@@ -41,7 +41,7 @@ export function ProductRow({ p, lang, t, currency, codMode, categoryName }: { p:
     <article className="nh-fig grid grid-cols-[6.5rem_1fr_auto] items-center gap-5 border-t border-line py-4 first:border-t-0 sm:grid-cols-[9rem_1fr_auto]">
       <Link href={`/p/${p.slug}`} className="nh-img aspect-[4/5]" aria-label={name}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        {p.image ? <img src={fileUrl(p.image, "md")} alt={name} loading="lazy" className={`absolute inset-0 size-full object-cover ${p.inStock ? "" : "opacity-50 grayscale"}`} /> : null}
+        {p.image ? <img {...imgProps(p.image, "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw")} alt={name} loading="lazy" className={`absolute inset-0 size-full object-cover ${p.inStock ? "" : "opacity-50 grayscale"}`} /> : null}
       </Link>
       <div className="min-w-0">
         {categoryName && <p className="micro mb-1">{categoryName}</p>}

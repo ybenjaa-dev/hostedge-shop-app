@@ -7,7 +7,7 @@ import { newId } from "@/lib/id";
 import { parse, refresh, fail } from "@/features/settings/lib";
 
 export async function setReviewStatus(_p: ActionState, form: FormData): Promise<ActionState> {
-  return run("staff", async (user) => {
+  return run("reviews.moderate", async (user) => {
     const status = fd(form, "status");
     const id = fd(form, "id");
     if (!id || !["approved", "hidden", "pending"].includes(status)) return fail("Invalid request");
@@ -19,7 +19,7 @@ export async function setReviewStatus(_p: ActionState, form: FormData): Promise<
 }
 
 export async function deleteReview(_p: ActionState, form: FormData): Promise<ActionState> {
-  return run("staff", async (user) => {
+  return run("reviews.moderate", async (user) => {
     const id = fd(form, "id");
     if (!id) return fail("Missing review");
     await getDb().delete(schema.reviews).where(eq(schema.reviews.id, id));
@@ -30,7 +30,7 @@ export async function deleteReview(_p: ActionState, form: FormData): Promise<Act
 }
 
 export async function addReview(_p: ActionState, form: FormData): Promise<ActionState> {
-  return run("staff", async (user) => {
+  return run("reviews.moderate", async (user) => {
     const p = parse(
       z.object({
         productId: z.string().min(1, "Choose a product").max(40),

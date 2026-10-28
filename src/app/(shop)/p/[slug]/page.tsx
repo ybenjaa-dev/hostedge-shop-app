@@ -1,3 +1,4 @@
+import { RichText } from "@/components/rich-text";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -26,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = tr(p.seoTitle, lang) || tr(p.name, lang);
   const desc = tr(p.seoDesc, lang) || tr(p.shortDesc, lang);
   const img = p.images[0] ? fileUrl(p.images[0].key) : undefined;
-  return { title, description: desc, openGraph: { title, description: desc, images: img ? [img] : undefined, type: "website" }, alternates: { canonical: `/p/${p.slug}` } };
+  return { title, description: desc, openGraph: { title, description: desc, images: img ? [img] : undefined, type: "website" } };
 }
 
 export default async function ProductPage({ params, searchParams }: Props) {
@@ -100,7 +101,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
           <div className="mt-10">
             <details className="nh-acc" open>
               <summary>{t("p.description")}</summary>
-              <div className="prose-lite text-sm text-muted">{desc.map((d, i) => <p key={i}>{d}</p>)}</div>
+              <RichText html={desc.join("\n\n")} className="prose-lite text-sm text-muted" />
             </details>
             <details className="nh-acc">
               <summary>{t("p.dimensions")}</summary>
@@ -143,7 +144,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
           <ul className="divide-y divide-line">
             {reviews.map((r) => (
               <li key={r.id} className="py-5 first:pt-0">
-                <div className="flex items-center justify-between gap-2"><span className="micro text-ink">{r.name}{r.city && <span> — {r.city}</span>}</span><span className="flex" aria-label={`${r.rating}/5`}>{stars(r.rating, "size-3")}</span></div>
+                <div className="flex items-center justify-between gap-2"><span className="micro text-ink">{r.name}{r.city && <span> — {r.city}</span>}</span><span className="flex" role="img" aria-label={`${r.rating}/5`}>{stars(r.rating, "size-3")}</span></div>
                 <p className="mt-2 leading-relaxed">{r.body}</p>
               </li>
             ))}

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireUser } from "@/lib/auth";
+import { requirePerm } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { toMajorString } from "@/lib/money";
 import { PageHeader, Panel, Empty } from "@/features/admin/components/ui";
@@ -14,7 +14,7 @@ import { CityMapping } from "@/features/shipping/components/city-mapping";
 export const metadata = { title: "Shipping" };
 
 export default async function ShippingPage({ searchParams }: { searchParams: Promise<{ country?: string; carrier?: string }> }) {
-  const user = await requireUser();
+  const user = await requirePerm("shipping.manage");
   const owner = user.role === "owner";
   const sp = await searchParams;
   const s = await getSettings();

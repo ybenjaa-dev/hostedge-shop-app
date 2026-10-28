@@ -2,6 +2,7 @@
 import { useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { fileUrl } from "@/lib/storage";
+import { imgProps } from "@/lib/image-sizes";
 
 /** Large stacked pictures on desktop, native swipe (scroll-snap) with a counter on phones. Click opens a zoomable lightbox. */
 export function Gallery({ images, alt, closeLabel }: { images: { key: string; alt: string | null }[]; alt: string; closeLabel: string }) {
@@ -25,7 +26,7 @@ export function Gallery({ images, alt, closeLabel }: { images: { key: string; al
         {images.map((im, i) => (
           <button key={im.key} type="button" onClick={() => open(i)} className="nh-img block aspect-[4/5] w-full cursor-zoom-in lg:aspect-[5/6]" aria-label={`Zoom ${i + 1}/${images.length}`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={fileUrl(im.key, "md")} alt={im.alt || alt} width={800} height={1000} className="absolute inset-0 size-full object-cover" loading={i === 0 ? "eager" : "lazy"} fetchPriority={i === 0 ? "high" : "auto"} decoding="async" />
+            <img {...imgProps(im.key, "(min-width: 1024px) 50vw, 100vw")} alt={im.alt || alt} width={800} height={1000} className="absolute inset-0 size-full object-cover" loading={i === 0 ? "eager" : "lazy"} fetchPriority={i === 0 ? "high" : "auto"} decoding="async" />
           </button>
         ))}
       </div>
