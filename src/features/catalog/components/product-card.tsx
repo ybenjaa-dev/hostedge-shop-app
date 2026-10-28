@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ProductCard as P } from "../queries";
 import { tr, type Lang } from "@/lib/i18n-core";
-import { fileUrl } from "@/lib/storage";
+import { imgProps } from "@/lib/image-sizes";
 import { parseFacts } from "@/lib/facts";
 import { splitKids } from "@/lib/kidsfacts";
 import { Money } from "@/components/money";
@@ -17,7 +17,7 @@ export function ProductCard({ p, lang, t, currency, codMode, priority }: { p: P;
       <Link href={`/p/${p.slug}`} className="relative block aspect-square overflow-hidden rounded-[1.5rem] bg-sunken" aria-label={name}>
         {p.image ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={fileUrl(p.image, "md")} alt={name} width={480} height={480} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={`size-full object-cover transition duration-500 group-hover:scale-[1.05] ${p.inStock ? "" : "opacity-50 grayscale"}`} />
+          <img {...imgProps(p.image, "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw")} alt={name} width={480} height={480} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={`size-full object-cover transition duration-500 group-hover:scale-[1.05] ${p.inStock ? "" : "opacity-50 grayscale"}`} />
         ) : (
           <div className="grid size-full place-items-center text-4xl text-muted">▢</div>
         )}

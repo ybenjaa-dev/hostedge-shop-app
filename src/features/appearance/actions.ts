@@ -2,7 +2,9 @@
 import { z } from "zod";
 import { run, audit, type ActionState } from "@/features/admin/run";
 import { saveSettings, type Settings } from "@/lib/settings";
-import { ARABIC_FONTS, LATIN_FONTS } from "@/lib/fonts";
+import { ALL_LATIN_FONTS, ARABIC_FONTS } from "@/lib/fonts";
+import { BACKGROUND, CASE, ROUNDNESS, TEXT_SIZE, WIDTH, parseExtra } from "@/lib/appearance-extra";
+import { saveExtra } from "@/lib/appearance-extra-server";
 import { jsonField, parse, refresh, fail } from "@/features/settings/lib";
 
 const t = (max: number) => z.string().max(max).optional();
@@ -20,7 +22,7 @@ const payload = z.object({
   branding: z.object({
     logo: image, favicon: image, primary: hex, secondary: hex, accent: hex,
     buttonStyle: z.enum(["rounded", "pill", "square"]),
-    fontLatin: z.string().refine((f) => (LATIN_FONTS as readonly string[]).includes(f), "Unknown Latin font"),
+    fontLatin: z.string().refine((f) => ALL_LATIN_FONTS.includes(f), "Unknown Latin font"),
     fontArabic: z.string().refine((f) => (ARABIC_FONTS as readonly string[]).includes(f), "Unknown Arabic font"),
   }),
   hero: z.object({
@@ -32,11 +34,12 @@ const payload = z.object({
   }),
   announcement: z.object({ enabled: z.boolean(), text: i18n(200), href: link }),
   footer: z.object({ text: i18n(1000) }),
+  extra: z.object({ roundness: z.enum(ROUNDNESS), textSize: z.enum(TEXT_SIZE), width: z.enum(WIDTH), background: z.enum(BACKGROUND), bgCustom: hex, headingCase: z.enum(CASE), buttonCase: z.enum(CASE) }).optional(),
   trust: z.array(z.object({ icon: z.enum(["cod", "returns", "delivery", "secure", "support", "quality"]), title: i18n(60), text: i18n(160) })).max(8, "At most 8 trust badges"),
 });
 
 export async function saveAppearance(_p: ActionState, form: FormData): Promise<ActionState> {
-  return run("staff", async (user) => {
+  return run("appearance.edit", async (user) => {
     const p = parse(payload, jsonField(form, "payload"));
     if (!p.ok) return p.state;
     const d = p.data;
@@ -49,6 +52,7 @@ export async function saveAppearance(_p: ActionState, form: FormData): Promise<A
     await saveSettings("announcement", d.announcement as Settings["announcement"]);
     await saveSettings("footer", d.footer as Settings["footer"]);
     await saveSettings("trust", d.trust as Settings["trust"]);
+    if (d.extra) await saveExtra(parseExtra(d.extra));
     await audit(user, "appearance.update", "settings", "appearance");
     refresh();
     return { message: "Appearance saved — the storefront is updated" };

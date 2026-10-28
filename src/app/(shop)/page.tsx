@@ -99,7 +99,7 @@ export default async function Home() {
             <div className="grid gap-4 md:grid-cols-3">
               {reviews.slice(0, 3).map((r, i) => (
                 <figure key={r.id} className={`soft flex flex-col rounded-[2rem] p-6 ${["bg-[#ffe9e4]", "bg-[#dff5f1]", "bg-[#ebe7fc]"][i % 3]} text-[#1e2a4a]`}>
-                  <div className="flex gap-0.5" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, k) => <Star key={k} className={`size-5 ${k < r.rating ? "fill-[#ffc933] text-[#ffc933]" : "text-white"}`} />)}</div>
+                  <div className="flex gap-0.5" role="img" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, k) => <Star key={k} className={`size-5 ${k < r.rating ? "fill-[#ffc933] text-[#ffc933]" : "text-white"}`} />)}</div>
                   <blockquote className="mt-3 flex-1 font-medium leading-relaxed">“{r.body}”</blockquote>
                   <figcaption className="mt-4 text-sm font-extrabold">{r.name}{r.city && <span className="font-medium opacity-70"> · {r.city}</span>}</figcaption>
                 </figure>
@@ -141,7 +141,7 @@ function SectionTitle({ title, sub, href, more }: { title: string; sub?: string;
   );
 }
 
-function Hero({ s, lang, t }: { s: Awaited<ReturnType<typeof getSettings>>; lang: "ar" | "fr" | "en"; t: ReturnType<typeof import("@/lib/dict").makeT> }) {
+function Hero({ s, lang, t }: { s: Awaited<ReturnType<typeof getSettings>>; lang: string; t: ReturnType<typeof import("@/lib/dict").makeT> }) {
   const sl = s.hero.slides[0];
   const title = sl ? tr(sl.title, lang) : s.store.name;
   const sub = sl ? tr(sl.sub, lang) : tr(s.store.tagline, lang);
