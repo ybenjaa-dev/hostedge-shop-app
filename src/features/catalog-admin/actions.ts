@@ -1,4 +1,6 @@
 "use server";
+import { refreshSearchText } from "@/features/catalog/search";
+import { sanitizeHtml } from "@/lib/rich-text";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -22,9 +24,11 @@ const offerSchema = z.array(z.object({
 })).max(6);
 const imageSchema = z.array(z.object({ key: z.string().min(1).max(200), alt: z.string().max(200).optional().nullable() })).max(20);
 
+const richI18n = (o: Record<string, string>) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, sanitizeHtml(v)]).filter(([, v]) => v));
+
 export async function saveProductAction(_p: ActionState, form: FormData): Promise<ActionState> {
   let createdId: string | null = null;
-  const res = await run("staff", async (user) => {
+  const res = await run("products.edit", async (user) => {
     const s = await getSettings();
     const cur = s.store.currency;
     const db = getEnv().DB;
@@ -42,7 +46,7 @@ export async function saveProductAction(_p: ActionState, form: FormData): Promis
     const now = Date.now();
     const status = fd(form, "status") === "published" ? "published" : "draft";
     const pid = id ?? newId();
-    const vals = [slug, JSON.stringify(name), JSON.stringify(fdI18n(form, "short")), JSON.stringify(fdI18n(form, "long")), fd(form, "categoryId") || null, fd(form, "sku") || null, price, cmp, Math.max(0, parseInt(fd(form, "stock") || "0", 10) || 0), form.get("trackStock") ? 1 : 0, status, form.get("featured") ? 1 : 0, form.get("bestseller") ? 1 : 0, JSON.stringify(fdI18n(form, "seoTitle")), JSON.stringify(fdI18n(form, "seoDesc")), JSON.stringify(fdI18n(form, "specs")), isOfferTemplate(fd(form, "offerTemplate")) ? fd(form, "offerTemplate") : null];
+    const vals = [slug, JSON.stringify(name), JSON.stringify(fdI18n(form, "short")), JSON.stringify(richI18n(fdI18n(form, "long"))), fd(form, "categoryId") || null, fd(form, "sku") || null, price, cmp, Math.max(0, parseInt(fd(form, "stock") || "0", 10) || 0), form.get("trackStock") ? 1 : 0, status, form.get("featured") ? 1 : 0, form.get("bestseller") ? 1 : 0, JSON.stringify(fdI18n(form, "seoTitle")), JSON.stringify(fdI18n(form, "seoDesc")), JSON.stringify(fdI18n(form, "specs")), isOfferTemplate(fd(form, "offerTemplate")) ? fd(form, "offerTemplate") : null];
     const stmts: D1PreparedStatement[] = [];
     if (id) stmts.push(db.prepare("UPDATE products SET slug=?, name=?, short_desc=?, long_desc=?, category_id=?, sku=?, price=?, compare_at=?, stock=?, track_stock=?, status=?, featured=?, bestseller=?, seo_title=?, seo_desc=?, specs=?, offer_template=?, updated_at=? WHERE id=?").bind(...vals, now, id));
     else stmts.push(db.prepare("INSERT INTO products (slug, name, short_desc, long_desc, category_id, sku, price, compare_at, stock, track_stock, status, featured, bestseller, seo_title, seo_desc, specs, offer_template, id, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)").bind(...vals, pid, now, now));
@@ -60,7 +64,16 @@ export async function saveProductAction(_p: ActionState, form: FormData): Promis
     // quantity offers: replace this product's fixed-price bundles
     stmts.push(db.prepare("DELETE FROM bundles WHERE product_id = ? AND price IS NOT NULL").bind(pid));
     offers.forEach((o) => stmts.push(db.prepare("INSERT INTO bundles (id, product_id, min_qty, percent, price, label, popular, image, active) VALUES (?,?,?,?,?,?,?,?,1)").bind(newId(), pid, o.qty, 0, money(o.price, cur), o.label || null, o.popular ? 1 : 0, o.image || null)));
+    // cross-sell links: replace this product's set (only existing, different products)
+    stmts.push(db.prepare("DELETE FROM product_links WHERE product_id = ?").bind(pid));
+    for (const [kind, max] of [["together", 3], ["addon", 2]] as const) {
+      let ids: string[] = [];
+      try { ids = z.array(z.string().min(1).max(40)).max(max).parse(JSON.parse(fd(form, kind) || "[]")); } catch { ids = []; }
+      const real = ids.length ? (await db.prepare(`SELECT id FROM products WHERE id IN (${ids.map(() => "?").join(",")})`).bind(...ids).all<{ id: string }>()).results.map((r) => r.id) : [];
+      [...new Set(ids)].filter((x) => x !== pid && real.includes(x)).forEach((lid, i) => stmts.push(db.prepare("INSERT INTO product_links (id, product_id, linked_id, kind, position) VALUES (?,?,?,?,?)").bind(newId(), pid, lid, kind, i)));
+    }
     await db.batch(stmts);
+    await refreshSearchText([pid]);
     await audit(user, id ? "product.update" : "product.create", "product", pid);
     revalidatePath("/", "layout");
     if (!id) createdId = pid;
@@ -77,7 +90,7 @@ const bulkSchema = z.object({
 });
 
 export async function bulkProductsAction(raw: unknown): Promise<ActionState> {
-  return run("staff", async (user) => {
+  return run("products.edit", async (user) => {
     const { ids, op, value = "" } = bulkSchema.parse(raw);
     const db = getEnv().DB;
     const s = await getSettings();
@@ -106,7 +119,7 @@ export async function bulkProductsAction(raw: unknown): Promise<ActionState> {
 
 /** Upsert products by slug from a CSV (see /admin/products/import for the template). */
 export async function importProductsAction(_p: ActionState, form: FormData): Promise<ActionState> {
-  return run("staff", async (user) => {
+  return run("products.edit", async (user) => {
     const file = form.get("file");
     const text = file instanceof File && file.size ? await file.text() : fd(form, "csv");
     if (!text) return { ok: false, error: "Choose a CSV file or paste CSV text." };
@@ -148,6 +161,7 @@ export async function importProductsAction(_p: ActionState, form: FormData): Pro
         }
       } catch (e) { errors.push(`Row ${n + 2}: ${e instanceof Error ? e.message : "invalid"}`); }
     }
+    await getEnv().DB.prepare("UPDATE products SET search_text = NULL WHERE updated_at >= ?").bind(Date.now() - 5 * 60_000).run(); // re-indexed lazily on the next search
     await audit(user, "product.import", "product", undefined, { created, updated, errors: errors.length });
     revalidatePath("/", "layout");
     return { message: `Imported: ${created} created, ${updated} updated${errors.length ? `, ${errors.length} skipped (${errors.slice(0, 3).join("; ")})` : ""}` };

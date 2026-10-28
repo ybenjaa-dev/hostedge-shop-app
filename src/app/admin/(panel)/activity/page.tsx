@@ -1,7 +1,7 @@
 import { DateRangeField } from "@/features/admin/components/date-picker";
 import Link from "next/link";
 import { and, desc, gte, lte, eq, sql } from "drizzle-orm";
-import { requireUser } from "@/lib/auth";
+import { requirePerm } from "@/lib/auth";
 import { getDb, schema } from "@/db";
 import { Empty, PageHeader, Pager, FilterBar, FbItem } from "@/features/admin/components/ui";
 import { DataTable, Td } from "@/features/settings/components/table";
@@ -12,7 +12,7 @@ const PER = 50;
 const dateMs = (v: string, end: boolean) => (/^\d{4}-\d{2}-\d{2}$/.test(v) ? Date.parse(`${v}T${end ? "23:59:59.999" : "00:00:00.000"}Z`) : NaN);
 
 export default async function ActivityPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  await requireUser();
+  await requirePerm("activity.view");
   const sp = await searchParams;
   const user = one(sp.user).slice(0, 40), action = one(sp.action).trim().slice(0, 40), from = one(sp.from), to = one(sp.to);
   const page = pageNum(sp.page);

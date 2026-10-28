@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { asc } from "drizzle-orm";
 import { ExternalLink, Pencil, Plus } from "lucide-react";
-import { requireUser } from "@/lib/auth";
+import { requirePerm } from "@/lib/auth";
 import { getDb, schema } from "@/db";
 import { tr } from "@/lib/i18n-core";
 import { Badge, Empty, PageHeader } from "@/features/admin/components/ui";
@@ -12,7 +12,7 @@ import { deletePage } from "@/features/catalog-admin/pages-actions";
 export const metadata = { title: "Pages" };
 
 export default async function PagesPage() {
-  await requireUser();
+  await requirePerm("pages.edit");
   const rows = await getDb().select().from(schema.pages).orderBy(asc(schema.pages.position), asc(schema.pages.slug));
   return (
     <div>

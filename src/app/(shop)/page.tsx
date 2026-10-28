@@ -96,7 +96,7 @@ export default async function Home() {
             <div className="grid gap-6 md:grid-cols-3">
               {reviews.slice(0, 3).map((r, i) => (
                 <figure key={r.id} className={`sticky-note p-5 ${NOTE_BG[i % NOTE_BG.length]} text-[#1f3d2b]`} style={{ transform: `rotate(${[-1.8, 1.2, -0.8][i % 3]}deg)` }}>
-                  <div className="flex gap-0.5" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, k) => <Star key={k} className={`size-4 ${k < r.rating ? "fill-[#ff6b4a] text-[#1f3d2b]" : "text-[#1f3d2b]/30"}`} />)}</div>
+                  <div className="flex gap-0.5" role="img" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, k) => <Star key={k} className={`size-4 ${k < r.rating ? "fill-[#ff6b4a] text-[#1f3d2b]" : "text-[#1f3d2b]/30"}`} />)}</div>
                   <blockquote className="mt-3 text-lg leading-snug">“{r.body}”</blockquote>
                   <figcaption className="display mt-3 text-base">{r.name}{r.city && <span className="font-sans text-sm font-normal opacity-70"> · {r.city}</span>}</figcaption>
                 </figure>

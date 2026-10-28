@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Star, Plus } from "lucide-react";
 import type { ProductCard as P } from "../queries";
 import { tr, type Lang } from "@/lib/i18n-core";
-import { fileUrl } from "@/lib/storage";
+import { imgProps } from "@/lib/image-sizes";
 import { Money } from "@/components/money";
 import type { TFn } from "@/lib/dict";
 import { careOf } from "../care";
@@ -20,10 +20,10 @@ export function ProductCard({ p, lang, t, currency, codMode, priority, rank, big
   return (
     <article className={`pcard group ${big ? "md:col-span-2 md:row-span-2" : ""}`}>
       <div className={`pcard-img ${big ? "md:aspect-auto md:min-h-[18rem] md:flex-1" : ""}`}>
-        <Link href={`/p/${p.slug}`} className="block size-full" aria-label={name}>
+        <Link href={`/p/${p.slug}`} className="block size-full">
           {p.image ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={fileUrl(p.image, "md")} alt={name} width={400} height={400} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={`size-full object-cover transition-transform duration-300 group-hover:scale-105 ${p.inStock ? "" : "opacity-50 grayscale"}`} />
+            <img {...imgProps(p.image, "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw")} alt={name} width={400} height={400} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={`size-full object-cover transition-transform duration-300 group-hover:scale-105 ${p.inStock ? "" : "opacity-50 grayscale"}`} />
           ) : <div className="grid size-full place-items-center text-4xl">🌱</div>}
         </Link>
         <div className="pointer-events-none absolute start-2.5 top-2.5 flex flex-col items-start gap-1.5">
@@ -54,7 +54,7 @@ export function ProductRow({ p, lang, t, currency, codMode, categoryName }: { p:
     <article className="nb grid grid-cols-[6.5rem_1fr] items-center gap-4 p-3 transition hover:-translate-y-0.5 sm:grid-cols-[9rem_1fr_auto]">
       <Link href={`/p/${p.slug}`} className="relative block aspect-square self-start overflow-hidden rounded-[1.5rem_1.5rem_1.5rem_.5rem] border-2 border-edge bg-mint" aria-label={name}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        {p.image ? <img src={fileUrl(p.image, "md")} alt={name} loading="lazy" className={`size-full object-cover ${p.inStock ? "" : "opacity-50 grayscale"}`} /> : <span className="grid size-full place-items-center text-3xl">🌱</span>}
+        {p.image ? <img {...imgProps(p.image, "(min-width: 640px) 9rem, 6.5rem")} alt={name} loading="lazy" className={`size-full object-cover ${p.inStock ? "" : "opacity-50 grayscale"}`} /> : <span className="grid size-full place-items-center text-3xl">🌱</span>}
         {discount > 0 && p.inStock && <span className="sticker coral num absolute start-1 top-1 !text-[.7rem]">−{discount}%</span>}
       </Link>
       <div className="min-w-0">

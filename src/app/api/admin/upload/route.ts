@@ -1,9 +1,9 @@
-import { getSessionUser } from "@/lib/auth";
+import { userCan } from "@/lib/auth";
 import { saveImage } from "@/lib/storage";
 import { rateLimit } from "@/lib/ratelimit";
 
 export async function POST(req: Request) {
-  const user = await getSessionUser();
+  const user = (await userCan("products.edit")) ?? (await userCan("media.manage")) ?? (await userCan("appearance.edit"));
   if (!user) return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   // CSRF: same-origin only (browsers always send Origin on POST).
   const origin = req.headers.get("origin");

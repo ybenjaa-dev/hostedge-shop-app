@@ -1,17 +1,18 @@
 import Link from "next/link";
 import { SlidersHorizontal, Search } from "lucide-react";
+import { FilterExtras } from "./filter-extras";
 
 type Props = {
   action: string;
-  values: { q: string; category: string; min: string; max: string; stock: string; sort: string; view: string };
+  values: { q: string; category: string; min: string; max: string; stock: string; sort: string; view: string; opt?: string };
   categories: { slug: string; name: string; count: number }[];
-  labels: { filters: string; category: string; all: string; price: string; min: string; max: string; stock: string; apply: string; clear: string; search: string };
+  labels: { filters: string; category: string; all: string; price: string; min: string; max: string; stock: string; apply: string; clear: string; search: string; active?: string; clearAll?: string };
 };
 
 /** Top filter strip: category chips, a pill search, and a collapsible price / stock tray. Plain GET forms — no client JS. */
 export function CatalogFilters({ action, values, categories, labels }: Props) {
-  const keep = (extra: Record<string, string>) => { const u = new URLSearchParams(); for (const [k, v] of Object.entries({ q: values.q, min: values.min, max: values.max, stock: values.stock, sort: values.sort === "new" ? "" : values.sort, view: values.view === "grid" ? "" : values.view, ...extra })) if (v) u.set(k, v); const s = u.toString(); return s ? `?${s}` : ""; };
-  const trayOpen = !!(values.min || values.max || values.stock);
+  const keep = (extra: Record<string, string>) => { const u = new URLSearchParams(); for (const [k, v] of Object.entries({ q: values.q, min: values.min, max: values.max, stock: values.stock, opt: values.opt ?? "", sort: values.sort === "new" ? "" : values.sort, view: values.view === "grid" ? "" : values.view, ...extra })) if (v) u.set(k, v); const s = u.toString(); return s ? `?${s}` : ""; };
+  const trayOpen = !!(values.min || values.max || values.stock || values.opt);
   return (
     <aside className="space-y-4">
       <div className="no-scrollbar -mx-3 flex gap-2 overflow-x-auto px-3 py-1 sm:mx-0 sm:flex-wrap sm:px-0">
@@ -42,6 +43,7 @@ export function CatalogFilters({ action, values, categories, labels }: Props) {
                 <input name="max" inputMode="decimal" placeholder={labels.max} defaultValue={values.max} className="field !w-28" aria-label={labels.max} />
               </div>
             </div>
+            <div className="w-full sm:w-72"><FilterExtras q={values.q} category={values.category} min={values.min} max={values.max} opt={values.opt ?? ""} labels={{ price: labels.price, active: labels.active ?? "Active filters", clearAll: labels.clearAll ?? "Clear all" }} /></div>
             <label className="chip cursor-pointer !py-2"><input type="checkbox" name="stock" value="1" defaultChecked={values.stock === "1"} className="size-4 accent-[var(--brand)]" />{labels.stock}</label>
             <a href={action} className="btn btn-ghost btn-sm">{labels.clear}</a>
           </div>

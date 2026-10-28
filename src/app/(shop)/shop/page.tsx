@@ -7,6 +7,7 @@ import { ProductCard, ProductGrid, ProductRow } from "@/features/catalog/compone
 import { LayoutGrid, List } from "lucide-react";
 import { toMinor } from "@/lib/money";
 import { Sprig, Squiggle, Monstera } from "@/components/botanical";
+import { parseOptions } from "@/lib/shop-filters";
 import { CatalogFilters } from "@/features/catalog/components/filters";
 
 export const metadata = { title: "Shop" };
@@ -30,6 +31,7 @@ export async function Catalog({ sp, categorySlug }: { sp: Record<string, string 
     minPrice: Number.isFinite(min) ? min : undefined,
     maxPrice: Number.isFinite(max) ? max : undefined,
     inStock: sp.stock === "1",
+    options: parseOptions(sp.opt),
     sort: sortOk.find((x) => x === sp.sort) ?? "new",
     page: Math.max(1, parseInt(sp.page ?? "1", 10) || 1),
     perPage: 12,
@@ -60,9 +62,9 @@ export async function Catalog({ sp, categorySlug }: { sp: Record<string, string 
       </div>
       <CatalogFilters
         action={base}
-        values={{ q: sp.q ?? "", category: cat?.slug ?? "", min: sp.min ?? "", max: sp.max ?? "", stock: sp.stock ?? "", sort: params.sort ?? "new", view }}
+        values={{ q: sp.q ?? "", category: cat?.slug ?? "", min: sp.min ?? "", max: sp.max ?? "", stock: sp.stock ?? "", sort: params.sort ?? "new", view, opt: sp.opt ?? "" }}
         categories={cats.map((c) => ({ slug: c.slug, name: tr(c.name, lang), count: c.count }))}
-        labels={{ filters: t("shop.filters"), category: t("shop.category"), all: t("shop.allCategories"), price: t("shop.price"), min: t("shop.min"), max: t("shop.max"), stock: t("shop.inStock"), apply: t("shop.apply"), clear: t("shop.clear"), search: t("shop.searchPh") }}
+        labels={{ filters: t("shop.filters"), category: t("shop.category"), all: t("shop.allCategories"), price: t("shop.price"), min: t("shop.min"), max: t("shop.max"), stock: t("shop.inStock"), active: t("shop.filter.active"), clearAll: t("shop.filter.clearAll"), apply: t("shop.apply"), clear: t("shop.clear"), search: t("shop.searchPh") }}
       />
       <div className="my-6 flex flex-wrap items-center justify-between gap-3">
         <div className="no-scrollbar flex items-center gap-2 overflow-x-auto" role="group" aria-label={t("shop.sort")}>

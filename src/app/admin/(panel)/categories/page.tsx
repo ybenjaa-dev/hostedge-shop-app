@@ -1,12 +1,14 @@
 import { asc, sql } from "drizzle-orm";
 import { Plus } from "lucide-react";
-import { requireUser } from "@/lib/auth";
+import { requirePerm } from "@/lib/auth";
 import { getDb, schema } from "@/db";
 import { tr, parseI18n } from "@/lib/i18n-core";
 import { fileUrl } from "@/lib/storage";
 import { AdminForm } from "@/features/admin/components/admin-form";
 import { Field, I18nField, ImageField, Toggle } from "@/features/admin/components/fields";
-import { Badge, Empty, PageHeader, Panel } from "@/features/admin/components/ui";
+import { Badge, Empty, PageHeader } from "@/features/admin/components/ui";
+import { DataTable } from "@/features/settings/components/table";
+import { Drawer } from "@/features/admin/components/drawer";
 import { saveCategory, deleteCategory } from "@/features/catalog-admin/category-actions";
 import { DeleteCategory } from "@/features/catalog-admin/components/delete-category";
 
@@ -30,45 +32,39 @@ function CategoryForm({ c, nextPos }: { c?: Cat; nextPos?: number }) {
 }
 
 export default async function CategoriesPage() {
-  await requireUser();
+  await requirePerm("categories.manage");
   const db = getDb();
   const [cats, counts] = await Promise.all([
     db.select().from(schema.categories).orderBy(asc(schema.categories.position), asc(schema.categories.slug)),
     db.select({ id: schema.products.categoryId, n: sql<number>`count(*)` }).from(schema.products).groupBy(schema.products.categoryId),
   ]);
   const countOf = new Map(counts.map((c) => [c.id, c.n]));
+  const others = (id: string) => cats.filter((o) => o.id !== id).map((o) => ({ id: o.id, name: tr(o.name, "en") || o.slug }));
   return (
     <div>
-      <PageHeader title="Categories" sub="Group products for navigation and filters." />
-      <Panel className="mb-6">
-        <details>
-          <summary className="flex min-h-11 cursor-pointer items-center gap-2 font-bold"><Plus className="size-4" aria-hidden />New category</summary>
-          <div className="mt-4"><CategoryForm nextPos={cats.length} /></div>
-        </details>
-      </Panel>
-      {cats.length === 0 ? <Empty title="No categories yet" hint="Create your first category above." /> : (
-        <ul className="space-y-3">
+      <PageHeader title="Categories" sub="Group products for navigation and filters."
+        actions={<Drawer trigger={<><Plus className="size-4" aria-hidden />New category</>} triggerClassName="btn btn-primary btn-sm" title="New category" sub="Shown in the menu and as a tile on the home page."><CategoryForm nextPos={cats.length} /></Drawer>} />
+      {cats.length === 0 ? <Empty title="No categories yet" hint="Create your first category with the button above." /> : (
+        <DataTable minWidth="40rem" head={["Category", "Slug", { label: "Products", end: true }, "Status", { label: "", end: true, narrow: true }]}>
           {cats.map((c) => {
             const n = countOf.get(c.id) ?? 0;
+            const name = tr(c.name, "en") || tr(c.name, "fr") || c.slug;
             return (
-              <li key={c.id} className="card">
-                <details className="group">
-                  <summary className="flex min-h-16 cursor-pointer list-none items-center gap-3 p-3 [&::-webkit-details-marker]:hidden">
-                    <span className="grid size-12 shrink-0 place-items-center overflow-hidden rounded-xl bg-sunken">{c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image)} alt="" className="size-full object-cover" />}</span>
-                    <span className="min-w-0 flex-1"><span className="block truncate font-bold">{tr(c.name, "en") || tr(c.name, "fr") || c.slug}</span><span className="text-xs text-muted" dir="ltr">/{c.slug}</span></span>
-                    <span className="num text-sm text-muted">{n} product{n === 1 ? "" : "s"}</span>
-                    {!c.active && <Badge>Hidden</Badge>}
-                    <span className="btn btn-outline btn-sm group-open:bg-sunken">Edit</span>
-                  </summary>
-                  <div className="space-y-5 border-t border-line p-4">
-                    <CategoryForm c={c} />
-                    <DeleteCategory id={c.id} name={tr(c.name, "en") || c.slug} count={n} others={cats.filter((o) => o.id !== c.id).map((o) => ({ id: o.id, name: tr(o.name, "en") || o.slug }))} action={deleteCategory} />
-                  </div>
-                </details>
-              </li>
+              <tr key={c.id}>
+                <td><div className="flex items-center gap-3">
+                  <span className="grid size-11 shrink-0 place-items-center overflow-hidden rounded-xl bg-sunken">{c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image, "thumb")} alt="" className="size-full object-cover" />}</span>
+                  <span className="font-semibold">{name}</span></div></td>
+                <td className="text-muted" dir="ltr"><span className="text-start">/{c.slug}</span></td>
+                <td className="num is-end">{n}</td>
+                <td>{c.active ? <Badge color="#16a34a">Active</Badge> : <Badge>Hidden</Badge>}</td>
+                <td className="is-end"><Drawer trigger="Edit" title={name} sub={`${n} product${n === 1 ? "" : "s"}`}>
+                  <div className="space-y-6"><CategoryForm c={c} />
+                    <div className="border-t border-line pt-4"><DeleteCategory id={c.id} name={name} count={n} others={others(c.id)} action={deleteCategory} /></div></div>
+                </Drawer></td>
+              </tr>
             );
           })}
-        </ul>
+        </DataTable>
       )}
     </div>
   );
