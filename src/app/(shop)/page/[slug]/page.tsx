@@ -1,3 +1,4 @@
+import { RichText } from "@/components/rich-text";
 import { notFound } from "next/navigation";
 import { getPage } from "@/features/catalog/queries";
 import { getT } from "@/lib/i18n";
@@ -16,7 +17,7 @@ export default async function StaticPage({ params }: { params: Promise<{ slug: s
   return (
     <article className="mx-auto max-w-3xl px-4 py-12">
       <h1 className="display mb-6 text-4xl font-extrabold">{tr(p.title, lang)}</h1>
-      <div className="prose-lite text-lg text-muted"><p>{tr(p.body, lang)}</p></div>
+      <RichText html={tr(p.body, lang)} className="prose-lite text-lg text-muted" />
     </article>
   );
 }

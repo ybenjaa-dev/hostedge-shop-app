@@ -1,4 +1,4 @@
-import { getSessionUser } from "@/lib/auth";
+import { getSessionUser, userCan } from "@/lib/auth";
 import { rateLimit } from "@/lib/ratelimit";
 import { findDuplicate, listMedia, mediaUsage, saveMedia } from "@/features/media/server";
 
@@ -16,7 +16,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const user = await getSessionUser();
+  const user = (await userCan("media.manage")) ?? (await userCan("products.edit")) ?? (await userCan("appearance.edit")) ?? (await userCan("categories.manage"));
   if (!user) return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   const origin = req.headers.get("origin");
   if (origin && new URL(origin).host !== new URL(req.url).host) return Response.json({ ok: false, error: "Bad origin" }, { status: 403 });

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { desc, eq } from "drizzle-orm";
 import { ArrowLeft, MessageCircle, Phone } from "lucide-react";
-import { requireUser } from "@/lib/auth";
+import { requirePerm } from "@/lib/auth";
 import { getDb, schema } from "@/db";
 import { getSettings } from "@/lib/settings";
 import { statusInfo } from "@/lib/status-labels";
@@ -16,7 +16,7 @@ import { blockPhone, unblockPhone } from "@/features/crm/actions";
 export const metadata = { title: "Customer" };
 
 export default async function CustomerPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireUser();
+  await requirePerm("customers.view");
   const { id } = await params;
   const db = getDb();
   const c = await db.select().from(schema.customers).where(eq(schema.customers.id, id)).get();

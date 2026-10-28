@@ -17,7 +17,7 @@ function dayMs(v: string, end: boolean): number | null | undefined {
 }
 
 export async function saveCoupon(_p: ActionState, form: FormData): Promise<ActionState> {
-  return run("staff", async (user) => {
+  return run("coupons.manage", async (user) => {
     const cur = (await getSettings()).store.currency;
     const p = parse(
       z.object({
@@ -61,7 +61,7 @@ export async function saveCoupon(_p: ActionState, form: FormData): Promise<Actio
 }
 
 export async function deleteCoupon(_p: ActionState, form: FormData): Promise<ActionState> {
-  return run("staff", async (user) => {
+  return run("coupons.manage", async (user) => {
     const id = fd(form, "id");
     if (!id) return fail("Missing coupon");
     await getDb().delete(schema.coupons).where(eq(schema.coupons.id, id));
@@ -72,7 +72,7 @@ export async function deleteCoupon(_p: ActionState, form: FormData): Promise<Act
 }
 
 export async function saveBundle(_p: ActionState, form: FormData): Promise<ActionState> {
-  return run("staff", async (user) => {
+  return run("products.edit", async (user) => {
     const p = parse(
       z.object({
         id: z.string().max(40),
@@ -105,18 +105,31 @@ export async function saveBundle(_p: ActionState, form: FormData): Promise<Actio
 }
 
 export async function saveOfferTemplate(_p: ActionState, form: FormData): Promise<ActionState> {
-  return run("staff", async (user) => {
+  return run("products.edit", async (user) => {
     const t = fd(form, "template");
     if (!isOfferTemplate(t)) return { ok: false, error: "Choose a layout." };
-    await saveSettings("offers", { template: t });
+    await saveSettings("offers", { ...(await getSettings()).offers, template: t });
     await audit(user, "offers.template", "settings", t);
     refresh();
     return { message: "Offer card layout saved for all products" };
   });
 }
 
+export async function saveUpsell(_p: ActionState, form: FormData): Promise<ActionState> {
+  return run("owner", async (user) => {
+    const pct = Math.round(Number(fd(form, "discountPct")));
+    const win = Math.round(Number(fd(form, "windowMin")));
+    if (!(pct >= 0 && pct <= 70)) return { ok: false, error: "Discount must be between 0 and 70 %." };
+    if (!(win >= 5 && win <= 240)) return { ok: false, error: "The offer window must be 5–240 minutes." };
+    await saveSettings("offers", { ...(await getSettings()).offers, upsell: { enabled: form.get("enabled") === "1", discountPct: pct, windowMin: win } });
+    await audit(user, "offers.upsell", "settings", String(pct));
+    refresh();
+    return { message: "Add-on offer saved" };
+  });
+}
+
 export async function deleteBundle(_p: ActionState, form: FormData): Promise<ActionState> {
-  return run("staff", async (user) => {
+  return run("products.edit", async (user) => {
     const id = fd(form, "id");
     if (!id) return fail("Missing bundle");
     await getDb().delete(schema.bundles).where(eq(schema.bundles.id, id));

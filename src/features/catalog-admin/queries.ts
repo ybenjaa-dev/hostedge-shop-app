@@ -1,6 +1,7 @@
 import "server-only";
 import { getEnv } from "@/lib/env";
 import { ensureSchema } from "@/db/ensure-schema";
+import { tr } from "@/lib/i18n-core";
 
 export type AdminProductRow = { id: string; slug: string; name: string; sku: string | null; price: number; status: string; image: string | null; stock: number; variants: number; category: string | null; featured: number };
 
@@ -41,4 +42,11 @@ export async function getAdminProduct(id: string) {
 export async function listCategoryOptions() {
   await ensureSchema();
   return (await getEnv().DB.prepare("SELECT id, name, slug FROM categories ORDER BY position, name").all<{ id: string; name: string; slug: string }>()).results;
+}
+
+/** Every product as a lightweight pick-list entry (name + first image) for the cross-sell pickers. */
+export async function listProductPicks(): Promise<{ id: string; name: string; image: string | null }[]> {
+  await ensureSchema();
+  const r = await getEnv().DB.prepare("SELECT p.id, p.name, (SELECT key FROM product_images i WHERE i.product_id = p.id ORDER BY i.position LIMIT 1) AS image FROM products p ORDER BY p.created_at DESC LIMIT 500").all<{ id: string; name: string; image: string | null }>();
+  return r.results.map((p) => ({ id: p.id, name: tr(p.name, "en") || tr(p.name, "fr") || p.id, image: p.image }));
 }

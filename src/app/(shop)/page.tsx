@@ -132,7 +132,7 @@ function SectionTitle({ title, href, more }: { title: string; href?: string; mor
   );
 }
 
-function Hero({ s, lang, t }: { s: Awaited<ReturnType<typeof getSettings>>; lang: "ar" | "fr" | "en"; t: ReturnType<typeof import("@/lib/dict").makeT> }) {
+function Hero({ s, lang, t }: { s: Awaited<ReturnType<typeof getSettings>>; lang: string; t: ReturnType<typeof import("@/lib/dict").makeT> }) {
   const sl = s.hero.slides[0];
   const title = sl ? tr(sl.title, lang) : s.store.name;
   const sub = sl ? tr(sl.sub, lang) : tr(s.store.tagline, lang);
