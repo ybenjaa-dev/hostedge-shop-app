@@ -120,9 +120,12 @@ export async function createUser(input: { email: string; name: string; password:
   return id;
 }
 
+let usersSeenAt = 0; // once the team exists it stays that way: remember a "yes" for a minute per isolate
 export async function hasAnyUser(): Promise<boolean> {
+  if (Date.now() - usersSeenAt < 60_000) return true;
   await ensureSchema();
   const r = await getDb().select({ id: schema.users.id }).from(schema.users).limit(1).get();
+  if (r) usersSeenAt = Date.now();
   return !!r;
 }
 
