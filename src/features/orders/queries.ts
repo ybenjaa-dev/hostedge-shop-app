@@ -57,20 +57,21 @@ export async function getOrderFull(id: string) {
   const db = getEnv().DB;
   const o = await db.prepare("SELECT * FROM orders WHERE id = ? OR number = ?").bind(id, id).first<Record<string, string | number | null>>();
   if (!o) return null;
-  const [items, history, notes] = await db.batch([
+  const [items, history, notes, blocked, prior] = await db.batch([
     db.prepare("SELECT * FROM order_items WHERE order_id = ?").bind(o.id),
     db.prepare("SELECT * FROM order_history WHERE order_id = ? ORDER BY created_at DESC").bind(o.id),
     db.prepare("SELECT * FROM order_notes WHERE order_id = ? ORDER BY created_at DESC").bind(o.id),
+    db.prepare("SELECT 1 AS x FROM blocked_phones WHERE phone = ?").bind(o.phone),
+    db.prepare("SELECT COUNT(*) AS n, SUM(CASE WHEN status='delivered' THEN 1 ELSE 0 END) AS d, SUM(CASE WHEN status IN ('returned','return_received') THEN 1 ELSE 0 END) AS r FROM orders WHERE phone = ? AND id != ?").bind(o.phone, o.id),
   ]);
-  const blocked = await db.prepare("SELECT 1 AS x FROM blocked_phones WHERE phone = ?").bind(o.phone).first();
-  const prior = await db.prepare("SELECT COUNT(*) AS n, SUM(CASE WHEN status='delivered' THEN 1 ELSE 0 END) AS d, SUM(CASE WHEN status IN ('returned','return_received') THEN 1 ELSE 0 END) AS r FROM orders WHERE phone = ? AND id != ?").bind(o.phone, o.id).first<{ n: number; d: number | null; r: number | null }>();
+  const priorRow = (prior!.results as { n: number; d: number | null; r: number | null }[])[0];
   return {
     o,
     items: items!.results as { id: string; name: string; variant_name: string | null; sku: string | null; price: number; qty: number; image: string | null; product_id: string | null }[],
     history: history!.results as { id: string; from_status: string | null; to_status: string; user_name: string | null; note: string | null; created_at: number }[],
     notes: notes!.results as { id: string; user_name: string; body: string; created_at: number }[],
-    blocked: !!blocked,
-    prior: { n: prior?.n ?? 0, delivered: prior?.d ?? 0, returned: prior?.r ?? 0 },
+    blocked: blocked!.results.length > 0,
+    prior: { n: priorRow?.n ?? 0, delivered: priorRow?.d ?? 0, returned: priorRow?.r ?? 0 },
   };
 }
 

@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getEnv } from "@/lib/env";
+import { clearMemo } from "@/lib/mem-cache";
 import { ensureSchema } from "@/db/ensure-schema";
 import { createSession, createUser, hasAnyUser, logActivity } from "@/lib/auth";
 import { DEFAULT_SETTINGS, saveSettings } from "@/lib/settings";
@@ -49,6 +50,7 @@ export async function runSetup(_prev: SetupState, form: FormData): Promise<Setup
       slides: [{ image: "uploads/sample-hero.svg", title: { en: "Rooms that feel calm", fr: "Des pièces qui apaisent", ar: "غرف تبعث على الهدوء" }, sub: { en: "Solid oak, soft textiles and honest design. Pay the courier when it arrives.", fr: "Chêne massif, textiles doux et design sincère. Payez au livreur à l'arrivée.", ar: "بلوط صلب وأقمشة ناعمة وتصميم صادق. ادفع للمندوب عند الوصول." }, cta: { en: "Explore the collection", fr: "Découvrir la collection", ar: "اكتشف المجموعة" }, href: "/shop" }],
     });
   }
+  clearMemo();
   await createSession(userId);
   await logActivity({ id: userId, name: d.name }, "setup.completed", "store", undefined, { country: country.code });
   redirect("/admin");
