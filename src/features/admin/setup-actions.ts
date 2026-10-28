@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getEnv } from "@/lib/env";
+import { clearMemo } from "@/lib/mem-cache";
 import { ensureSchema } from "@/db/ensure-schema";
 import { createSession, createUser, hasAnyUser, logActivity } from "@/lib/auth";
 import { DEFAULT_SETTINGS, saveSettings } from "@/lib/settings";
@@ -49,6 +50,7 @@ export async function runSetup(_prev: SetupState, form: FormData): Promise<Setup
       slides: [{ image: "uploads/sample-hero.svg", title: { en: "Accessories that fit your car", fr: "Des accessoires qui vont à votre voiture", ar: "إكسسوارات تناسب سيارتك" }, sub: { en: "Pick your make and model, see what fits, and pay the courier when it arrives.", fr: "Choisissez marque et modèle, voyez ce qui va et payez le livreur à la réception.", ar: "اختر الماركة والطراز وشاهد ما يناسب سيارتك وادفع للمندوب عند الاستلام." }, cta: { en: "Shop all accessories", fr: "Tous les accessoires", ar: "كل الإكسسوارات" }, href: "/shop" }],
     });
   }
+  clearMemo();
   await createSession(userId);
   await logActivity({ id: userId, name: d.name }, "setup.completed", "store", undefined, { country: country.code });
   redirect("/admin");
