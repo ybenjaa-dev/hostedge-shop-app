@@ -29,12 +29,14 @@ if (arg === "--reset") {
   process.exit(0);
 }
 
-const theme = (arg ?? process.env.THEME ?? "classic").trim();
+const requested = (arg ?? process.env.THEME ?? "").trim();
 if (existsSync(STATE)) {
+  // `next build` re-runs this as a pre-build hook without THEME in its environment: keep whatever is applied.
   const prev = JSON.parse(readFileSync(STATE, "utf8"));
-  if (prev.theme === theme) { console.log(`Theme "${theme}" already applied.`); process.exit(0); }
+  if (!requested || prev.theme === requested) { console.log(`Theme "${prev.theme}" already applied.`); process.exit(0); }
   console.error(`Theme "${prev.theme}" is already applied. Run: node scripts/apply-theme.mjs --reset`); process.exit(1);
 }
+const theme = requested || "classic";
 if (theme === "classic") { console.log('Theme "classic" (base): nothing to apply.'); process.exit(0); }
 const dir = join(root, "themes", theme);
 if (!existsSync(join(dir, "files"))) { console.error(`Unknown theme "${theme}". Available: ${themes().join(", ")}`); process.exit(1); }
