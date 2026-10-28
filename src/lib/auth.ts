@@ -8,7 +8,7 @@ import { ensureSchema } from "@/db/ensure-schema";
 import { hashPassword, randomToken, sha256Hex, verifyPassword } from "@/lib/crypto";
 import { newId } from "@/lib/id";
 import { clientIp, rateLimit } from "@/lib/ratelimit";
-import { can, homeFor, isPerm, type Perm, type Role } from "@/lib/permissions";
+import { can, isPerm, type Perm, type Role } from "@/lib/permissions";
 
 const COOKIE = "he_session";
 const SESSION_DAYS = 14;
@@ -46,13 +46,13 @@ export async function requireUser(): Promise<SessionUser> {
 /** Page guard: signed in AND allowed to see this area; otherwise bounce to the first page the role may open. */
 export async function requirePerm(perm: Perm): Promise<SessionUser> {
   const u = await requireUser();
-  if (!can(u.role, perm)) redirect(`${homeFor(u.role)}?denied=1`);
+  if (!can(u.role, perm)) redirect("/admin/no-access");
   return u;
 }
 
 export async function requireOwner(): Promise<SessionUser> {
   const u = await requireUser();
-  if (u.role !== "owner") redirect("/admin?denied=1");
+  if (u.role !== "owner") redirect("/admin/no-access");
   return u;
 }
 
