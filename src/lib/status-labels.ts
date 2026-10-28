@@ -6,5 +6,5 @@ export function statusInfo(settings: Pick<Settings, "statuses">, status: string,
   if (!isStatus(status)) return { label: status, color: "#64748b" };
   const base = DEFAULT_STATUS_DEFS[status];
   const o = settings.statuses[status as OrderStatus];
-  return { label: o?.label?.[lang] || o?.label?.en || base.label[lang] || base.label.en, color: o?.color || base.color };
+  return { label: (o?.label as Record<string, string> | undefined)?.[lang] || o?.label?.en || (base.label as Record<string, string>)[lang] || base.label.en, color: o?.color || base.color };
 }

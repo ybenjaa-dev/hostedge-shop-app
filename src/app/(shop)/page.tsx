@@ -92,7 +92,7 @@ export default async function Home() {
             <div className="grid gap-4 md:grid-cols-3">
               {reviews.slice(0, 3).map((r) => (
                 <figure key={r.id} className="card flex flex-col border-s-4 !border-s-[var(--brand)] p-5">
-                  <div className="flex gap-0.5" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`size-4 ${i < r.rating ? "fill-[var(--brand)] text-[var(--brand)]" : "text-line"}`} />)}</div>
+                  <div className="flex gap-0.5" role="img" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`size-4 ${i < r.rating ? "fill-[var(--brand)] text-[var(--brand)]" : "text-line"}`} />)}</div>
                   <blockquote className="mt-3 flex-1 leading-relaxed">“{r.body}”</blockquote>
                   <figcaption className="mt-3 text-sm font-bold">{r.name}{r.city && <span className="font-normal text-muted"> · {r.city}</span>}</figcaption>
                 </figure>
@@ -126,7 +126,7 @@ function SectionTitle({ title, href, more }: { title: string; href?: string; mor
   );
 }
 
-function Hero({ s, lang, t }: { s: Awaited<ReturnType<typeof getSettings>>; lang: "ar" | "fr" | "en"; t: ReturnType<typeof import("@/lib/dict").makeT> }) {
+function Hero({ s, lang, t }: { s: Awaited<ReturnType<typeof getSettings>>; lang: string; t: ReturnType<typeof import("@/lib/dict").makeT> }) {
   const sl = s.hero.slides[0];
   const title = sl ? tr(sl.title, lang) : s.store.name;
   const sub = sl ? tr(sl.sub, lang) : tr(s.store.tagline, lang);

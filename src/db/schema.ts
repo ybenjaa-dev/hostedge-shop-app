@@ -17,8 +17,13 @@ export const users = sqliteTable(
     email: text("email").notNull(),
     name: text("name").notNull(),
     passwordHash: text("password_hash").notNull(),
-    role: text("role", { enum: ["owner", "staff"] }).notNull().default("staff"),
+    role: text("role", { enum: ["owner", "staff", "confirmer", "packer", "accountant"] }).notNull().default("staff"),
     active: integer("active", { mode: "boolean" }).notNull().default(true),
+    // profile (each person edits their own)
+    phone: text("phone"),
+    jobTitle: text("job_title"),
+    bio: text("bio"),
+    avatar: text("avatar"), // R2 key under uploads/avatars/
     createdAt: ts("created_at"),
   },
   (t) => [uniqueIndex("users_email_idx").on(t.email)],
@@ -38,7 +43,7 @@ export const sessions = sqliteTable(
 export const invites = sqliteTable("invites", {
   id: text("id").primaryKey(), // sha-256 of the token
   email: text("email").notNull(),
-  role: text("role", { enum: ["owner", "staff"] }).notNull().default("staff"),
+  role: text("role", { enum: ["owner", "staff", "confirmer", "packer", "accountant"] }).notNull().default("staff"),
   expiresAt: integer("expires_at").notNull(),
   createdAt: ts("created_at"),
 });
@@ -71,6 +76,8 @@ export const products = sqliteTable(
     shortDesc: text("short_desc").notNull().default("{}"),
     longDesc: text("long_desc").notNull().default("{}"),
     specs: text("specs").notNull().default("{}"), // JSON i18n; one "Label: value" per line (supplement facts, specs…)
+    /** Lower-cased, accent-folded text of name (all languages), SKU, descriptions and category — what instant search matches against. */
+    searchText: text("search_text"),
     offerTemplate: text("offer_template"), // quantity-offer card layout for this product; null → store default
     categoryId: text("category_id"),
     sku: text("sku"),
@@ -267,6 +274,10 @@ export const orders = sqliteTable(
     remitted: integer("remitted", { mode: "boolean" }).notNull().default(false),
     ip: text("ip"),
     source: text("source"),
+    /** Ad-click context captured at checkout (JSON: fbp, fbc, ttp, ttclid, ua, url) — used for server-side (Conversions API) events later. */
+    tracking: text("tracking"),
+    /** The visitor (device) that placed the order — see the `visitors` table. */
+    visitorId: text("visitor_id"),
     lang: text("lang"),
     createdAt: ts("created_at"),
     updatedAt: ts("updated_at"),
@@ -296,6 +307,8 @@ export const orderItems = sqliteTable(
     price: integer("price").notNull(),
     qty: integer("qty").notNull(),
     image: text("image"),
+    /** Added after checkout through the one-click add-on offer. */
+    addon: integer("addon", { mode: "boolean" }).notNull().default(false),
   },
   (t) => [index("order_items_order_idx").on(t.orderId), index("order_items_product_idx").on(t.productId)],
 );
@@ -391,3 +404,120 @@ export const media = sqliteTable(
   },
   (t) => [uniqueIndex("media_key_idx").on(t.key), index("media_hash_idx").on(t.hash), index("media_source_hash_idx").on(t.sourceHash), index("media_created_idx").on(t.createdAt)],
 );
+
+/** Server-side ad events (Meta / TikTok Conversions API): one row per attempt target, with the platform's answer. */
+export const trackingEvents = sqliteTable(
+  "tracking_events",
+  {
+    id: text("id").primaryKey(),
+    orderId: text("order_id"),
+    platform: text("platform", { enum: ["meta", "tiktok"] }).notNull(),
+    event: text("event").notNull(),
+    eventId: text("event_id").notNull(),
+    status: text("status", { enum: ["ok", "error", "test"] }).notNull(),
+    httpStatus: integer("http_status"),
+    response: text("response"),
+    attempts: integer("attempts").notNull().default(1),
+    createdAt: ts("created_at"),
+    updatedAt: integer("updated_at").notNull().$defaultFn(now),
+  },
+  (t) => [index("tracking_events_order_idx").on(t.orderId), index("tracking_events_created_idx").on(t.createdAt), uniqueIndex("tracking_events_uniq_idx").on(t.platform, t.eventId, t.event)],
+);
+
+/** "Frequently bought together" (kind=together, shown on the product page) and the one-click post-checkout offer (kind=addon). */
+export const productLinks = sqliteTable(
+  "product_links",
+  {
+    id: text("id").primaryKey(),
+    productId: text("product_id").notNull(),
+    linkedId: text("linked_id").notNull(),
+    kind: text("kind", { enum: ["together", "addon"] }).notNull(),
+    position: integer("position").notNull().default(0),
+  },
+  (t) => [uniqueIndex("product_links_uniq_idx").on(t.productId, t.linkedId, t.kind), index("product_links_product_idx").on(t.productId, t.kind)],
+);
+
+/** Anonymous visitor registry (only for people who accepted the notice): where they come from and which device they use. `fp` is a hash of browser/device traits — no raw personal data. */
+export const visitors = sqliteTable(
+  "visitors",
+  {
+    id: text("id").primaryKey(), // random id kept in a first-party cookie
+    fp: text("fp"),              // device fingerprint hash
+    firstSeen: integer("first_seen").notNull().$defaultFn(now),
+    lastSeen: integer("last_seen").notNull().$defaultFn(now),
+    visits: integer("visits").notNull().default(1),
+    pageViews: integer("page_views").notNull().default(1),
+    ip: text("ip"),
+    country: text("country"),
+    region: text("region"),
+    city: text("city"),
+    timezone: text("timezone"),
+    latitude: text("latitude"),
+    longitude: text("longitude"),
+    network: text("network"),   // ISP / ASN organisation
+    ua: text("ua"),
+    browser: text("browser"),
+    os: text("os"),
+    device: text("device"),     // mobile | tablet | desktop
+    screen: text("screen"),
+    lang: text("lang"),
+    referrer: text("referrer"),
+    landing: text("landing"),
+    utm: text("utm"),           // JSON
+    phone: text("phone"),       // set once the visitor places an order
+    orders: integer("orders").notNull().default(0),
+    push: integer("push", { mode: "boolean" }).notNull().default(false),
+  },
+  (t) => [index("visitors_fp_idx").on(t.fp), index("visitors_last_idx").on(t.lastSeen), index("visitors_country_idx").on(t.country), index("visitors_phone_idx").on(t.phone)],
+);
+
+/** Web Push subscriptions (one per browser). */
+export const pushSubscriptions = sqliteTable(
+  "push_subscriptions",
+  {
+    id: text("id").primaryKey(),
+    endpoint: text("endpoint").notNull(),
+    p256dh: text("p256dh").notNull(),
+    auth: text("auth").notNull(),
+    visitorId: text("visitor_id"),
+    lang: text("lang"),
+    country: text("country"),
+    city: text("city"),
+    ua: text("ua"),
+    createdAt: ts("created_at"),
+    lastSentAt: integer("last_sent_at"),
+    /** id of the last campaign delivered to this browser — lets a big send resume where it stopped. */
+    lastMsg: text("last_msg"),
+    failures: integer("failures").notNull().default(0),
+    active: integer("active", { mode: "boolean" }).notNull().default(true),
+  },
+  (t) => [uniqueIndex("push_endpoint_idx").on(t.endpoint), index("push_visitor_idx").on(t.visitorId)],
+);
+
+/** Messages composed in the admin and the outcome of sending them. */
+export const pushMessages = sqliteTable(
+  "push_messages",
+  {
+    id: text("id").primaryKey(),
+    title: text("title").notNull(),
+    body: text("body").notNull(),
+    url: text("url"),
+    image: text("image"),
+    audience: text("audience").notNull().default("{}"), // JSON filter: lang / country / city
+    status: text("status", { enum: ["sending", "sent"] }).notNull().default("sending"),
+    targeted: integer("targeted").notNull().default(0),
+    delivered: integer("delivered").notNull().default(0),
+    failed: integer("failed").notNull().default(0),
+    clicks: integer("clicks").notNull().default(0),
+    createdBy: text("created_by"),
+    createdAt: ts("created_at"),
+  },
+  (t) => [index("push_messages_created_idx").on(t.createdAt)],
+);
+
+/** Devices barred from ordering (matched by fingerprint). */
+export const blockedFingerprints = sqliteTable("blocked_fingerprints", {
+  fp: text("fp").primaryKey(),
+  reason: text("reason"),
+  createdAt: ts("created_at"),
+});

@@ -1,3 +1,4 @@
+import { requirePerm } from "@/lib/auth";
 import { DateRangeField } from "@/features/admin/components/date-picker";
 import Link from "next/link";
 import { getDashboard } from "@/features/admin/dashboard-queries";
@@ -14,6 +15,7 @@ export const metadata = { title: "Dashboard" };
 const DAY = 86400_000;
 
 export default async function Dashboard({ searchParams }: { searchParams: Promise<{ range?: string; from?: string; to?: string; denied?: string }> }) {
+  await requirePerm("dashboard.view");
   const sp = await searchParams;
   const s = await getSettings();
   const now = Date.now();
@@ -33,7 +35,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
     <>
       <PageHeader title="Dashboard" sub={`${new Date(from).toISOString().slice(0, 10)} → ${new Date(to - DAY).toISOString().slice(0, 10)} (UTC days)`} actions={<>{chip("today", "Today")}{chip("7", "7 days")}{chip("30", "30 days")}{chip("90", "90 days")}</>} />
       <SetupChecklist {...setup} />
-      {sp.denied && <p role="alert" className="mb-4 rounded-lg bg-danger/10 p-3 text-sm font-medium text-danger">That section is for the store owner only.</p>}
+      {sp.denied && <p role="alert" className="mb-4 rounded-lg bg-danger/10 p-3 text-sm font-medium text-danger">Your role can’t open that page.</p>}
       <FilterBar actions={<button className="btn btn-primary">Apply</button>}><FbItem wide><DateRangeField from={sp.from} to={sp.to} label="Date range" /></FbItem></FilterBar>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat label="Orders today" value={d.today} sub={`${d.pendingConfirm} waiting for confirmation`} />

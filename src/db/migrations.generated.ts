@@ -93,5 +93,46 @@ export const MIGRATIONS: { name: string; statements: string[] }[] = [
       "CREATE INDEX `media_source_hash_idx` ON `media` (`source_hash`);",
       "CREATE INDEX `media_created_idx` ON `media` (`created_at`);"
     ]
+  },
+  {
+    "name": "0006_tracking_upsell",
+    "statements": [
+      "CREATE TABLE `product_links` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`product_id` text NOT NULL,\n\t`linked_id` text NOT NULL,\n\t`kind` text NOT NULL,\n\t`position` integer DEFAULT 0 NOT NULL\n);",
+      "CREATE UNIQUE INDEX `product_links_uniq_idx` ON `product_links` (`product_id`,`linked_id`,`kind`);",
+      "CREATE INDEX `product_links_product_idx` ON `product_links` (`product_id`,`kind`);",
+      "CREATE TABLE `tracking_events` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`order_id` text,\n\t`platform` text NOT NULL,\n\t`event` text NOT NULL,\n\t`event_id` text NOT NULL,\n\t`status` text NOT NULL,\n\t`http_status` integer,\n\t`response` text,\n\t`attempts` integer DEFAULT 1 NOT NULL,\n\t`created_at` integer NOT NULL,\n\t`updated_at` integer NOT NULL\n);",
+      "CREATE INDEX `tracking_events_order_idx` ON `tracking_events` (`order_id`);",
+      "CREATE INDEX `tracking_events_created_idx` ON `tracking_events` (`created_at`);",
+      "CREATE UNIQUE INDEX `tracking_events_uniq_idx` ON `tracking_events` (`platform`,`event_id`,`event`);",
+      "ALTER TABLE `order_items` ADD `addon` integer DEFAULT false NOT NULL;",
+      "ALTER TABLE `orders` ADD `tracking` text;"
+    ]
+  },
+  {
+    "name": "0007_visitors_push_search",
+    "statements": [
+      "CREATE TABLE `blocked_fingerprints` (\n\t`fp` text PRIMARY KEY NOT NULL,\n\t`reason` text,\n\t`created_at` integer NOT NULL\n);",
+      "CREATE TABLE `push_messages` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`title` text NOT NULL,\n\t`body` text NOT NULL,\n\t`url` text,\n\t`image` text,\n\t`audience` text DEFAULT '{}' NOT NULL,\n\t`status` text DEFAULT 'sending' NOT NULL,\n\t`targeted` integer DEFAULT 0 NOT NULL,\n\t`delivered` integer DEFAULT 0 NOT NULL,\n\t`failed` integer DEFAULT 0 NOT NULL,\n\t`clicks` integer DEFAULT 0 NOT NULL,\n\t`created_by` text,\n\t`created_at` integer NOT NULL\n);",
+      "CREATE INDEX `push_messages_created_idx` ON `push_messages` (`created_at`);",
+      "CREATE TABLE `push_subscriptions` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`endpoint` text NOT NULL,\n\t`p256dh` text NOT NULL,\n\t`auth` text NOT NULL,\n\t`visitor_id` text,\n\t`lang` text,\n\t`country` text,\n\t`city` text,\n\t`ua` text,\n\t`created_at` integer NOT NULL,\n\t`last_sent_at` integer,\n\t`last_msg` text,\n\t`failures` integer DEFAULT 0 NOT NULL,\n\t`active` integer DEFAULT true NOT NULL\n);",
+      "CREATE UNIQUE INDEX `push_endpoint_idx` ON `push_subscriptions` (`endpoint`);",
+      "CREATE INDEX `push_visitor_idx` ON `push_subscriptions` (`visitor_id`);",
+      "CREATE TABLE `visitors` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`fp` text,\n\t`first_seen` integer NOT NULL,\n\t`last_seen` integer NOT NULL,\n\t`visits` integer DEFAULT 1 NOT NULL,\n\t`page_views` integer DEFAULT 1 NOT NULL,\n\t`ip` text,\n\t`country` text,\n\t`region` text,\n\t`city` text,\n\t`timezone` text,\n\t`latitude` text,\n\t`longitude` text,\n\t`network` text,\n\t`ua` text,\n\t`browser` text,\n\t`os` text,\n\t`device` text,\n\t`screen` text,\n\t`lang` text,\n\t`referrer` text,\n\t`landing` text,\n\t`utm` text,\n\t`phone` text,\n\t`orders` integer DEFAULT 0 NOT NULL,\n\t`push` integer DEFAULT false NOT NULL\n);",
+      "CREATE INDEX `visitors_fp_idx` ON `visitors` (`fp`);",
+      "CREATE INDEX `visitors_last_idx` ON `visitors` (`last_seen`);",
+      "CREATE INDEX `visitors_country_idx` ON `visitors` (`country`);",
+      "CREATE INDEX `visitors_phone_idx` ON `visitors` (`phone`);",
+      "ALTER TABLE `orders` ADD `visitor_id` text;",
+      "ALTER TABLE `products` ADD `search_text` text;"
+    ]
+  },
+  {
+    "name": "0008_user_profile",
+    "statements": [
+      "ALTER TABLE `users` ADD `phone` text;",
+      "ALTER TABLE `users` ADD `job_title` text;",
+      "ALTER TABLE `users` ADD `bio` text;",
+      "ALTER TABLE `users` ADD `avatar` text;"
+    ]
   }
 ];

@@ -1,3 +1,4 @@
+import { RichText } from "@/components/rich-text";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -27,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = tr(p.seoTitle, lang) || tr(p.name, lang);
   const desc = tr(p.seoDesc, lang) || tr(p.shortDesc, lang);
   const img = p.images[0] ? fileUrl(p.images[0].key) : undefined;
-  return { title, description: desc, openGraph: { title, description: desc, images: img ? [img] : undefined, type: "website" }, alternates: { canonical: `/p/${p.slug}` } };
+  return { title, description: desc, openGraph: { title, description: desc, images: img ? [img] : undefined, type: "website" } };
 }
 
 export default async function ProductPage({ params, searchParams }: Props) {
@@ -102,7 +103,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
       <section className="mt-12 grid gap-6 lg:grid-cols-[1fr_22rem]">
         <div className="space-y-6">
           {tr(p.longDesc, lang) && (
-            <div><h2 className="heading mb-3 text-2xl">{t("p.description")}</h2><div className="prose-lite text-muted"><p>{tr(p.longDesc, lang)}</p></div></div>
+            <div><h2 className="heading mb-3 text-2xl">{t("p.description")}</h2><RichText html={tr(p.longDesc, lang)} className="prose-lite text-muted" /></div>
           )}
           {rest.length > 0 && (
             <div><h2 className="heading mb-3 flex items-center gap-2 text-2xl"><Wrench className="size-5 text-brand" />{t("p.specs")}</h2>
