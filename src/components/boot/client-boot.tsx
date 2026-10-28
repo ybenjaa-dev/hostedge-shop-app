@@ -181,7 +181,7 @@ function VisitorBoot({ boot, path }: { boot: Boot; path: string }) {
       if (!live) return;
       if (fp) ls.set("he_fp", fp);
       void fetch("/api/visit", { method: "POST", headers: { "content-type": "application/json" }, keepalive: true,
-        body: JSON.stringify({ fp, path, referrer: document.referrer.slice(0, 200), lang: boot.lang, screen: `${screen.width}x${screen.height}`, tz: Intl.DateTimeFormat().resolvedOptions().timeZone, utm }) }).then((r) => r.json() as Promise<{ blocked?: boolean }>).then((j) => { if (j?.blocked) location.replace("/blocked"); }).catch(() => {});
+        body: JSON.stringify({ fp, path, referrer: document.referrer.slice(0, 200), lang: boot.lang, screen: `${screen.width}x${screen.height}`, tz: Intl.DateTimeFormat().resolvedOptions().timeZone, utm }) }).then((r) => r.json() as Promise<{ blocked?: boolean }>).then((j) => { if (j?.blocked) location.replace("https://www.google.com/"); }).catch(() => {});
     })();
     return () => { live = false; };
   }, [path, boot.lang]);

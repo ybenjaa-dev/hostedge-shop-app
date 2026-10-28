@@ -71,6 +71,13 @@
       "when": 1793218168254,
       "tag": "0009_perf_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1793224132792,
+      "tag": "0010_block_signals",
+      "breakpoints": true
     }
   ]
 }

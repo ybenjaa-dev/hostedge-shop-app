@@ -28,7 +28,7 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
   const data = await getOrderFull(id);
   if (!data) notFound();
   const { o, items, history, notes, blocked, prior } = data;
-  const vis = o.visitor_id ? await getEnv().DB.prepare("SELECT v.id, v.fp, v.country, v.city, v.browser, v.os, v.device, v.ip, v.visits, (SELECT 1 FROM blocked_fingerprints b WHERE b.fp = v.fp) AS blocked, (SELECT COUNT(*) FROM visitors x WHERE x.fp = v.fp AND x.id != v.id) AS others FROM visitors v WHERE v.id = ?").bind(o.visitor_id).first<{ id: string; fp: string | null; country: string | null; city: string | null; browser: string | null; os: string | null; device: string | null; ip: string | null; visits: number; blocked: number | null; others: number }>() : null;
+  const vis = o.visitor_id ? await getEnv().DB.prepare("SELECT v.id, v.fp, v.country, v.city, v.browser, v.os, v.device, v.ip, v.visits, ((SELECT 1 FROM blocked_signals s WHERE s.visitor_id = v.id LIMIT 1) OR (SELECT 1 FROM blocked_fingerprints b WHERE b.fp = v.fp)) AS blocked, (SELECT COUNT(*) FROM visitors x WHERE x.fp = v.fp AND x.id != v.id) AS others FROM visitors v WHERE v.id = ?").bind(o.visitor_id).first<{ id: string; fp: string | null; country: string | null; city: string | null; browser: string | null; os: string | null; device: string | null; ip: string | null; visits: number; blocked: number | null; others: number }>() : null;
   const s = await getSettings();
   const cur = o.currency as string;
   const fmt = (n: number) => formatMoney(n, cur, "en");

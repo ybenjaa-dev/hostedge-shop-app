@@ -28,15 +28,17 @@ export default async function VisitorPage({ params }: { params: Promise<{ id: st
   if (!v) notFound();
   const s = await getSettings();
   const fp = v.fp ? String(v.fp) : null, ip = v.ip ? String(v.ip) : null, phone = v.phone ? String(v.phone) : null;
-  const [orders, sameDevice, sameIp, block, push, customer] = await db.batch([
+  const [orders, sameDevice, sameIp, sigs, block, push, customer] = await db.batch([
     db.prepare("SELECT id, number, status, total, created_at AS at FROM orders WHERE visitor_id = ? ORDER BY created_at DESC LIMIT 20").bind(id),
     fp ? db.prepare("SELECT id, city, country, phone, orders, last_seen AS lastSeen FROM visitors WHERE fp = ? AND id != ? ORDER BY last_seen DESC LIMIT 20").bind(fp, id) : db.prepare("SELECT 1 WHERE 0"),
     ip ? db.prepare("SELECT id, fp, city, country, browser, os, orders, last_seen AS lastSeen FROM visitors WHERE ip = ? AND id != ? AND (fp IS NULL OR fp != ?) ORDER BY last_seen DESC LIMIT 20").bind(ip, id, fp ?? "") : db.prepare("SELECT 1 WHERE 0"),
+    db.prepare("SELECT kind, value, reason, created_at AS at, last_hit_at AS lastHit, hits FROM blocked_signals WHERE visitor_id = ? OR (kind = 'fp' AND value = ?) ORDER BY created_at").bind(id, fp ?? ""),
     db.prepare("SELECT reason, created_at AS at FROM blocked_fingerprints WHERE fp = ?").bind(fp ?? ""),
     db.prepare("SELECT created_at AS at, last_sent_at AS sent, active FROM push_subscriptions WHERE visitor_id = ? ORDER BY created_at DESC LIMIT 1").bind(id),
     phone ? db.prepare("SELECT id, name, orders_count AS n, total_spent AS spent FROM customers WHERE phone = ?").bind(phone) : db.prepare("SELECT 1 WHERE 0"),
   ]);
-  const blocked = block!.results[0] as { reason: string | null; at: number } | undefined;
+  const signals = sigs!.results as { kind: string; value: string; reason: string | null; at: number; lastHit: number | null; hits: number }[];
+  const blocked = (block!.results[0] as { reason: string | null; at: number } | undefined) ?? (signals[0] ? { reason: signals[0].reason, at: signals[0].at } : undefined);
   const cust = customer!.results[0] as { id: string; name: string; n: number; spent: number } | undefined;
   const ps = push!.results[0] as { at: number; sent: number | null; active: number } | undefined;
   const dev = String(v.device ?? "");
@@ -128,9 +130,19 @@ export default async function VisitorPage({ params }: { params: Promise<{ id: st
           {can(me.role, "customers.block") && (
             <Panel title="Fraud control">
               {blocked ? (
-                <div className="mb-3 rounded-xl bg-danger/10 p-3 text-sm"><p className="flex items-center gap-2 font-bold text-danger"><ShieldAlert className="size-4" aria-hidden />Blocked on {when(blocked.at)}</p>{blocked.reason && <p className="mt-1 text-muted">“{blocked.reason}”</p>}<p className="mt-1 text-xs text-muted">This device can’t open the shop or place orders.</p></div>
-              ) : <p className="mb-3 text-sm text-muted">Blocking shuts this device out of the shop and checkout, even with a new phone number or cleared cookies.</p>}
-              {fp ? <BlockDevice fp={fp} blocked={!!blocked} /> : <p className="text-sm text-muted">No device id was recorded, so this visitor can’t be blocked by device.</p>}
+                <div className="mb-3 rounded-xl bg-danger/10 p-3 text-sm"><p className="flex items-center gap-2 font-bold text-danger"><ShieldAlert className="size-4" aria-hidden />Blocked on {when(blocked.at)}</p>{blocked.reason && <p className="mt-1 text-muted">“{blocked.reason}”</p>}<p className="mt-1 text-xs text-muted">This visitor is sent to Google and can’t place orders.</p></div>
+              ) : <p className="mb-3 text-sm text-muted">Blocking sends this visitor to Google and shuts them out of checkout, even after clearing cookies or changing network.</p>}
+              {signals.length > 0 && (
+                <ul className="mb-3 divide-y divide-line rounded-xl border border-line text-xs">
+                  {signals.map((x) => (
+                    <li key={x.kind + x.value} className="flex items-center justify-between gap-2 px-3 py-2">
+                      <span><b className="uppercase">{x.kind}</b> <span className="font-mono text-muted" dir="ltr">{x.kind === "phone" ? x.value : x.value.slice(0, 10) + "…"}</span></span>
+                      <span className="text-end text-muted">{x.hits} hit{x.hits === 1 ? "" : "s"}{x.lastHit ? <> · last {when(x.lastHit)}</> : null}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <BlockDevice visitorId={id} fp={fp} blocked={!!blocked} />
             </Panel>
           )}
           <Panel title="Orders">

@@ -1,5 +1,6 @@
 import "server-only";
-import { isBlockedFingerprint, linkOrderToVisitor } from "@/features/visitors/server";
+import { headers } from "next/headers";
+import { findBlock, linkOrderToVisitor } from "@/features/visitors/server";
 import { getEnv } from "@/lib/env";
 import { ensureSchema } from "@/db/ensure-schema";
 import { browserEvent } from "@/features/tracking/capi-core";
@@ -57,7 +58,8 @@ export async function createOrder(raw: unknown, ctx: { ip: string; ua?: string |
   if (!ipRl.ok || !phoneRl.ok) return { ok: false, code: "rate_limit" };
 
   const blocked = await db.prepare("SELECT phone FROM blocked_phones WHERE phone = ?").bind(ph.e164).first();
-  if (blocked || (await isBlockedFingerprint(input.tracking?.fp))) return { ok: false, code: "blocked" };
+  const reqHeaders = await headers().catch(() => null); // null outside a request (cron, scripts)
+  if (blocked || (reqHeaders && (await findBlock(reqHeaders, { fp: input.tracking?.fp, phone: ph.e164 })))) return { ok: false, code: "blocked" };
 
   const quote = await buildQuote({ items: input.items, cityId: input.cityId, couponCode: input.couponCode });
   if (quote.errors.some((e) => e.reason === "stock")) return { ok: false, code: "stock" };

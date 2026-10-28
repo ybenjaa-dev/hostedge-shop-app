@@ -141,5 +141,13 @@ export const MIGRATIONS: { name: string; statements: string[] }[] = [
       "CREATE INDEX `rate_limits_reset_idx` ON `rate_limits` (`reset_at`);",
       "CREATE INDEX `sessions_expires_idx` ON `sessions` (`expires_at`);"
     ]
+  },
+  {
+    "name": "0010_block_signals",
+    "statements": [
+      "CREATE TABLE `blocked_signals` (\n\t`id` text PRIMARY KEY NOT NULL,\n\t`kind` text NOT NULL,\n\t`value` text NOT NULL,\n\t`visitor_id` text,\n\t`reason` text,\n\t`created_at` integer NOT NULL,\n\t`last_hit_at` integer,\n\t`hits` integer DEFAULT 0 NOT NULL\n);",
+      "CREATE UNIQUE INDEX `blocked_signals_kind_value_idx` ON `blocked_signals` (`kind`,`value`);",
+      "CREATE INDEX `blocked_signals_visitor_idx` ON `blocked_signals` (`visitor_id`);"
+    ]
   }
 ];
