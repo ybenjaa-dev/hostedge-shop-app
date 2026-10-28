@@ -15,7 +15,7 @@ async function toE164(input: string): Promise<string | null> {
 }
 
 export async function blockPhone(_p: ActionState, form: FormData): Promise<ActionState> {
-  return run("staff", async (user) => {
+  return run("customers.block", async (user) => {
     const phone = await toE164(fd(form, "phone"));
     if (!phone) return fail("Enter a valid phone number (include the country code if it is not local).");
     const reason = fd(form, "reason").slice(0, 200);
@@ -27,7 +27,7 @@ export async function blockPhone(_p: ActionState, form: FormData): Promise<Actio
 }
 
 export async function unblockPhone(_p: ActionState, form: FormData): Promise<ActionState> {
-  return run("staff", async (user) => {
+  return run("customers.block", async (user) => {
     const phone = fd(form, "phone");
     if (!/^\d{6,16}$/.test(phone)) return fail("Invalid number");
     await getDb().delete(schema.blockedPhones).where(eq(schema.blockedPhones.phone, phone));
@@ -38,7 +38,7 @@ export async function unblockPhone(_p: ActionState, form: FormData): Promise<Act
 }
 
 export async function markAbandonedDone(_p: ActionState, form: FormData): Promise<ActionState> {
-  return run("staff", async (user) => {
+  return run("abandoned.view", async (user) => {
     const id = fd(form, "id");
     if (!id) return fail("Missing record");
     await getDb().update(schema.abandonedOrders).set({ recovered: true }).where(eq(schema.abandonedOrders.id, id));

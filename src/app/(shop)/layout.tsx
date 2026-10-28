@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSettings } from "@/lib/settings";
+import { assertNotBlocked } from "@/features/visitors/guard";
 import { getT } from "@/lib/i18n";
 import { listCategories, listPages } from "@/features/catalog/queries";
 import { SiteHeader } from "@/components/site-header";
@@ -7,14 +8,16 @@ import { SiteFooter } from "@/components/site-footer";
 import { WhatsAppFab } from "@/components/whatsapp-fab";
 import { StoreProvider } from "@/features/checkout/store-context";
 import { DICT } from "@/lib/dict";
+import { clientDict } from "@/lib/client-dict";
 import { CartDrawer } from "@/features/checkout/components/cart-drawer";
 
 export default async function ShopLayout({ children }: { children: React.ReactNode }) {
   const s = await getSettings();
   if (!s.setupDone) redirect("/setup");
+  await assertNotBlocked();
   const { lang, t } = await getT();
   const [cats, pages] = await Promise.all([listCategories(), listPages()]);
-  const store = { lang, currency: s.store.currency, codMode: s.checkout.codMode, placement: s.checkout.formPlacement, codFee: s.checkout.codFee, defaultShippingFee: s.checkout.defaultShippingFee, freeThreshold: s.checkout.freeShippingThreshold, taxRateBp: s.store.taxRateBp, taxInclusive: s.store.taxInclusive, country: s.store.country, countries: s.store.countries, whatsapp: s.store.whatsapp, bundlesInForm: s.checkout.bundlesInForm, dict: DICT[lang] };
+  const store = { lang, currency: s.store.currency, codMode: s.checkout.codMode, placement: s.checkout.formPlacement, codFee: s.checkout.codFee, defaultShippingFee: s.checkout.defaultShippingFee, freeThreshold: s.checkout.freeShippingThreshold, taxRateBp: s.store.taxRateBp, taxInclusive: s.store.taxInclusive, country: s.store.country, countries: s.store.countries, whatsapp: s.store.whatsapp, bundlesInForm: s.checkout.bundlesInForm, dict: clientDict(DICT[lang]) };
   return (
     <StoreProvider value={store}>
       <div className="v5">

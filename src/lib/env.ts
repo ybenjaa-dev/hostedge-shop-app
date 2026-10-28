@@ -4,6 +4,8 @@ export type AppEnv = {
   DB: D1Database;
   FILES: R2Bucket;
   SECRETS_KEY?: string;
+  /** Cloudflare Images binding — optional; enables on-the-fly resize and AVIF/WebP for `/files/…?w=`. */
+  IMAGES?: ImagesBinding;
 };
 
 export function getEnv(): AppEnv {

@@ -91,7 +91,7 @@ export default async function Home() {
             <div className="grid gap-5 md:grid-cols-3">
               {reviews.slice(0, 3).map((r) => (
                 <figure key={r.id} className="card p-6">
-                  <div className="flex gap-0.5" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, k) => <Star key={k} className={`size-4 ${k < r.rating ? "fill-rose text-rose" : "text-line"}`} />)}</div>
+                  <div className="flex gap-0.5" role="img" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, k) => <Star key={k} className={`size-4 ${k < r.rating ? "fill-rose text-rose" : "text-line"}`} />)}</div>
                   <blockquote className="display mt-3 text-[1.3rem] leading-snug">“{r.body}”</blockquote>
                   <figcaption className="mt-4 flex items-center gap-3 text-sm"><span className="grid size-9 place-items-center rounded-full bg-brand-soft font-bold text-brand">{r.name.slice(0, 1)}</span><span><b>{r.name}</b>{r.city && <span className="block text-muted">{r.city}</span>}</span></figcaption>
                 </figure>

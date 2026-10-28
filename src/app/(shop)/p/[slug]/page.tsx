@@ -1,3 +1,4 @@
+import { RichText } from "@/components/rich-text";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -25,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = tr(p.seoTitle, lang) || tr(p.name, lang);
   const desc = tr(p.seoDesc, lang) || tr(p.shortDesc, lang);
   const img = p.images[0] ? fileUrl(p.images[0].key) : undefined;
-  return { title, description: desc, openGraph: { title, description: desc, images: img ? [img] : undefined, type: "website" }, alternates: { canonical: `/p/${p.slug}` } };
+  return { title, description: desc, openGraph: { title, description: desc, images: img ? [img] : undefined, type: "website" } };
 }
 
 export default async function ProductPage({ params, searchParams }: Props) {
@@ -95,7 +96,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
             {s.trust.map((b, i) => <li key={i} className="rounded-2xl bg-sunken px-4 py-3 text-center text-sm"><b className="block font-semibold">{tr(b.title, lang)}</b><span className="text-muted">{tr(b.text, lang)}</span></li>)}
           </ul>
           <div className="mt-6 space-y-3">
-            {tr(p.longDesc, lang) && <details className={acc} open><summary className={sum}>{t("p.ritual")}{chev}</summary><div className="prose-lite px-5 pb-5 text-muted"><p>{tr(p.longDesc, lang)}</p></div></details>}
+            {tr(p.longDesc, lang) && <details className={acc} open><summary className={sum}>{t("p.ritual")}{chev}</summary><RichText html={tr(p.longDesc, lang)} className="prose-lite px-5 pb-5 text-muted" /></details>}
             <details className={acc}><summary className={sum}>{t("p.delivery")}{chev}</summary><div className="px-5 pb-5 text-muted"><p>{t("p.deliveryText")}</p>{wa && <a href={wa} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm mt-3">{t("p.shareWa")}</a>}</div></details>
           </div>
         </div>

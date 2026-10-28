@@ -1,7 +1,7 @@
-import { getSessionUser } from "@/lib/auth";
+import { userCan } from "@/lib/auth";
 
 export async function GET(req: Request) {
-  if (!(await getSessionUser())) return new Response("Unauthorized", { status: 401 });
+  if (!(await userCan("orders.fulfil"))) return new Response("Unauthorized", { status: 401 });
   const u = new URL(req.url);
   const carrier = u.searchParams.get("carrier") ?? "";
   const ids = (u.searchParams.get("ids") ?? "").split(",").filter(Boolean).slice(0, 500);

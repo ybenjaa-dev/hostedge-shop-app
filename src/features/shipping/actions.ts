@@ -167,7 +167,7 @@ export type SendActionState = ActionState & { results?: SendResult[] };
 /** Staff may send. Returns per-order results; failures are stored on the order as shipment_error. */
 export async function sendOrdersAction(orderIds: string[], carrierId: string): Promise<SendActionState> {
   let results: SendResult[] = [];
-  const st = await run("staff", async (u) => {
+  const st = await run("orders.fulfil", async (u) => {
     if (!Array.isArray(orderIds) || !orderIds.length || orderIds.length > 100) return bad("Select 1 to 100 orders");
     results = await sendOrdersToCarrier(orderIds.filter((x) => typeof x === "string"), String(carrierId), { id: u.id, name: u.name });
     const ok = results.filter((r) => r.ok).length;
@@ -179,7 +179,7 @@ export async function sendOrdersAction(orderIds: string[], carrierId: string): P
 }
 
 export async function setTrackingAction(orderId: string, carrierId: string, trackingNumber: string): Promise<ActionState> {
-  return run("staff", async (u) => {
+  return run("orders.fulfil", async (u) => {
     const r = await setManualTracking(String(orderId), String(carrierId), String(trackingNumber), { id: u.id, name: u.name });
     if (!r.ok) return bad(r.error ?? "Failed");
     await audit(u, "order.tracking", "order", String(orderId), { carrierId });
