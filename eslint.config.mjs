@@ -5,7 +5,7 @@ import ts from "eslint-config-next/typescript";
 export default defineConfig([
   ...vitals,
   ...ts,
-  globalIgnores([".next/**", ".open-next/**", "node_modules/**", "next-env.d.ts", "src/db/migrations.generated.ts", "worker.ts"]),
+  globalIgnores([".next/**", ".open-next/**", "node_modules/**", "themes/**", "next-env.d.ts", "src/db/migrations.generated.ts", "worker.ts"]),
   {
     linterOptions: { reportUnusedDisableDirectives: "off" },
     rules: {
