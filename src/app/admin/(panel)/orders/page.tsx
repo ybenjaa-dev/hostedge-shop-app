@@ -1,3 +1,5 @@
+import { requirePerm } from "@/lib/auth";
+import { can, canSetStatus } from "@/lib/permissions";
 import { DateRangeField } from "@/features/admin/components/date-picker";
 import Link from "next/link";
 import { listOrders, statusCounts } from "@/features/orders/queries";
@@ -13,6 +15,7 @@ export const metadata = { title: "Orders" };
 type SP = Record<string, string | undefined>;
 
 export default async function OrdersPage({ searchParams }: { searchParams: Promise<SP> }) {
+  const me = await requirePerm("orders.view");
   const sp = await searchParams;
   const s = await getSettings();
   const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
@@ -45,7 +48,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
       {rows.length === 0 ? (
         <Empty title="No orders found" hint="Orders placed on the storefront show up here instantly." action={<Link href="/admin/orders" className="btn btn-outline btn-sm">Clear filters</Link>} />
       ) : (
-        <OrdersTable rows={rows} labels={labels} colors={colors} carriers={carriers.results.map((c) => ({ id: c.id, name: c.id }))} exportQs={qs} bulkCarrier={bulkSendAction} />
+        <OrdersTable rows={rows} labels={labels} colors={colors} carriers={carriers.results.map((c) => ({ id: c.id, name: c.id }))} exportQs={qs} bulkCarrier={can(me.role, "orders.fulfil") ? bulkSendAction : undefined} statuses={ORDER_STATUSES.filter((x) => canSetStatus(me.role, x))} canExport={can(me.role, "orders.export")} canPrint={can(me.role, "orders.fulfil") || can(me.role, "orders.export")} />
       )}
       <Pager page={page} pages={Math.max(1, Math.ceil(total / perPage))} base="/admin/orders" params={sp} />
     </>

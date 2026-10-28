@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Star, Check } from "lucide-react";
 import type { ProductCard as P } from "../queries";
 import { tr, type Lang } from "@/lib/i18n-core";
-import { fileUrl } from "@/lib/storage";
+import { imgProps } from "@/lib/image-sizes";
 import { Money } from "@/components/money";
 import type { TFn } from "@/lib/dict";
 
@@ -12,10 +12,10 @@ export function ProductCard({ p, lang, t, currency, codMode, priority, rank, big
   const discount = p.compareAt && p.compareAt > p.price ? Math.round(((p.compareAt - p.price) / p.compareAt) * 100) : 0;
   return (
     <article className={`tile group ${big ? "sm:col-span-2 sm:row-span-2" : ""}`}>
-      <Link href={`/p/${p.slug}`} className={`tile-media ${big ? "sm:!aspect-auto sm:flex-1" : ""}`} aria-label={name}>
+      <Link href={`/p/${p.slug}`} className={`tile-media ${big ? "sm:!aspect-auto sm:flex-1" : ""}`}>
         {p.image ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={fileUrl(p.image, "md")} alt={name} width={400} height={500} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={`size-full object-cover ${p.inStock ? "" : "opacity-40 grayscale"}`} />
+          <img {...imgProps(p.image, "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw")} alt={name} width={400} height={500} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={`size-full object-cover ${p.inStock ? "" : "opacity-40 grayscale"}`} />
         ) : <div className="grid size-full place-items-center text-3xl text-muted">▢</div>}
         {p.inStock && p.featured && <span className="sticker start-3 top-3 bg-[var(--brand)] text-black">{t("sp.new")}</span>}
         {discount > 0 && p.inStock && <span className={`sticker num start-3 bg-white text-black ${p.featured ? "top-10" : "top-3"}`}>−{discount}%</span>}
@@ -43,7 +43,7 @@ export function ProductRow({ p, lang, t, currency, codMode, categoryName }: { p:
     <article className="tile group grid grid-cols-[7.5rem_1fr] sm:grid-cols-[11rem_1fr_14rem]">
       <Link href={`/p/${p.slug}`} className="relative block aspect-square self-stretch overflow-hidden bg-sunken sm:aspect-auto" aria-label={name}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        {p.image ? <img src={fileUrl(p.image, "md")} alt={name} loading="lazy" className={`size-full object-cover ${p.inStock ? "" : "opacity-40 grayscale"}`} /> : <span className="grid size-full place-items-center text-muted">▢</span>}
+        {p.image ? <img {...imgProps(p.image, "(min-width: 640px) 25vw, 40vw")} alt={name} loading="lazy" className={`size-full object-cover ${p.inStock ? "" : "opacity-40 grayscale"}`} /> : <span className="grid size-full place-items-center text-muted">▢</span>}
         {discount > 0 && p.inStock && <span className="sticker num start-2 top-2 bg-white text-black">−{discount}%</span>}
       </Link>
       <div className="min-w-0 p-3">

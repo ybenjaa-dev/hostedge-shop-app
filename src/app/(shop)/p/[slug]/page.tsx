@@ -1,3 +1,4 @@
+import { RichText } from "@/components/rich-text";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -28,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = tr(p.seoTitle, lang) || tr(p.name, lang);
   const desc = tr(p.seoDesc, lang) || tr(p.shortDesc, lang);
   const img = p.images[0] ? fileUrl(p.images[0].key) : undefined;
-  return { title, description: desc, openGraph: { title, description: desc, images: img ? [img] : undefined, type: "website" }, alternates: { canonical: `/p/${p.slug}` } };
+  return { title, description: desc, openGraph: { title, description: desc, images: img ? [img] : undefined, type: "website" } };
 }
 
 export default async function ProductPage({ params, searchParams }: Props) {
@@ -69,8 +70,6 @@ export default async function ProductPage({ params, searchParams }: Props) {
   const cur = s.store.currency;
   const dist = [5, 4, 3, 2, 1].map((n) => ({ n, c: reviews.filter((r) => r.rating === n).length }));
   const maxC = Math.max(1, ...dist.map((d) => d.c));
-  const hash = [...p.slug].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
-  const stats = ([["sp.grip", 0], ["sp.lightness", 1], ["sp.durability", 2], ["sp.comfort", 3]] as const).map(([k, n]) => ({ k, v: 62 + ((hash >>> (n * 5)) % 37) }));
   return (
     <article className="pb-28 md:pb-6">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
@@ -107,20 +106,10 @@ export default async function ProductPage({ params, searchParams }: Props) {
       </div>
 
       <section id="details" className="slant mt-10 scroll-mt-28 bg-surface">
-        <div className={`${W} grid gap-10 lg:grid-cols-[1fr_1.2fr]`}>
+        <div className={`${W} max-w-4xl`}>
           <div>
             <p className="kicker mb-2">{t("sp.profile")}</p>
             <h2 className="display mb-6 text-[clamp(2.4rem,6vw,4rem)]">{t("sp.spec")}</h2>
-            <ul className="space-y-5">
-              {stats.map((x, i) => (
-                <li key={x.k}>
-                  <div className="mb-1.5 flex items-baseline justify-between"><span className="text-xs font-black uppercase tracking-[0.18em]">{t(x.k)}</span><span className="display num text-3xl text-[var(--brand)]">{x.v}</span></div>
-                  <div className="statbar"><i style={{ width: `${x.v}%`, animationDelay: `${i * 0.12}s` }} /></div>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
             <table className="spec-table text-sm">
               <tbody>
                 {p.sku && <tr><th>SKU</th><td className="num font-bold">{p.sku}</td></tr>}
@@ -138,7 +127,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
               </div>
             )}
             <h3 className="kicker mb-3 mt-8">{t("p.description")}</h3>
-            <div className="prose-lite max-w-2xl text-muted"><p>{tr(p.longDesc, lang) || tr(p.shortDesc, lang)}</p></div>
+            <RichText html={tr(p.longDesc, lang) || tr(p.shortDesc, lang)} className="prose-lite max-w-2xl text-muted" />
           </div>
         </div>
       </section>
@@ -153,7 +142,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
           <ul className="space-y-3">
             {reviews.map((r) => (
               <li key={r.id} className="border-s-4 border-[var(--brand)] bg-surface p-4">
-                <div className="flex items-center justify-between gap-2"><span className="text-sm font-black uppercase tracking-wider">{r.name}{r.city && <span className="font-medium normal-case tracking-normal text-muted"> — {r.city}</span>}</span><span className="flex" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`size-3.5 ${i < r.rating ? "fill-[var(--brand)] text-[var(--brand)]" : "text-rule"}`} />)}</span></div>
+                <div className="flex items-center justify-between gap-2"><span className="text-sm font-black uppercase tracking-wider">{r.name}{r.city && <span className="font-medium normal-case tracking-normal text-muted"> — {r.city}</span>}</span><span className="flex" role="img" aria-label={`/5`}>{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`size-3.5 ${i < r.rating ? "fill-[var(--brand)] text-[var(--brand)]" : "text-rule"}`} />)}</span></div>
                 <p className="mt-1.5">{r.body}</p>
               </li>
             ))}

@@ -2,14 +2,16 @@ import { requireOwner } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { PageHeader } from "@/features/admin/components/ui";
 import { Tabs } from "@/features/settings/components/tabs";
-import { StoreSection, SocialSection, CheckoutSection, AnalyticsSection, StatusesSection, TemplatesSection } from "@/features/settings/components/store-sections";
+import { StoreSection, SocialSection, CheckoutSection, AnalyticsSection, StatusesSection, TemplatesSection, EngageSection } from "@/features/settings/components/store-sections";
+import { OffersSection } from "@/features/settings/components/offers-section";
 import { CitiesSection } from "@/features/settings/components/cities-section";
+import { ensureLangs } from "@/lib/languages";
 import { one } from "@/features/settings/lib";
 
 export const metadata = { title: "Settings" };
 const TABS = [
-  { id: "store", label: "Store" }, { id: "checkout", label: "Checkout" }, { id: "cities", label: "Cities" }, { id: "social", label: "Social links" },
-  { id: "analytics", label: "Analytics" }, { id: "statuses", label: "Order statuses" }, { id: "templates", label: "Messages" },
+  { id: "store", label: "Store" }, { id: "checkout", label: "Checkout" }, { id: "offers", label: "Offers" }, { id: "cities", label: "Cities" }, { id: "social", label: "Social links" },
+  { id: "analytics", label: "Analytics & ads" }, { id: "statuses", label: "Order statuses" }, { id: "templates", label: "Messages" }, { id: "engage", label: "App, push & SEO" },
 ];
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
@@ -17,6 +19,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   const sp = await searchParams;
   const tab = TABS.some((t) => t.id === one(sp.tab)) ? one(sp.tab) : "store";
   const s = await getSettings();
+  await ensureLangs();
   return (
     <div>
       <PageHeader title="Settings" sub="Store configuration, checkout and shipping rules." />
@@ -24,10 +27,12 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       <div className="space-y-5">
         {tab === "store" && <StoreSection s={s} />}
         {tab === "checkout" && <CheckoutSection s={s} />}
+        {tab === "offers" && <OffersSection s={s} />}
         {tab === "cities" && <CitiesSection s={s} sp={{ country: one(sp.country), q: one(sp.q), page: one(sp.page) }} />}
         {tab === "social" && <SocialSection s={s} />}
         {tab === "analytics" && <AnalyticsSection s={s} />}
         {tab === "statuses" && <StatusesSection s={s} />}
+        {tab === "engage" && <EngageSection s={s} />}
         {tab === "templates" && <TemplatesSection s={s} />}
       </div>
     </div>

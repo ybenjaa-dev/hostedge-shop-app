@@ -119,7 +119,7 @@ export default async function Home() {
               {reviews.slice(0, 3).map((r, i) => (
                 <figure key={r.id} className={`relative bg-surface p-6 ${i === 1 ? "md:-translate-y-4" : ""}`}>
                   <span aria-hidden className="display absolute end-4 top-0 text-8xl text-[var(--brand)] opacity-30">”</span>
-                  <div className="flex gap-0.5" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, k) => <Star key={k} className={`size-4 ${k < r.rating ? "fill-[var(--brand)] text-[var(--brand)]" : "text-rule"}`} />)}</div>
+                  <div className="flex gap-0.5" role="img" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, k) => <Star key={k} className={`size-4 ${k < r.rating ? "fill-[var(--brand)] text-[var(--brand)]" : "text-rule"}`} />)}</div>
                   <blockquote className="mt-3 text-lg leading-snug">{r.body}</blockquote>
                   <figcaption className="mt-4 text-xs font-black uppercase tracking-widest">{r.name}{r.city && <span className="font-medium text-muted"> — {r.city}</span>}</figcaption>
                 </figure>
