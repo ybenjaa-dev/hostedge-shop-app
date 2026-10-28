@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getEnv } from "@/lib/env";
+import { clearMemo } from "@/lib/mem-cache";
 import { ensureSchema } from "@/db/ensure-schema";
 import { createSession, createUser, hasAnyUser, logActivity } from "@/lib/auth";
 import { DEFAULT_SETTINGS, saveSettings } from "@/lib/settings";
@@ -49,6 +50,7 @@ export async function runSetup(_prev: SetupState, form: FormData): Promise<Setup
       slides: [{ image: "uploads/sample-hero.svg", title: { en: "Everything your pet will love", fr: "Tout ce que votre animal va adorer", ar: "كل ما سيحبه حيوانك الأليف" }, sub: { en: "Food, toys, beds and care for dogs, cats and small pets. We carry the heavy bags — you pay when they arrive.", fr: "Croquettes, jouets, paniers et soins pour chiens, chats et petits animaux. On porte les gros sacs — vous payez à la livraison.", ar: "طعام وألعاب وأسرّة وعناية للكلاب والقطط والحيوانات الصغيرة. نحمل الأكياس الثقيلة وتدفع عند الاستلام." }, cta: { en: "Shop by pet", fr: "Acheter par animal", ar: "تسوّق حسب الحيوان" }, href: "/shop" }],
     });
   }
+  clearMemo();
   await createSession(userId);
   await logActivity({ id: userId, name: d.name }, "setup.completed", "store", undefined, { country: country.code });
   redirect("/admin");

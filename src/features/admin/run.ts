@@ -1,5 +1,6 @@
 import "server-only";
 import type { Perm } from "@/lib/permissions";
+import { clearMemo } from "@/lib/mem-cache";
 import { allLangs } from "@/lib/i18n-core";
 import { ensureLangs } from "@/lib/languages";
 import { assertUser, AuthError, logActivity, type SessionUser } from "@/lib/auth";
@@ -12,8 +13,10 @@ export async function run(role: "owner" | "staff" | Perm, fn: (user: SessionUser
     await ensureLangs();
     const user = await assertUser(role);
     const r = await fn(user);
+    clearMemo(); // an admin change may touch categories/pages: the next storefront view re-reads them
     return { ok: true, ts: Date.now(), ...(r ?? {}) };
   } catch (e) {
+    clearMemo();
     if (e instanceof AuthError) return { error: e.message, ts: Date.now() };
     if (e && typeof e === "object" && "digest" in e && String((e as { digest: string }).digest).startsWith("NEXT_REDIRECT")) throw e;
     console.error("admin action failed", e);

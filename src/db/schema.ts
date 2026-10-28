@@ -37,7 +37,7 @@ export const sessions = sqliteTable(
     expiresAt: integer("expires_at").notNull(),
     createdAt: ts("created_at"),
   },
-  (t) => [index("sessions_user_idx").on(t.userId)],
+  (t) => [index("sessions_user_idx").on(t.userId), index("sessions_expires_idx").on(t.expiresAt)],
 );
 
 export const invites = sqliteTable("invites", {
@@ -48,11 +48,15 @@ export const invites = sqliteTable("invites", {
   createdAt: ts("created_at"),
 });
 
-export const rateLimits = sqliteTable("rate_limits", {
-  key: text("key").primaryKey(),
-  count: integer("count").notNull(),
-  resetAt: integer("reset_at").notNull(),
-});
+export const rateLimits = sqliteTable(
+  "rate_limits",
+  {
+    key: text("key").primaryKey(),
+    count: integer("count").notNull(),
+    resetAt: integer("reset_at").notNull(),
+  },
+  (t) => [index("rate_limits_reset_idx").on(t.resetAt)],
+);
 
 export const categories = sqliteTable(
   "categories",
