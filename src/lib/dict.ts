@@ -1,6 +1,7 @@
 import type { Lang } from "./i18n-core";
 
 const en = {
+  "nav.collections": "Collections", "home.kicker": "Furniture & interiors", "home.story": "Calm rooms, honest materials", "home.storyD": "Solid oak, natural fibres and pieces that age well. Delivered to your room, paid on arrival.", "p.dimensions": "Dimensions & materials", "shop.refine": "Refine", "footer.showroom": "Showroom", "home.lookbook": "The lookbook",
   "nav.home": "Home", "nav.shop": "Shop", "nav.track": "Track order", "nav.search": "Search products", "nav.cart": "Cart", "nav.menu": "Menu", "nav.language": "Language",
   "home.categories": "Shop by category", "home.featured": "Featured", "home.bestsellers": "Best sellers", "home.reviews": "Loved by customers", "home.viewAll": "View all", "home.shopNow": "Shop now",
   "trust.cod": "Pay on delivery", "trust.returns": "Free returns", "trust.delivery": "Fast delivery",
@@ -38,6 +39,7 @@ export type DictKey = keyof typeof en;
 type D = Record<DictKey, string>;
 
 const fr: D = {
+  "nav.collections": "Collections", "home.kicker": "Mobilier & décoration", "home.story": "Des pièces calmes, des matières sincères", "home.storyD": "Chêne massif, fibres naturelles et pièces qui vieillissent bien. Livré dans votre pièce, payé à l'arrivée.", "p.dimensions": "Dimensions & matières", "shop.refine": "Affiner", "footer.showroom": "Showroom", "home.lookbook": "Le lookbook",
   "nav.home": "Accueil", "nav.shop": "Boutique", "nav.track": "Suivre ma commande", "nav.search": "Rechercher", "nav.cart": "Panier", "nav.menu": "Menu", "nav.language": "Langue",
   "home.categories": "Acheter par catégorie", "home.featured": "Sélection", "home.bestsellers": "Meilleures ventes", "home.reviews": "Ils nous font confiance", "home.viewAll": "Tout voir", "home.shopNow": "Acheter",
   "trust.cod": "Paiement à la livraison", "trust.returns": "Retours gratuits", "trust.delivery": "Livraison rapide",
@@ -71,6 +73,7 @@ const fr: D = {
 };
 
 const ar: D = {
+  "nav.collections": "المجموعات", "home.kicker": "أثاث وديكور", "home.story": "غرف هادئة وخامات صادقة", "home.storyD": "بلوط صلب وألياف طبيعية وقطع تزداد جمالاً مع الوقت. نوصّلها إلى غرفتك وتدفع عند الاستلام.", "p.dimensions": "الأبعاد والخامات", "shop.refine": "تصفية", "footer.showroom": "صالة العرض", "home.lookbook": "الكتالوج",
   "nav.home": "الرئيسية", "nav.shop": "المتجر", "nav.track": "تتبع الطلب", "nav.search": "ابحث عن منتج", "nav.cart": "السلة", "nav.menu": "القائمة", "nav.language": "اللغة",
   "home.categories": "تسوّق حسب الفئة", "home.featured": "منتجات مميزة", "home.bestsellers": "الأكثر مبيعاً", "home.reviews": "آراء عملائنا", "home.viewAll": "عرض الكل", "home.shopNow": "تسوّق الآن",
   "trust.cod": "الدفع عند الاستلام", "trust.returns": "إرجاع مجاني", "trust.delivery": "توصيل سريع",

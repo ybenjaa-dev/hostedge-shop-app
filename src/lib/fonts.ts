@@ -5,7 +5,7 @@ export const ARABIC_FONTS = ["Tajawal", "Cairo", "Almarai", "IBM Plex Sans Arabi
 const AXES: Record<string, string> = {
   Tajawal: "wght@400;500;700;800", Amiri: "wght@400;700", Lora: "wght@400;600;700", Marcellus: "wght@400",
   "Playfair Display": "ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600",
-  "Cormorant Garamond": "ital,wght@0,500;0,600;0,700;1,500;1,600",
+  "Cormorant Garamond": "ital,wght@0,400;0,500;0,600;1,400;1,500",
   "DM Sans": "wght@400;500;600;700", "Space Grotesk": "wght@400;500;600;700", Sora: "wght@400;600;700;800", Syne: "wght@400;500;600;700;800",
   Jost: "wght@400;500;600;700", Oswald: "wght@400;500;600;700", Fredoka: "wght@400;500;600;700", "Baloo 2": "wght@400;500;600;700;800",
   Fraunces: "wght@400;500;600;700", "Bodoni Moda": "wght@400;500;600;700", "Reem Kufi": "wght@400..700", Inter: "wght@400;500;600;700;800",

@@ -24,7 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#fbfaf7" };
+export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#f6f2ea" };
 
 const themeInit = `try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.dataset.theme='dark'}catch(e){}`;
 
@@ -39,7 +39,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link rel="stylesheet" href={googleFontsUrl(b.fontLatin, b.fontArabic)} />
+        <link rel="stylesheet" href={googleFontsUrl(b.fontLatin, b.fontArabic, ["Cormorant Garamond"])} />
         <style dangerouslySetInnerHTML={{ __html: css }} />
         <script dangerouslySetInnerHTML={{ __html: themeInit }} />
       </head>

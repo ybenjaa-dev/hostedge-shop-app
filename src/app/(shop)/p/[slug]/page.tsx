@@ -12,7 +12,7 @@ import { Banknote, Truck } from "lucide-react";
 import { getProduct, listBundles, listCities, listProducts, listReviews, listCategories } from "@/features/catalog/queries";
 import { Gallery } from "@/features/catalog/components/gallery";
 import { ProductBuy } from "@/features/checkout/components/product-buy";
-import { ProductCard } from "@/features/catalog/components/product-card";
+import { ProductCard, ProductGrid } from "@/features/catalog/components/product-card";
 import { ReviewForm } from "@/features/catalog/components/review-form";
 import { ViewContent } from "@/features/catalog/components/view-content";
 
@@ -67,25 +67,28 @@ export default async function ProductPage({ params, searchParams }: Props) {
   const cur = s.store.currency;
   const dist = [5, 4, 3, 2, 1].map((n) => ({ n, c: reviews.filter((r) => r.rating === n).length }));
   const maxC = Math.max(1, ...dist.map((d) => d.c));
-  const tab = "border-e border-line px-5 py-3 text-sm font-extrabold uppercase tracking-wide hover:bg-sunken hover:text-brand";
+  const parts = (tr(p.longDesc, lang) || tr(p.shortDesc, lang)).split(/\n{2,}/).map((x) => x.trim()).filter(Boolean);
+  const specRows = parts.length > 1 ? parts[parts.length - 1]!.split("\n").map((l) => l.match(/^([^:]{2,30}):\s*(.+)$/)) : [];
+  const hasSpecs = specRows.length > 0 && specRows.every(Boolean);
+  const desc = hasSpecs ? parts.slice(0, -1) : parts;
+  const stars = (n: number, size = "size-3.5") => Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`${size} ${i < n ? "fill-brand text-brand" : "text-rule"}`} strokeWidth={1.4} />);
   return (
-    <article className="mx-auto max-w-[84rem] px-3 py-3 pb-28 md:pb-6">
+    <article className="pb-28 lg:pb-6">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <ViewContent id={p.id} value={p.price} currency={cur} />
-      <nav aria-label="Breadcrumb" className="mb-3 text-xs text-muted">
-        <Link href="/" className="hover:text-brand hover:underline">{t("nav.home")}</Link> › <Link href="/shop" className="hover:text-brand hover:underline">{t("nav.shop")}</Link> › {cat && <><Link href={`/category/${cat.slug}`} className="hover:text-brand hover:underline">{tr(cat.name, lang)}</Link> › </>}<span className="font-bold text-ink">{name}</span>
-      </nav>
-      <div className="panel grid gap-6 p-4 md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)_17rem]">
+      <div className="grid lg:grid-cols-[minmax(0,1fr)_27rem] xl:grid-cols-[minmax(0,1fr)_31rem]">
         <Gallery images={p.images} alt={name} closeLabel={t("cod.close")} />
-        <div>
-          <h1 className="text-2xl font-extrabold leading-tight sm:text-3xl">{name}</h1>
-          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-line pb-3 text-sm">
-            {p.rating != null ? <span className="inline-flex items-center gap-1"><span className="flex">{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`size-4 ${i < Math.round(p.rating!) ? "fill-accent text-accent" : "text-rule"}`} />)}</span><a href="#reviews" className="font-bold text-brand hover:underline"><span className="num">{p.rating}</span> · {t("p.reviews", { n: p.reviewCount })}</a></span> : <span className="text-muted">{t("p.noReviews")}</span>}
-            {p.sku && <span className="text-muted">SKU: <span className="num font-semibold text-ink">{p.sku}</span></span>}
-            <span className={`font-extrabold ${inStock ? "text-ok" : "text-danger"}`}>{inStock ? t("p.inStock") : t("p.soldOut")}</span>
+        <div className="px-5 py-8 sm:px-10 lg:sticky lg:top-0 lg:h-dvh lg:self-start lg:overflow-y-auto lg:py-12">
+          <nav aria-label="Breadcrumb" className="micro">
+            <Link href="/" className="hover:text-ink">{t("nav.home")}</Link> / <Link href="/shop" className="hover:text-ink">{t("nav.shop")}</Link>{cat && <> / <Link href={`/category/${cat.slug}`} className="hover:text-ink">{tr(cat.name, lang)}</Link></>}
+          </nav>
+          <h1 className="display mt-6 text-5xl sm:text-6xl">{name}</h1>
+          <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+            {p.rating != null ? <a href="#reviews" className="inline-flex items-center gap-2 text-muted hover:text-ink"><span className="flex">{stars(Math.round(p.rating))}</span><span className="num">{p.rating} · {t("p.reviews", { n: p.reviewCount })}</span></a> : <span className="text-muted">{t("p.noReviews")}</span>}
+            <span className={`micro ${inStock ? "!text-ok" : "!text-danger"}`}>{inStock ? t("p.inStock") : t("p.soldOut")}</span>
           </p>
-          <p className="mt-3 leading-relaxed text-muted">{tr(p.shortDesc, lang)}</p>
-          <div className="mt-4">
+          <p className="mt-5 leading-relaxed text-muted">{tr(p.shortDesc, lang)}</p>
+          <div className="mt-8">
             <ProductBuy
               autoOpen={sp.order === "1"}
               product={{ id: p.id, slug: p.slug, name: p.name, price: p.price, compareAt: p.compareAt, stock: p.stock, trackStock: p.trackStock, variants: p.variants, image: p.images[0]?.key ?? null }}
@@ -93,72 +96,67 @@ export default async function ProductPage({ params, searchParams }: Props) {
               cities={cities}
             />
           </div>
+
+          <div className="mt-10">
+            <details className="nh-acc" open>
+              <summary>{t("p.description")}</summary>
+              <div className="prose-lite text-sm text-muted">{desc.map((d, i) => <p key={i}>{d}</p>)}</div>
+            </details>
+            <details className="nh-acc">
+              <summary>{t("p.dimensions")}</summary>
+              <div>
+                <table className="spec"><tbody>
+                  {hasSpecs ? specRows.map((m, i) => <tr key={i}><th>{m![1]}</th><td>{m![2]}</td></tr>) : <>
+                    {p.sku && <tr><th>SKU</th><td className="num">{p.sku}</td></tr>}
+                    {cat && <tr><th>{t("shop.category")}</th><td>{tr(cat.name, lang)}</td></tr>}
+                  </>}
+                  {hasSpecs && p.sku && <tr><th>SKU</th><td className="num">{p.sku}</td></tr>}
+                </tbody></table>
+                {p.variants.length > 0 && (
+                  <div className="mt-4 overflow-x-auto">
+                    <table className="spec">
+                      <tbody>{p.variants.map((v) => <tr key={v.id}><th className="!text-ink">{v.name}</th><td className="num"><bdi dir="ltr">{formatMoney(v.price, cur, lang)}</bdi></td><td className={v.stock > 0 || !p.trackStock ? "text-ok" : "text-danger"}>{v.stock > 0 || !p.trackStock ? t("p.inStock") : t("p.soldOut")}</td></tr>)}</tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </details>
+            <details className="nh-acc">
+              <summary>{t("p.delivery")}</summary>
+              <ul className="space-y-4 text-sm">
+                <li className="flex gap-3"><Banknote className="size-5 shrink-0 text-brand" strokeWidth={1.3} /><span><b className="block font-medium">{t("cod.payOnDelivery")}</b><span className="text-muted">{t("p.deliveryText")}</span></span></li>
+                {s.trust.slice(1).map((b, i) => <li key={i} className="flex gap-3"><Truck className="size-5 shrink-0 text-brand" strokeWidth={1.3} /><span><b className="block font-medium">{tr(b.title, lang)}</b><span className="text-muted">{tr(b.text, lang)}</span></span></li>)}
+                {wa && <li><a href={wa} target="_blank" rel="noopener noreferrer" className="micro ulink text-ink">{t("p.shareWa")}</a></li>}
+              </ul>
+            </details>
+          </div>
         </div>
-        <aside className="h-fit border border-line bg-sunken text-sm md:col-span-2 xl:col-span-1 xl:sticky xl:top-36" aria-label={t("p.delivery")}>
-          <h2 className="bar bar-brand !text-xs">{t("p.delivery")}</h2>
-          <ul className="divide-y divide-line">
-            <li className="flex gap-3 p-3"><Banknote className="size-5 shrink-0 text-brand" /><span><b className="block">{t("cod.payOnDelivery")}</b><span className="text-muted">{t("p.deliveryText")}</span></span></li>
-            {s.trust.slice(1).map((b, i) => <li key={i} className="flex gap-3 p-3"><Truck className="size-5 shrink-0 text-brand" /><span><b className="block">{tr(b.title, lang)}</b><span className="text-muted">{tr(b.text, lang)}</span></span></li>)}
-            {wa && <li className="p-3"><a href={wa} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm w-full">{t("p.shareWa")}</a></li>}
-          </ul>
-        </aside>
       </div>
 
-      <nav aria-label="Sections" className="panel sticky top-[6.2rem] z-20 mt-3 flex overflow-x-auto md:top-[7.4rem]">
-        <a href="#description" className={tab}>{t("p.description")}</a>
-        <a href="#details" className={tab}>{t("p.details")}</a>
-        <a href="#reviews" className={tab}>{t("p.reviews", { n: p.reviewCount })}</a>
-      </nav>
-
-      <section id="description" className="panel mt-3 scroll-mt-48 p-4">
-        <h2 className="mb-2 text-lg font-extrabold">{t("p.description")}</h2>
-        <div className="prose-lite max-w-3xl"><p>{tr(p.longDesc, lang) || tr(p.shortDesc, lang)}</p></div>
-      </section>
-
-      <section id="details" className="panel mt-3 scroll-mt-48 p-4">
-        <h2 className="mb-3 text-lg font-extrabold">{t("p.details")}</h2>
-        <table className="spec">
-          <tbody>
-            {p.sku && <tr><th>SKU</th><td className="num">{p.sku}</td></tr>}
-            {cat && <tr><th>{t("shop.category")}</th><td><Link href={`/category/${cat.slug}`} className="text-brand hover:underline">{tr(cat.name, lang)}</Link></td></tr>}
-            <tr><th>{t("track.status")}</th><td>{inStock ? t("p.inStock") : t("p.soldOut")}</td></tr>
-            <tr><th>{t("cod.payOnDelivery")}</th><td>{t("p.deliveryText")}</td></tr>
-          </tbody>
-        </table>
-        {p.variants.length > 0 && (
-          <div className="mt-3 overflow-x-auto">
-            <table className="spec">
-              <thead><tr><th>{t("p.chooseOptions")}</th><th>SKU</th><th>{t("shop.price")}</th><th>{t("track.status")}</th></tr></thead>
-              <tbody>{p.variants.map((v) => <tr key={v.id}><td className="font-semibold">{v.name}</td><td className="num">{v.sku ?? "—"}</td><td className="num"><bdi dir="ltr">{formatMoney(v.price, cur, lang)}</bdi></td><td className={v.stock > 0 || !p.trackStock ? "font-bold text-ok" : "font-bold text-danger"}>{v.stock > 0 || !p.trackStock ? t("p.inStock") : t("p.soldOut")}</td></tr>)}</tbody>
-            </table>
-          </div>
-        )}
-      </section>
-
-      <section id="reviews" className="panel mt-3 scroll-mt-48 p-4" aria-labelledby="reviews-h">
-        <h2 id="reviews-h" className="mb-3 text-lg font-extrabold">{t("p.reviews", { n: p.reviewCount })}</h2>
-        <div className="grid gap-6 md:grid-cols-[16rem_1fr_20rem]">
+      <section id="reviews" className="mx-5 mt-24 scroll-mt-8 border-t border-line pt-12 sm:mx-10" aria-labelledby="reviews-h">
+        <h2 id="reviews-h" className="display mb-10 text-4xl sm:text-5xl">{t("p.reviews", { n: p.reviewCount })}</h2>
+        <div className="grid gap-12 lg:grid-cols-[16rem_1fr_22rem]">
           <div>
-            {p.rating != null ? <><p className="num text-5xl font-extrabold">{p.rating}<span className="text-xl text-muted">/5</span></p>
-              <ul className="mt-2 space-y-1 text-xs">{dist.map((d) => <li key={d.n} className="flex items-center gap-2"><span className="num w-3">{d.n}</span><Star className="size-3 fill-accent text-accent" /><span className="h-2.5 flex-1 bg-sunken"><span className="block h-full bg-accent" style={{ width: `${(d.c / maxC) * 100}%` }} /></span><span className="num w-4 text-end text-muted">{d.c}</span></li>)}</ul></> : <p className="text-muted">{t("p.noReviews")}</p>}
+            {p.rating != null ? <><p className="display num text-7xl">{p.rating}<span className="text-2xl text-muted">/5</span></p>
+              <ul className="mt-4 space-y-1.5 text-xs">{dist.map((d) => <li key={d.n} className="flex items-center gap-2"><span className="num w-3">{d.n}</span><span className="h-px flex-1 bg-line"><span className="block h-px bg-brand" style={{ width: `${(d.c / maxC) * 100}%` }} /></span><span className="num w-4 text-end text-muted">{d.c}</span></li>)}</ul></> : <p className="text-muted">{t("p.noReviews")}</p>}
           </div>
-          <ul className="divide-y divide-line border border-line">
+          <ul className="divide-y divide-line">
             {reviews.map((r) => (
-              <li key={r.id} className="p-3">
-                <div className="flex items-center justify-between gap-2"><span className="font-bold">{r.name}{r.city && <span className="font-normal text-muted"> — {r.city}</span>}</span><span className="flex" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`size-3.5 ${i < r.rating ? "fill-accent text-accent" : "text-rule"}`} />)}</span></div>
-                <p className="mt-1">{r.body}</p>
+              <li key={r.id} className="py-5 first:pt-0">
+                <div className="flex items-center justify-between gap-2"><span className="micro text-ink">{r.name}{r.city && <span> — {r.city}</span>}</span><span className="flex" aria-label={`${r.rating}/5`}>{stars(r.rating, "size-3")}</span></div>
+                <p className="mt-2 leading-relaxed">{r.body}</p>
               </li>
             ))}
-            {reviews.length === 0 && <li className="p-4 text-muted">{t("p.noReviews")}</li>}
+            {reviews.length === 0 && <li className="text-muted">{t("p.noReviews")}</li>}
           </ul>
-          <div className="h-fit border border-line bg-sunken p-4"><h3 className="mb-2 font-extrabold">{t("p.writeReview")}</h3><ReviewForm productId={p.id} /></div>
+          <div className="h-fit bg-sunken p-6"><h3 className="display mb-3 text-2xl">{t("p.writeReview")}</h3><ReviewForm productId={p.id} /></div>
         </div>
       </section>
 
       {related.items.length > 0 && (
-        <section className="panel mt-3">
-          <div className="bar"><h2>{t("p.related")}</h2></div>
-          <div className="rail">{related.items.map((r) => <ProductCard key={r.id} p={r} lang={lang} t={t} currency={cur} codMode={s.checkout.codMode} />)}</div>
+        <section className="mx-5 mt-24 sm:mx-10">
+          <h2 className="display mb-10 border-b border-line pb-5 text-4xl sm:text-5xl">{t("p.related")}</h2>
+          <ProductGrid>{related.items.map((r, i) => <ProductCard key={r.id} p={r} i={i + 1} lang={lang} t={t} currency={cur} codMode={s.checkout.codMode} />)}</ProductGrid>
         </section>
       )}
     </article>
