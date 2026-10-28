@@ -1,9 +1,11 @@
+import { requirePerm } from "@/lib/auth";
 import { PageHeader, Panel } from "@/features/admin/components/ui";
 import { ImportForm } from "@/features/catalog-admin/import-form";
 
 export const metadata = { title: "Import products" };
 
-export default function ImportPage() {
+export default async function ImportPage() {
+  await requirePerm("products.edit");
   return (
     <>
       <PageHeader title="Import products" sub="Upsert by slug from a CSV file" />

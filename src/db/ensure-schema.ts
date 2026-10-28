@@ -20,10 +20,12 @@ function idempotent(sql: string) {
 
 async function run() {
   const { DB } = getEnv();
-  await DB.exec("CREATE TABLE IF NOT EXISTS _migrations (name TEXT PRIMARY KEY, applied_at INTEGER NOT NULL)");
-  const done = new Set(
-    ((await DB.prepare("SELECT name FROM _migrations").all<{ name: string }>()).results ?? []).map((r) => r.name),
-  );
+  // one round trip: make sure the table exists and read it (this runs on every cold start, so it must be cheap)
+  const [, rows] = await DB.batch([
+    DB.prepare("CREATE TABLE IF NOT EXISTS _migrations (name TEXT PRIMARY KEY, applied_at INTEGER NOT NULL)"),
+    DB.prepare("SELECT name FROM _migrations"),
+  ]);
+  const done = new Set(((rows?.results ?? []) as { name: string }[]).map((r) => r.name));
   for (const m of MIGRATIONS) {
     if (done.has(m.name)) continue;
     try {

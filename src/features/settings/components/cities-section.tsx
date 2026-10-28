@@ -72,7 +72,7 @@ export async function CitiesSection({ s, sp }: { s: Settings; sp: { country?: st
       </Panel>
 
       <Panel title={`Cities (${total?.n ?? 0})`} actions={null}>
-        <details className="mb-4 rounded-xl border border-line">
+        <details data-keep-open className="mb-4 rounded-xl border border-line">
           <summary className="flex min-h-11 cursor-pointer items-center gap-2 px-4 text-sm font-bold"><Plus className="size-4" />Add a city</summary>
           <div className="border-t border-line p-4"><CityForm country={country} cur={cur} regions={regions} /></div>
         </details>
@@ -80,7 +80,7 @@ export async function CitiesSection({ s, sp }: { s: Settings; sp: { country?: st
           <ul className="divide-y divide-line">
             {rows.map((c) => (
               <li key={c.id}>
-                <details className="group">
+                <details data-keep-open className="group">
                   <summary className="flex min-h-12 cursor-pointer list-none items-center gap-3 py-2 [&::-webkit-details-marker]:hidden">
                     <span className="min-w-0 flex-1"><span className="block truncate font-semibold">{c.name}{c.nameAr && <span className="ms-2 text-sm font-normal text-muted" dir="rtl">{c.nameAr}</span>}</span>
                       <span className="text-xs text-muted">{c.region ?? "—"}</span></span>
