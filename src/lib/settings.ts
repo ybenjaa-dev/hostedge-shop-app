@@ -1,4 +1,6 @@
 import { cache } from "react";
+import { headers } from "next/headers";
+import { getEnv } from "@/lib/env";
 import { BRAND } from "@/lib/brand";
 import { getDb, schema } from "@/db";
 import { ensureSchema } from "@/db/ensure-schema";
@@ -185,15 +187,36 @@ function merge<T>(base: T, over: unknown): T {
   return out as T;
 }
 
-/** One query for all settings, merged over defaults. Cached per request. */
-export const getSettings = cache(async (): Promise<Settings> => {
+const TTL_MS = 20_000;
+let rowsCache: { at: number; rows: Map<string, string> } | null = null;
+
+/** Admin requests always read fresh (they edit these values); everything else may use the short-lived isolate copy. */
+async function isAdminRequest(): Promise<boolean> {
+  try { return ((await headers()).get("x-seo-path") ?? "").startsWith("/admin"); } catch { return false; }
+}
+
+/**
+ * Every settings row in one query, kept in memory for a few seconds per Worker isolate (same for all visitors).
+ * Writers below update it in place, so changes show instantly in the isolate that saved them and within TTL elsewhere.
+ */
+export async function loadSettingRows(): Promise<Map<string, string>> {
+  if (rowsCache && Date.now() - rowsCache.at < TTL_MS && !(await isAdminRequest())) return rowsCache.rows;
   await ensureSchema();
-  const rows = await getDb().select().from(schema.settings);
+  const res = await getEnv().DB.prepare("SELECT key, value FROM settings").all<{ key: string; value: string }>();
+  const rows = new Map((res.results ?? []).map((r) => [r.key, r.value]));
+  if (rows.get("setupDone") === "true") rowsCache = { at: Date.now(), rows }; // never cache a half-installed site
+  return rows;
+}
+const remember = (key: string, value: string) => { if (rowsCache) { rowsCache.rows.set(key, value); rowsCache.at = Date.now(); } };
+
+/** All settings, merged over defaults. Cached per request and briefly per isolate. */
+export const getSettings = cache(async (): Promise<Settings> => {
+  const rows = await loadSettingRows();
   let s = DEFAULT_SETTINGS;
-  for (const r of rows) {
-    if (!(r.key in DEFAULT_SETTINGS)) continue;
+  for (const [key, value] of rows) {
+    if (!(key in DEFAULT_SETTINGS)) continue;
     try {
-      s = { ...s, [r.key]: merge((s as Record<string, unknown>)[r.key], JSON.parse(r.value)) };
+      s = { ...s, [key]: merge((s as Record<string, unknown>)[key], JSON.parse(value)) };
     } catch {}
   }
   return s;
@@ -201,10 +224,12 @@ export const getSettings = cache(async (): Promise<Settings> => {
 
 export async function saveSettings<K extends keyof Settings>(key: K, value: Settings[K]) {
   await ensureSchema();
+  const json = JSON.stringify(value);
   await getDb()
     .insert(schema.settings)
-    .values({ key, value: JSON.stringify(value) })
-    .onConflictDoUpdate({ target: schema.settings.key, set: { value: JSON.stringify(value) } });
+    .values({ key, value: json })
+    .onConflictDoUpdate({ target: schema.settings.key, set: { value: json } });
+  remember(key, json);
 }
 
 export async function getRaw(key: string): Promise<string | null> {
@@ -214,4 +239,5 @@ export async function getRaw(key: string): Promise<string | null> {
 }
 export async function setRaw(key: string, value: string) {
   await getDb().insert(schema.settings).values({ key, value }).onConflictDoUpdate({ target: schema.settings.key, set: { value } });
+  remember(key, value);
 }

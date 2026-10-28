@@ -134,5 +134,12 @@ export const MIGRATIONS: { name: string; statements: string[] }[] = [
       "ALTER TABLE `users` ADD `bio` text;",
       "ALTER TABLE `users` ADD `avatar` text;"
     ]
+  },
+  {
+    "name": "0009_perf_indexes",
+    "statements": [
+      "CREATE INDEX `rate_limits_reset_idx` ON `rate_limits` (`reset_at`);",
+      "CREATE INDEX `sessions_expires_idx` ON `sessions` (`expires_at`);"
+    ]
   }
 ];

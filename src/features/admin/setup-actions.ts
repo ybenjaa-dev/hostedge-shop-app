@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getEnv } from "@/lib/env";
+import { clearMemo } from "@/lib/mem-cache";
 import { ensureSchema } from "@/db/ensure-schema";
 import { createSession, createUser, hasAnyUser, logActivity } from "@/lib/auth";
 import { DEFAULT_SETTINGS, saveSettings } from "@/lib/settings";
@@ -49,6 +50,7 @@ export async function runSetup(_prev: SetupState, form: FormData): Promise<Setup
       slides: [{ image: "uploads/sample-hero.svg", title: { en: "Every book is a small journey", fr: "Chaque livre est un petit voyage", ar: "كل كتاب رحلة صغيرة" }, sub: { en: "Hand-picked stories, delivered to your door. Pay when they arrive.", fr: "Des histoires choisies à la main, livrées chez vous. Payez à la réception.", ar: "حكايات مختارة بعناية تصلك إلى بابك. تدفع عند الاستلام." }, cta: { en: "Browse the shelves", fr: "Parcourir les rayons", ar: "تصفّح الرفوف" }, href: "/shop" }],
     });
   }
+  clearMemo();
   await createSession(userId);
   await logActivity({ id: userId, name: d.name }, "setup.completed", "store", undefined, { country: country.code });
   redirect("/admin");

@@ -5,6 +5,7 @@ import { resolveOfferTemplate } from "@/lib/offer-templates";
 import { getSettings } from "@/lib/settings";
 import { getEnv } from "@/lib/env";
 import { ensureSchema } from "@/db/ensure-schema";
+import { memo } from "@/lib/mem-cache";
 
 export type ProductCard = {
   id: string;
@@ -118,7 +119,8 @@ export async function listProducts(p: ListParams = {}): Promise<{ items: Product
 
 export type Category = { id: string; slug: string; name: string; image: string | null; count: number };
 
-export async function listCategories(): Promise<Category[]> {
+export const listCategories = (): Promise<Category[]> => memo("categories", 15_000, loadCategories);
+async function loadCategories(): Promise<Category[]> {
   await ensureSchema();
   const r = await getEnv()
     .DB.prepare(
@@ -234,7 +236,8 @@ export async function getPage(slug: string) {
   await ensureSchema();
   return getEnv().DB.prepare("SELECT slug, title, body FROM pages WHERE slug = ? AND published = 1").bind(slug).first<{ slug: string; title: string; body: string }>();
 }
-export async function listPages() {
+export const listPages = () => memo("pages", 15_000, loadPages);
+async function loadPages() {
   await ensureSchema();
   return (await getEnv().DB.prepare("SELECT slug, title FROM pages WHERE published = 1 ORDER BY position").all<{ slug: string; title: string }>()).results;
 }
