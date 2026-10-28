@@ -32,7 +32,7 @@ type PRow = { id: string; name: string; price: number; stock: number; track_stoc
 type VRow = { id: string; product_id: string; name: string; price: number | null; stock: number; sku: string | null };
 
 /** Server-side authoritative pricing: never trusts prices from the client. */
-export async function buildQuote(input: QuoteInput, opts: { applyCodFee?: boolean } = {}): Promise<Quote> {
+export async function buildQuote(input: QuoteInput, opts: { applyCodFee?: boolean; shippingFee?: number } = {}): Promise<Quote> {
   const s = await getSettings();
   const db = getEnv().DB;
   const ids = [...new Set(input.items.map((i) => i.productId))];
@@ -113,8 +113,8 @@ export async function buildQuote(input: QuoteInput, opts: { applyCodFee?: boolea
     lines: lines.map((l) => ({ productId: l.productId, unitPrice: l.unitPrice, qty: l.qty })),
     bundles,
     coupon,
-    shippingFee: cityFee ?? s.checkout.defaultShippingFee,
-    freeShippingThreshold: threshold,
+    shippingFee: opts.shippingFee ?? cityFee ?? s.checkout.defaultShippingFee,
+    freeShippingThreshold: opts.shippingFee != null ? 0 : threshold,
     codFee: opts.applyCodFee === false ? 0 : s.checkout.codFee,
     taxRateBp: s.store.taxRateBp,
     taxInclusive: s.store.taxInclusive,

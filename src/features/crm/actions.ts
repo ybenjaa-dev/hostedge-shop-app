@@ -36,14 +36,3 @@ export async function unblockPhone(_p: ActionState, form: FormData): Promise<Act
     return { message: "Number unblocked" };
   });
 }
-
-export async function markAbandonedDone(_p: ActionState, form: FormData): Promise<ActionState> {
-  return run("abandoned.view", async (user) => {
-    const id = fd(form, "id");
-    if (!id) return fail("Missing record");
-    await getDb().update(schema.abandonedOrders).set({ recovered: true }).where(eq(schema.abandonedOrders.id, id));
-    await audit(user, "abandoned.done", "abandoned", id);
-    refresh();
-    return { message: "Marked as done" };
-  });
-}

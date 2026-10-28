@@ -28,7 +28,7 @@ async function nextOrderNumber(): Promise<string> {
 }
 
 /** Public tracking token = HMAC-less short code stored with the order id; lets confirmation page load the order. */
-export async function createOrder(raw: unknown, ctx: { ip: string; ua?: string | null; vid?: string | null }): Promise<CreateOrderResult> {
+export async function createOrder(raw: unknown, ctx: { ip: string; ua?: string | null; vid?: string | null; admin?: { id: string; name: string }; shippingFee?: number }): Promise<CreateOrderResult> {
   await ensureSchema();
   const parsed = orderInputSchema.safeParse(raw);
   if (!parsed.success) {
@@ -40,7 +40,7 @@ export async function createOrder(raw: unknown, ctx: { ip: string; ua?: string |
   const s = await getSettings();
 
   // Honeypot: pretend success so bots learn nothing.
-  if (input.hp) return { ok: true, number: "0000", token: "x", total: 0, currency: s.store.currency, items: [], status: "new" };
+  if (input.hp && !ctx.admin) return { ok: true, number: "0000", token: "x", total: 0, currency: s.store.currency, items: [], status: "new" };
 
   const ph = normalizePhone(input.phone, input.phoneCountry);
   if (!ph.ok) return { ok: false, code: "phone", fields: { phone: "invalid" } };
@@ -51,17 +51,20 @@ export async function createOrder(raw: unknown, ctx: { ip: string; ua?: string |
   const existingByKey = await db.prepare("SELECT id, number, total, currency, status FROM orders WHERE idem_key = ?").bind(input.idemKey).first<{ id: string; number: string; total: number; currency: string; status: string }>();
   if (existingByKey) return await existingResult(existingByKey, true);
 
-  const [ipRl, phoneRl] = await Promise.all([
-    rateLimit(`order:ip:${ctx.ip}`, s.checkout.ratePerHourPerIp, 3600),
-    rateLimit(`order:ph:${ph.e164}`, s.checkout.ratePerDayPerPhone, 86400),
-  ]);
-  if (!ipRl.ok || !phoneRl.ok) return { ok: false, code: "rate_limit" };
+  // Staff-entered orders (admin context) skip the customer-facing throttles and the duplicate window.
+  if (!ctx.admin) {
+    const [ipRl, phoneRl] = await Promise.all([
+      rateLimit(`order:ip:${ctx.ip}`, s.checkout.ratePerHourPerIp, 3600),
+      rateLimit(`order:ph:${ph.e164}`, s.checkout.ratePerDayPerPhone, 86400),
+    ]);
+    if (!ipRl.ok || !phoneRl.ok) return { ok: false, code: "rate_limit" };
+  }
 
   const blocked = await db.prepare("SELECT phone FROM blocked_phones WHERE phone = ?").bind(ph.e164).first();
   const reqHeaders = await headers().catch(() => null); // null outside a request (cron, scripts)
   if (blocked || (reqHeaders && (await findBlock(reqHeaders, { fp: input.tracking?.fp, phone: ph.e164 })))) return { ok: false, code: "blocked" };
 
-  const quote = await buildQuote({ items: input.items, cityId: input.cityId, couponCode: input.couponCode });
+  const quote = await buildQuote({ items: input.items, cityId: input.cityId, couponCode: input.couponCode }, ctx.shippingFee != null ? { shippingFee: ctx.shippingFee } : {});
   if (quote.errors.some((e) => e.reason === "stock")) return { ok: false, code: "stock" };
   if (quote.errors.length || !quote.lines.length) return { ok: false, code: "unavailable" };
   if (input.cityId && !quote.city) return { ok: false, code: "city" };
@@ -70,7 +73,7 @@ export async function createOrder(raw: unknown, ctx: { ip: string; ua?: string |
   if (!cityName) return { ok: false, code: "validation", fields: { city: "required" } };
 
   // Duplicate detection: same phone + any same product inside the window.
-  const windowMs = s.checkout.duplicateWindowMin * 60_000;
+  const windowMs = ctx.admin ? 0 : s.checkout.duplicateWindowMin * 60_000;
   if (windowMs > 0) {
     const ids = quote.lines.map((l) => l.productId);
     const dup = await db
@@ -107,11 +110,12 @@ export async function createOrder(raw: unknown, ctx: { ip: string; ua?: string |
         // price stored net of bundle discount per unit isn't integer-safe; keep unit price, discount lives on the order.
         .bind(newId(), id, l.productId, l.variantId, l.name, l.variantName, l.sku, l.unitPrice, l.qty, l.image),
     ),
-    db.prepare("INSERT INTO order_history (id, order_id, from_status, to_status, user_name, note, created_at) VALUES (?,?,?,?,?,?,?)").bind(newId(), id, null, status, "customer", null, now),
+    db.prepare("INSERT INTO order_history (id, order_id, from_status, to_status, user_name, note, created_at) VALUES (?,?,?,?,?,?,?)").bind(newId(), id, null, status, ctx.admin?.name ?? "customer", null, now),
     existingCustomer
       ? db.prepare("UPDATE customers SET name = ?, orders_count = orders_count + 1, last_order_at = ? WHERE id = ?").bind(input.name, now, customerId)
       : db.prepare("INSERT INTO customers (id, phone, name, orders_count, last_order_at, created_at) VALUES (?,?,?,1,?,?)").bind(customerId, ph.e164, input.name, now, now),
-    db.prepare("UPDATE abandoned_orders SET recovered = 1, updated_at = ? WHERE phone = ? AND recovered = 0").bind(now, ph.e164),
+    // A real order from this phone converts its abandoned checkouts (rows are kept and linked, never hidden).
+    db.prepare("UPDATE abandoned_orders SET status = 'converted', recovered = 1, converted_order_id = ? WHERE phone = ? AND status != 'converted'").bind(id, ph.e164),
   ];
   if (quote.coupon) stmts.push(db.prepare("UPDATE coupons SET used = used + 1 WHERE code = ?").bind(quote.coupon.code));
   stmts.push(db.prepare("UPDATE orders SET tracking = ? WHERE id = ?").bind(JSON.stringify({ ...(input.tracking ?? {}), ua: (ctx.ua ?? "").slice(0, 300) }), id));

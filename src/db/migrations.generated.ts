@@ -149,5 +149,31 @@ export const MIGRATIONS: { name: string; statements: string[] }[] = [
       "CREATE UNIQUE INDEX `blocked_signals_kind_value_idx` ON `blocked_signals` (`kind`,`value`);",
       "CREATE INDEX `blocked_signals_visitor_idx` ON `blocked_signals` (`visitor_id`);"
     ]
+  },
+  {
+    "name": "0011_abandoned_crm",
+    "statements": [
+      "ALTER TABLE `abandoned_orders` ADD `status` text DEFAULT 'new' NOT NULL;",
+      "ALTER TABLE `abandoned_orders` ADD `note` text;",
+      "ALTER TABLE `abandoned_orders` ADD `contacted_at` integer;",
+      "ALTER TABLE `abandoned_orders` ADD `contacted_count` integer DEFAULT 0 NOT NULL;",
+      "ALTER TABLE `abandoned_orders` ADD `converted_order_id` text;",
+      "ALTER TABLE `abandoned_orders` ADD `address` text;",
+      "ALTER TABLE `abandoned_orders` ADD `lines` text;",
+      "ALTER TABLE `abandoned_orders` ADD `subtotal` integer;",
+      "ALTER TABLE `abandoned_orders` ADD `total` integer;",
+      "ALTER TABLE `abandoned_orders` ADD `currency` text;",
+      "ALTER TABLE `abandoned_orders` ADD `coupon` text;",
+      "ALTER TABLE `abandoned_orders` ADD `lang` text;",
+      "ALTER TABLE `abandoned_orders` ADD `source` text;",
+      "ALTER TABLE `abandoned_orders` ADD `device` text;",
+      "ALTER TABLE `abandoned_orders` ADD `extra` text;",
+      "ALTER TABLE `abandoned_orders` ADD `saves` integer DEFAULT 1 NOT NULL;",
+      "ALTER TABLE `abandoned_orders` ADD `last_seen_at` integer;",
+      "CREATE INDEX `abandoned_status_idx` ON `abandoned_orders` (`status`,`updated_at`);",
+      "CREATE INDEX `abandoned_phone_idx` ON `abandoned_orders` (`phone`);",
+      "UPDATE `abandoned_orders` SET `status` = 'converted' WHERE `recovered` = 1 AND `status` = 'new';",
+      "UPDATE `abandoned_orders` SET `last_seen_at` = `updated_at` WHERE `last_seen_at` IS NULL;"
+    ]
   }
 ];

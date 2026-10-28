@@ -78,6 +78,13 @@
       "when": 1793224132792,
       "tag": "0010_block_signals",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1793224132793,
+      "tag": "0011_abandoned_crm",
+      "breakpoints": true
     }
   ]
 }
