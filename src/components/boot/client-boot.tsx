@@ -163,20 +163,16 @@ function PwaBoot({ boot, path }: { boot: Boot; path: string }) {
   );
 }
 
-/* ───────── consent, visitor beacon, push opt-in ───────── */
+/* ───────── visitor beacon, push opt-in ───────── */
 const b64uToBytes = (s: string) => { const p = "=".repeat((4 - (s.length % 4)) % 4); const r = atob((s + p).replace(/-/g, "+").replace(/_/g, "/")); return Uint8Array.from(r, (c) => c.charCodeAt(0)); };
 
 function VisitorBoot({ boot, path }: { boot: Boot; path: string }) {
   const L = boot.labels;
-  const [consent, setConsent] = useState<string | null>(null);
-  const [ready, setReady] = useState(false);
   const [askPush, setAskPush] = useState(false);
   const [msg, setMsg] = useState("");
-  useEffect(() => { setConsent(ls.get("he_consent")); setReady(true); }, []);
 
-  // one beacon per page view once consent is given
+  // one anonymous beacon per page view
   useEffect(() => {
-    if (consent !== "1") return;
     let live = true;
     void (async () => {
       const q = new URLSearchParams(location.search); const utm: Record<string, string> = {};
@@ -188,16 +184,18 @@ function VisitorBoot({ boot, path }: { boot: Boot; path: string }) {
         body: JSON.stringify({ fp, path, referrer: document.referrer.slice(0, 200), lang: boot.lang, screen: `${screen.width}x${screen.height}`, tz: Intl.DateTimeFormat().resolvedOptions().timeZone, utm }) }).then((r) => r.json() as Promise<{ blocked?: boolean }>).then((j) => { if (j?.blocked) location.replace("/blocked"); }).catch(() => {});
     })();
     return () => { live = false; };
-  }, [consent, path, boot.lang]);
+  }, [path, boot.lang]);
 
-  // push prompt — only after consent, never on the checkout pages, never twice in 14 days
+  // push prompt — shown as soon as the visitor scrolls, never on the checkout pages, never twice in 14 days
   useEffect(() => {
-    if (consent !== "1" || !boot.push || !("PushManager" in window) || !("serviceWorker" in navigator) || Notification.permission !== "default") return;
+    if (!boot.push || !("PushManager" in window) || !("serviceWorker" in navigator) || Notification.permission !== "default") return;
     if (/^\/(checkout|cart|order)/.test(path)) return;
     if (Date.now() - Number(ls.get("he_push_no") ?? 0) < 14 * 864e5) return;
-    const t = setTimeout(() => setAskPush(true), Math.max(5, boot.pushDelaySec) * 1000);
-    return () => clearTimeout(t);
-  }, [consent, boot.push, boot.pushDelaySec, path]);
+    const onScroll = () => { if (scrollY > 200) { setAskPush(true); window.removeEventListener("scroll", onScroll); } };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [boot.push, path]);
 
   const enable = async () => {
     try {
@@ -212,19 +210,6 @@ function VisitorBoot({ boot, path }: { boot: Boot; path: string }) {
   };
   const close = () => { ls.set("he_push_no", String(Date.now())); setAskPush(false); };
 
-  if (!ready) return null;
-  if (consent === null) {
-    return (
-      <div role="dialog" aria-label={L["privacy.title"]} dir={boot.dir} className="fixed inset-x-3 bottom-3 z-[95] mx-auto max-w-lg rounded-2xl border border-line bg-surface p-4 text-ink shadow-2xl md:bottom-4 md:start-4 md:mx-0">
-        <p className="text-sm font-bold">{L["privacy.title"]}</p>
-        <p className="mt-1 text-xs leading-relaxed text-muted">{L["privacy.text"]}</p>
-        <div className="mt-3 flex gap-2">
-          <button type="button" className="btn btn-primary btn-sm flex-1" onClick={() => { ls.set("he_consent", "1"); setConsent("1"); }}>{L["privacy.accept"]}</button>
-          <button type="button" className="btn btn-ghost btn-sm flex-1" onClick={() => { ls.set("he_consent", "0"); try { localStorage.removeItem("he_fp"); } catch { /* */ } setConsent("0"); }}>{L["privacy.decline"]}</button>
-        </div>
-      </div>
-    );
-  }
   if (!askPush) return null;
   return (
     <div role="dialog" aria-label={L["push.ask"]} dir={boot.dir} className="fixed inset-x-3 bottom-24 z-[80] mx-auto max-w-md rounded-2xl border border-line bg-surface p-4 text-ink shadow-2xl md:bottom-6 md:start-4 md:mx-0">
