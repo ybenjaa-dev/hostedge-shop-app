@@ -17,5 +17,6 @@ ALTER TABLE `abandoned_orders` ADD `saves` integer DEFAULT 1 NOT NULL;--> statem
 ALTER TABLE `abandoned_orders` ADD `last_seen_at` integer;--> statement-breakpoint
 CREATE INDEX `abandoned_status_idx` ON `abandoned_orders` (`status`,`updated_at`);--> statement-breakpoint
 CREATE INDEX `abandoned_phone_idx` ON `abandoned_orders` (`phone`);--> statement-breakpoint
-UPDATE `abandoned_orders` SET `status` = 'converted' WHERE `recovered` = 1 AND `status` = 'new';--> statement-breakpoint
+UPDATE `abandoned_orders` SET `status` = 'converted', `converted_order_id` = (SELECT o.`id` FROM `orders` o WHERE o.`phone` = `abandoned_orders`.`phone` ORDER BY o.`created_at` DESC LIMIT 1) WHERE `recovered` = 1 AND `status` = 'new' AND EXISTS (SELECT 1 FROM `orders` o WHERE o.`phone` = `abandoned_orders`.`phone`);--> statement-breakpoint
+UPDATE `abandoned_orders` SET `status` = 'dismissed' WHERE `recovered` = 1 AND `status` = 'new';--> statement-breakpoint
 UPDATE `abandoned_orders` SET `last_seen_at` = `updated_at` WHERE `last_seen_at` IS NULL;
