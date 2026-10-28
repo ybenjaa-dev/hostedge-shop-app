@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getEnv } from "@/lib/env";
+import { clearMemo } from "@/lib/mem-cache";
 import { ensureSchema } from "@/db/ensure-schema";
 import { createSession, createUser, hasAnyUser, logActivity } from "@/lib/auth";
 import { DEFAULT_SETTINGS, saveSettings } from "@/lib/settings";
@@ -49,6 +50,7 @@ export async function runSetup(_prev: SetupState, form: FormData): Promise<Setup
       slides: [{ image: "uploads/sample-hero.svg", title: { en: "Built to move", fr: "Faits pour bouger", ar: "صُنعت للحركة" }, sub: { en: "Sneakers, boots, slides and bags. Try them on at the door and pay only if they fit.", fr: "Baskets, bottines, claquettes et sacs. Essayez à la porte et payez seulement si ça va.", ar: "أحذية رياضية وجزم وصنادل وحقائب. جرّبها عند الباب وادفع فقط إن ناسبتك." }, cta: { en: "Shop sneakers", fr: "Voir les baskets", ar: "تسوّق الأحذية الرياضية" }, href: "/category/sneakers" }],
     });
   }
+  clearMemo();
   await createSession(userId);
   await logActivity({ id: userId, name: d.name }, "setup.completed", "store", undefined, { country: country.code });
   redirect("/admin");
