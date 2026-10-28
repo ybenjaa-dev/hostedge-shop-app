@@ -1,41 +1,46 @@
 import Link from "next/link";
-import { Star, Check } from "lucide-react";
+import { Star, Plus } from "lucide-react";
 import type { ProductCard as P } from "../queries";
 import { tr, type Lang } from "@/lib/i18n-core";
 import { fileUrl } from "@/lib/storage";
 import { Money } from "@/components/money";
 import type { TFn } from "@/lib/dict";
+import { careOf } from "../care";
+import { CareChips } from "./care-chips";
 
 const Stars = ({ v }: { v: number }) => (
-  <span className="flex" aria-hidden>{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`size-3.5 ${i < Math.round(v) ? "fill-accent text-accent" : "text-rule"}`} />)}</span>
+  <span className="flex" aria-hidden>{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`size-3.5 ${i < Math.round(v) ? "fill-accent text-ink" : "text-ink/30"}`} />)}</span>
 );
 
-/** Dense catalog card: white tile, thin border, contained photo, stars, bold price, full-width CTA. */
-export function ProductCard({ p, lang, t, currency, codMode, priority, rank }: { p: P; lang: Lang; t: TFn; currency: string; codMode: boolean; priority?: boolean; rank?: number }) {
+/** Sticker-style card: chunky rounded photo with a hard shadow, care chips, price pill and a round "+" order button. */
+export function ProductCard({ p, lang, t, currency, codMode, priority, rank, big }: { p: P; lang: Lang; t: TFn; currency: string; codMode: boolean; priority?: boolean; rank?: number; big?: boolean }) {
   const name = tr(p.name, lang);
   const discount = p.compareAt && p.compareAt > p.price ? Math.round(((p.compareAt - p.price) / p.compareAt) * 100) : 0;
+  const care = careOf(p.slug);
   return (
-    <article className="group relative flex flex-col border border-line bg-surface transition hover:z-10 hover:border-ink hover:shadow-md">
-      <Link href={`/p/${p.slug}`} className="relative block aspect-square overflow-hidden bg-white" aria-label={name}>
-        {p.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={fileUrl(p.image, "md")} alt={name} width={400} height={400} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={`size-full object-cover ${p.inStock ? "" : "opacity-50 grayscale"}`} />
-        ) : <div className="grid size-full place-items-center bg-sunken text-3xl text-muted">▢</div>}
-        {discount > 0 && p.inStock && <span className="num absolute start-0 top-2 bg-danger px-2 py-0.5 text-xs font-extrabold text-white">−{discount}%</span>}
-        {rank != null && <span className="num absolute end-0 top-0 bg-secondary px-2 py-0.5 text-xs font-extrabold text-white">#{rank}</span>}
-        {!p.inStock && <span className="absolute inset-x-0 bottom-0 bg-secondary/90 py-1 text-center text-xs font-bold uppercase text-white">{t("p.soldOut")}</span>}
-      </Link>
-      <div className="flex flex-1 flex-col gap-1 border-t border-line p-2.5">
-        <Link href={`/p/${p.slug}`} className="line-clamp-2 min-h-[2.5rem] text-[0.92rem] font-medium leading-snug hover:text-brand hover:underline">{name}</Link>
-        <div className="flex items-center gap-1.5 text-xs text-muted">
-          {p.rating != null ? <><Stars v={p.rating} /><span>({p.reviewCount})</span></> : <span>&nbsp;</span>}
+    <article className={`pcard group ${big ? "md:col-span-2 md:row-span-2" : ""}`}>
+      <div className={`pcard-img ${big ? "md:aspect-auto md:min-h-[18rem] md:flex-1" : ""}`}>
+        <Link href={`/p/${p.slug}`} className="block size-full" aria-label={name}>
+          {p.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={fileUrl(p.image, "md")} alt={name} width={400} height={400} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={`size-full object-cover transition-transform duration-300 group-hover:scale-105 ${p.inStock ? "" : "opacity-50 grayscale"}`} />
+          ) : <div className="grid size-full place-items-center text-4xl">🌱</div>}
+        </Link>
+        <div className="pointer-events-none absolute start-2.5 top-2.5 flex flex-col items-start gap-1.5">
+          {discount > 0 && p.inStock && <span className="sticker coral num">−{discount}%</span>}
+          {!p.inStock && <span className="sticker !bg-surface">{t("p.soldOut")}</span>}
         </div>
-        <p className="mt-0.5 flex flex-wrap items-baseline gap-x-2">
-          <Money amount={p.minPrice} currency={currency} lang={lang} className="text-lg font-extrabold" />
+        {rank != null && <span className="display num pointer-events-none absolute end-3 top-1 text-5xl text-white [-webkit-text-stroke:2px_#1f3d2b] [paint-order:stroke_fill]">{rank}</span>}
+        {codMode && p.inStock && <Link href={`/p/${p.slug}?order=1#order`} aria-label={`${t("cod.orderNowShort")} — ${name}`} className="pcard-add"><Plus className="size-6" strokeWidth={3} /></Link>}
+      </div>
+      <div className="flex flex-1 flex-col gap-1.5 px-1">
+        <Link href={`/p/${p.slug}`} className={`display line-clamp-2 leading-tight hover:underline hover:decoration-wavy hover:decoration-[var(--coral)] ${big ? "text-xl sm:text-2xl" : "text-[1.05rem]"}`}>{name}</Link>
+        {p.rating != null && <div className="flex items-center gap-1.5 text-xs text-muted"><Stars v={p.rating} /><span>({p.reviewCount})</span></div>}
+        <CareChips care={care} t={t} />
+        <p className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1 pt-1">
+          <span className="rounded-full border-2 border-edge bg-sun px-2.5 py-0.5 text-[#1f3d2b]"><Money amount={p.minPrice} currency={currency} lang={lang} className="display text-base" /></span>
           {p.compareAt && p.compareAt > p.price && <Money amount={p.compareAt} currency={currency} lang={lang} className="text-xs text-muted line-through" />}
         </p>
-        {p.inStock && <p className="flex items-center gap-1 text-xs font-semibold text-ok"><Check className="size-3.5" />{t("p.inStock")}</p>}
-        {codMode && p.inStock && <Link href={`/p/${p.slug}?order=1#order`} className="btn btn-primary btn-sm mt-1.5 w-full">{t("cod.orderNowShort")}</Link>}
       </div>
     </article>
   );
@@ -46,20 +51,21 @@ export function ProductRow({ p, lang, t, currency, codMode, categoryName }: { p:
   const name = tr(p.name, lang);
   const discount = p.compareAt && p.compareAt > p.price ? Math.round(((p.compareAt - p.price) / p.compareAt) * 100) : 0;
   return (
-    <article className="grid grid-cols-[7.5rem_1fr] gap-3 border border-line bg-surface p-3 hover:border-ink sm:grid-cols-[10rem_1fr_13rem]">
-      <Link href={`/p/${p.slug}`} className="relative block aspect-square self-start overflow-hidden bg-white" aria-label={name}>
+    <article className="nb grid grid-cols-[6.5rem_1fr] items-center gap-4 p-3 transition hover:-translate-y-0.5 sm:grid-cols-[9rem_1fr_auto]">
+      <Link href={`/p/${p.slug}`} className="relative block aspect-square self-start overflow-hidden rounded-[1.5rem_1.5rem_1.5rem_.5rem] border-2 border-edge bg-mint" aria-label={name}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        {p.image ? <img src={fileUrl(p.image, "md")} alt={name} loading="lazy" className={`size-full object-cover ${p.inStock ? "" : "opacity-50 grayscale"}`} /> : <span className="grid size-full place-items-center bg-sunken text-muted">▢</span>}
-        {discount > 0 && p.inStock && <span className="num absolute start-0 top-1 bg-danger px-1.5 py-0.5 text-xs font-extrabold text-white">−{discount}%</span>}
+        {p.image ? <img src={fileUrl(p.image, "md")} alt={name} loading="lazy" className={`size-full object-cover ${p.inStock ? "" : "opacity-50 grayscale"}`} /> : <span className="grid size-full place-items-center text-3xl">🌱</span>}
+        {discount > 0 && p.inStock && <span className="sticker coral num absolute start-1 top-1 !text-[.7rem]">−{discount}%</span>}
       </Link>
       <div className="min-w-0">
-        <Link href={`/p/${p.slug}`} className="text-base font-bold hover:text-brand hover:underline">{name}</Link>
-        <div className="mt-1 flex items-center gap-1.5 text-xs text-muted">{p.rating != null ? <><Stars v={p.rating} /><span>({p.reviewCount})</span></> : null}{categoryName && <span>· {categoryName}</span>}</div>
-        <p className={`mt-1.5 flex items-center gap-1 text-xs font-bold ${p.inStock ? "text-ok" : "text-danger"}`}>{p.inStock ? <><Check className="size-3.5" />{t("p.inStock")}</> : t("p.soldOut")}</p>
+        <Link href={`/p/${p.slug}`} className="display text-lg hover:underline">{name}</Link>
+        <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted">{p.rating != null && <><Stars v={p.rating} /><span>({p.reviewCount})</span></>}{categoryName && <span className="chip !py-0 !text-xs">{categoryName}</span>}</div>
+        <div className="mt-2"><CareChips care={careOf(p.slug)} t={t} /></div>
+        <p className={`mt-2 text-xs font-bold ${p.inStock ? "text-ok" : "text-danger"}`}>{p.inStock ? t("p.inStock") : t("p.soldOut")}</p>
       </div>
-      <div className="col-span-2 flex items-center justify-between gap-3 border-t border-line pt-2 sm:col-span-1 sm:flex-col sm:items-stretch sm:justify-center sm:border-s sm:border-t-0 sm:ps-3 sm:pt-0">
-        <p className="flex flex-wrap items-baseline gap-x-2 sm:block">
-          <Money amount={p.minPrice} currency={currency} lang={lang} className="block text-xl font-extrabold" />
+      <div className="col-span-2 flex items-center justify-between gap-3 border-t-2 border-dashed border-edge pt-3 sm:col-span-1 sm:flex-col sm:items-end sm:border-t-0 sm:pt-0">
+        <p className="flex flex-wrap items-baseline gap-x-2 sm:flex-col sm:items-end">
+          <Money amount={p.minPrice} currency={currency} lang={lang} className="display text-xl" />
           {p.compareAt && p.compareAt > p.price && <Money amount={p.compareAt} currency={currency} lang={lang} className="text-xs text-muted line-through" />}
         </p>
         {codMode && p.inStock ? <Link href={`/p/${p.slug}?order=1#order`} className="btn btn-primary btn-sm">{t("cod.orderNowShort")}</Link> : <Link href={`/p/${p.slug}`} className="btn btn-outline btn-sm">{t("home.shopNow")}</Link>}
@@ -68,15 +74,15 @@ export function ProductRow({ p, lang, t, currency, codMode, categoryName }: { p:
   );
 }
 
-export function ProductGrid({ children }: { children: React.ReactNode }) {
-  return <div className="grid grid-cols-2 gap-px border border-line bg-line md:grid-cols-3 xl:grid-cols-4 [&>*]:border-0">{children}</div>;
+export function ProductGrid({ children, bento }: { children: React.ReactNode; bento?: boolean }) {
+  return <div className={`grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-6 md:grid-cols-3 xl:grid-cols-4 ${bento ? "md:[grid-auto-flow:dense]" : ""}`}>{children}</div>;
 }
 
 export function ProductGridSkeleton({ n = 8 }: { n?: number }) {
   return (
     <ProductGrid>
       {Array.from({ length: n }).map((_, i) => (
-        <div key={i} className="bg-surface p-2.5"><div className="skeleton aspect-square" /><div className="skeleton mt-2 h-4 w-3/4" /><div className="skeleton mt-2 h-5 w-1/3" /></div>
+        <div key={i}><div className="skeleton aspect-square" /><div className="skeleton mt-3 h-4 w-3/4" /><div className="skeleton mt-2 h-6 w-1/3" /></div>
       ))}
     </ProductGrid>
   );

@@ -1,14 +1,16 @@
 import Link from "next/link";
-import { ChevronRight, ChevronLeft, Banknote, RotateCcw, Truck, ShieldCheck, Headset, Gem, Star } from "lucide-react";
-import { getSettings, type Settings, type TrustBadge } from "@/lib/settings";
+import { ArrowRight, ArrowLeft, Star, Sprout, Truck, Banknote } from "lucide-react";
+import { getSettings, type Settings } from "@/lib/settings";
 import { getT } from "@/lib/i18n";
 import { tr, dirOf, type Lang } from "@/lib/i18n-core";
 import { fileUrl } from "@/lib/storage";
 import type { TFn } from "@/lib/dict";
 import { listCategories, listProducts, listReviews } from "@/features/catalog/queries";
-import { ProductCard } from "@/features/catalog/components/product-card";
+import { ProductCard, ProductGrid } from "@/features/catalog/components/product-card";
+import { Sprig, Monstera, Squiggle, Sparkle, Dots } from "@/components/botanical";
 
-const ICONS: Record<TrustBadge["icon"], typeof Banknote> = { cod: Banknote, returns: RotateCcw, delivery: Truck, secure: ShieldCheck, support: Headset, quality: Gem };
+const BLOBS = ["blob", "blob-2", "blob-3", "blob-2", "blob"];
+const NOTE_BG = ["bg-sun", "bg-mint", "bg-blush", "bg-sky"];
 
 export default async function Home() {
   const s = await getSettings();
@@ -21,76 +23,82 @@ export default async function Home() {
   ]);
   const cur = s.store.currency;
   const codMode = s.checkout.codMode;
-  const Arrow = dirOf(lang) === "rtl" ? ChevronLeft : ChevronRight;
+  const Arrow = dirOf(lang) === "rtl" ? ArrowLeft : ArrowRight;
 
-  const shelf = (id: string, title: string, items: typeof featured.items, ranked = false) =>
-    items.length ? (
-      <section key={id} className="panel mx-auto mt-4 max-w-[84rem]">
-        <div className="bar"><h2>{title}</h2><Link href="/shop" className="inline-flex items-center gap-0.5">{t("home.viewAll")}<Arrow className="size-4" /></Link></div>
-        <div className="rail">{items.slice(0, 8).map((p, i) => <ProductCard key={p.id} p={p} lang={lang} t={t} currency={cur} codMode={codMode} rank={ranked ? i + 1 : undefined} />)}</div>
-      </section>
-    ) : null;
+  const heading = (title: string, kicker?: string, href = "/shop") => (
+    <div className="mb-6 flex items-end justify-between gap-4">
+      <div className="relative">
+        {kicker && <p className="sticker mb-2">{kicker}</p>}
+        <h2 className="display text-3xl sm:text-5xl"><span className="relative inline-block">{title}<Squiggle className="absolute inset-x-0 -bottom-2 h-2.5 text-coral" /></span></h2>
+      </div>
+      <Link href={href} className="btn btn-outline btn-sm shrink-0">{t("home.viewAll")}<Arrow className="size-4" /></Link>
+    </div>
+  );
 
   const render = (id: string) => {
     switch (id) {
       case "hero":
-        return <HeroBlock key={id} s={s} lang={lang} t={t} cats={cats.map((c) => ({ slug: c.slug, name: c.name, count: c.count }))} />;
+        return <HeroBlock key={id} s={s} lang={lang} t={t} />;
       case "trust":
-        return (
-          <section key={id} className="mx-auto mt-4 grid max-w-[84rem] border border-line bg-surface sm:grid-cols-3">
-            {s.trust.map((b, i) => {
-              const Icon = ICONS[b.icon] ?? ShieldCheck;
-              return (
-                <div key={i} className="flex items-center gap-3 border-line p-4 max-sm:border-b sm:border-s first:sm:border-s-0">
-                  <Icon className="size-9 shrink-0 text-brand" strokeWidth={1.6} aria-hidden />
-                  <div><p className="font-extrabold">{tr(b.title, lang)}</p><p className="text-sm text-muted">{tr(b.text, lang)}</p></div>
-                </div>
-              );
-            })}
-          </section>
-        );
+        return <Ribbon key={id} items={s.trust.map((b) => tr(b.title, lang))} />;
       case "categories":
         if (!cats.length) return null;
         return (
-          <section key={id} className="panel mx-auto mt-4 max-w-[84rem]">
-            <div className="bar"><h2>{t("home.categories")}</h2></div>
-            <div className="grid grid-cols-2 bg-surface sm:grid-cols-3 lg:grid-cols-6">
-              {cats.map((c) => (
-                <Link key={c.id} href={`/category/${c.slug}`} className="group flex flex-col items-center gap-2 border-b border-e border-line p-4 text-center hover:bg-sunken">
-                  <span className="block aspect-square w-full max-w-28 overflow-hidden border border-line bg-white">{c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image, "md")} alt="" loading="lazy" className="size-full object-cover" />}</span>
-                  <span className="text-sm font-bold group-hover:text-brand group-hover:underline">{tr(c.name, lang)}</span>
-                  <span className="num text-xs text-muted">{c.count}</span>
+          <section key={id} className="mx-auto mt-16 max-w-[78rem] px-4">
+            {heading(t("home.categories"), t("home.pickYours"))}
+            <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-5">
+              {cats.map((c, i) => (
+                <Link key={c.id} href={`/category/${c.slug}`} className="group flex flex-col items-center gap-3 text-center">
+                  <span className={`relative block aspect-square w-full overflow-hidden border-2 border-edge bg-mint shadow-[5px_5px_0_var(--edge)] transition duration-200 group-hover:-translate-y-1 group-hover:rotate-[-2deg] group-hover:shadow-[8px_9px_0_var(--edge)] ${BLOBS[i % BLOBS.length]}`}>
+                    {c.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(c.image, "md")} alt="" loading="lazy" className="size-full object-cover" />}
+                  </span>
+                  <span className="chip !bg-surface !text-base group-hover:!bg-sun group-hover:!text-[#1f3d2b]">{tr(c.name, lang)}<span className="num rounded-full bg-ink/10 px-1.5 text-xs">{c.count}</span></span>
                 </Link>
               ))}
             </div>
           </section>
         );
       case "featured":
-        return shelf(id, t("home.featured"), featured.items);
+        if (!featured.items.length) return null;
+        return (
+          <section key={id} className="mx-auto mt-20 max-w-[78rem] px-4">
+            {heading(t("home.featured"), t("home.growing"))}
+            <ProductGrid bento>{featured.items.slice(0, 7).map((p, i) => <ProductCard key={p.id} p={p} lang={lang} t={t} currency={cur} codMode={codMode} big={i === 0} priority={i < 2} />)}</ProductGrid>
+          </section>
+        );
       case "bestsellers":
-        return shelf(id, t("home.bestsellers"), best.items, true);
+        if (!best.items.length) return null;
+        return (
+          <section key={id} className="relative mt-20 border-y-2 border-edge bg-mint/70 py-12">
+            <Sprig className="pointer-events-none absolute end-6 top-4 hidden w-16 rotate-12 text-[#4fa86b] md:block" />
+            <div className="mx-auto max-w-[78rem] px-4">
+              {heading(t("home.bestsellers"), t("home.rank"))}
+              <div className="rail">{best.items.slice(0, 8).map((p, i) => <ProductCard key={p.id} p={p} lang={lang} t={t} currency={cur} codMode={codMode} rank={i + 1} />)}</div>
+            </div>
+          </section>
+        );
       case "banner":
         if (!s.home.banner.image) return null;
         return (
-          <section key={id} className="mx-auto mt-4 max-w-[84rem]">
-            <Link href={s.home.banner.href || "/shop"} className="relative block overflow-hidden border border-line">
+          <section key={id} className="mx-auto mt-20 max-w-[78rem] px-4">
+            <Link href={s.home.banner.href || "/shop"} className="nb relative block overflow-hidden !rounded-[2.5rem]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={fileUrl(s.home.banner.image)} alt={tr(s.home.banner.title, lang)} loading="lazy" className="aspect-[16/5] min-h-36 w-full object-cover" />
-              <span className="absolute inset-0 flex flex-col justify-center bg-gradient-to-r from-black/70 to-transparent p-5 text-white rtl:bg-gradient-to-l md:p-10"><span className="display text-2xl md:text-4xl">{tr(s.home.banner.title, lang)}</span><span className="mt-1 max-w-md text-sm">{tr(s.home.banner.sub, lang)}</span></span>
+              <img src={fileUrl(s.home.banner.image)} alt={tr(s.home.banner.title, lang)} loading="lazy" className="aspect-[16/6] min-h-40 w-full object-cover" />
+              <span className="absolute inset-0 flex flex-col justify-center bg-gradient-to-r from-[#1f3d2b]/85 to-transparent p-6 text-white rtl:bg-gradient-to-l md:p-12"><span className="display text-3xl md:text-5xl">{tr(s.home.banner.title, lang)}</span><span className="mt-2 max-w-md">{tr(s.home.banner.sub, lang)}</span></span>
             </Link>
           </section>
         );
       case "reviews":
         if (!reviews.length) return null;
         return (
-          <section key={id} className="panel mx-auto mt-4 max-w-[84rem]">
-            <div className="bar"><h2>{t("home.reviews")}</h2></div>
-            <div className="grid gap-px bg-line md:grid-cols-3">
-              {reviews.slice(0, 3).map((r) => (
-                <figure key={r.id} className="bg-surface p-4">
-                  <div className="flex gap-0.5" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, k) => <Star key={k} className={`size-4 ${k < r.rating ? "fill-accent text-accent" : "text-rule"}`} />)}</div>
-                  <blockquote className="mt-2">{r.body}</blockquote>
-                  <figcaption className="mt-2 text-sm font-bold">{r.name}{r.city && <span className="font-normal text-muted"> — {r.city}</span>}</figcaption>
+          <section key={id} className="mx-auto mt-20 max-w-[78rem] px-4">
+            <h2 className="display mb-8 text-center text-3xl sm:text-5xl">{t("home.reviews")}</h2>
+            <div className="grid gap-6 md:grid-cols-3">
+              {reviews.slice(0, 3).map((r, i) => (
+                <figure key={r.id} className={`sticky-note p-5 ${NOTE_BG[i % NOTE_BG.length]} text-[#1f3d2b]`} style={{ transform: `rotate(${[-1.8, 1.2, -0.8][i % 3]}deg)` }}>
+                  <div className="flex gap-0.5" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, k) => <Star key={k} className={`size-4 ${k < r.rating ? "fill-[#ff6b4a] text-[#1f3d2b]" : "text-[#1f3d2b]/30"}`} />)}</div>
+                  <blockquote className="mt-3 text-lg leading-snug">“{r.body}”</blockquote>
+                  <figcaption className="display mt-3 text-base">{r.name}{r.city && <span className="font-sans text-sm font-normal opacity-70"> · {r.city}</span>}</figcaption>
                 </figure>
               ))}
             </div>
@@ -103,21 +111,39 @@ export default async function Home() {
   const sections = s.home.sections.filter((x) => x.visible);
   const heroIdx = sections.findIndex((x) => x.id === "hero");
   const nodes = sections.map((x) => render(x.id));
-  nodes.splice(Math.max(0, heroIdx + 2), 0, <HowItWorks key="how" t={t} codMode={codMode} />);
-  return <div className="px-3 pb-6 pt-3">{nodes}</div>;
+  nodes.splice(Math.max(0, heroIdx + 3), 0, <HowItWorks key="how" t={t} codMode={codMode} />);
+  return <div className="pb-6">{nodes}</div>;
+}
+
+/** Sticker-tape ribbon: slow marquee of the store's promises. */
+function Ribbon({ items }: { items: string[] }) {
+  const list = [...items, ...items, ...items, ...items].filter(Boolean);
+  if (!list.length) return null;
+  const row = (hidden: boolean) => (
+    <ul className="flex shrink-0 items-center gap-6 pe-6" aria-hidden={hidden || undefined}>
+      {list.map((x, i) => <li key={i} className="display flex items-center gap-6 whitespace-nowrap text-lg">{x}<Sparkle className="size-5" fill={i % 2 ? "#ff6b4a" : "#fffdf6"} /></li>)}
+    </ul>
+  );
+  return (
+    <div className="my-12 -rotate-1 border-y-2 border-edge bg-sun py-3 text-[#1f3d2b] shadow-[0_5px_0_var(--edge)]">
+      <div className="marquee"><div className="marquee-track">{row(false)}{row(true)}</div></div>
+    </div>
+  );
 }
 
 function HowItWorks({ t, codMode }: { t: TFn; codMode: boolean }) {
   if (!codMode) return null;
   const steps = [[t("how.s1"), t("how.s1d")], [t("how.s2"), t("how.s2d")], [t("how.s3"), t("how.s3d")]];
+  const bg = ["bg-sun", "bg-coral text-white", "bg-mint"];
   return (
-    <section className="panel mx-auto mt-4 max-w-[84rem]">
-      <div className="bar"><h2>{t("how.title")}</h2></div>
-      <ol className="grid gap-px bg-line md:grid-cols-3">
+    <section className="mx-auto mt-20 max-w-[78rem] px-4">
+      <h2 className="display mb-10 text-center text-3xl sm:text-5xl"><span className="relative inline-block">{t("how.title")}<Squiggle className="absolute inset-x-0 -bottom-2 h-2.5 text-coral" /></span></h2>
+      <ol className="relative grid gap-8 md:grid-cols-3">
+        <span className="pointer-events-none absolute inset-x-[16%] top-8 hidden border-t-[3px] border-dashed border-edge md:block" aria-hidden />
         {steps.map(([title, text], i) => (
-          <li key={i} className="flex gap-3 bg-surface p-4">
-            <span className="num grid size-9 shrink-0 place-items-center bg-brand text-lg font-extrabold text-brand-ink">{i + 1}</span>
-            <div><h3 className="font-extrabold">{title}</h3><p className="text-sm text-muted">{text}</p></div>
+          <li key={i} className="relative flex flex-col items-center text-center">
+            <span className={`display num relative z-10 grid size-16 place-items-center rounded-full border-2 border-edge text-3xl shadow-[4px_4px_0_var(--edge)] ${bg[i]} ${i === 1 ? "text-white" : "text-[#1f3d2b]"}`}>{i + 1}</span>
+            <div className="nb mt-4 w-full p-5"><h3 className="display text-xl">{title}</h3><p className="mt-1 text-muted">{text}</p></div>
           </li>
         ))}
       </ol>
@@ -125,32 +151,46 @@ function HowItWorks({ t, codMode }: { t: TFn; codMode: boolean }) {
   );
 }
 
-/** Marketplace opening: department menu on one side, banner slider on the other. */
-function HeroBlock({ s, lang, t, cats }: { s: Settings; lang: Lang; t: TFn; cats: { slug: string; name: string; count: number }[] }) {
-  const Arrow = dirOf(lang) === "rtl" ? ChevronLeft : ChevronRight;
+function Headline({ text, as: H }: { text: string; as: "h1" | "h2" }) {
+  const parts = text.split(/\*(.+?)\*/g);
+  return (
+    <H className="display text-[2.9rem] leading-[1.02] sm:text-6xl lg:text-7xl">
+      {parts.map((p, i) => i % 2 ? <span key={i} className="relative inline-block whitespace-nowrap text-coral">{p}<Squiggle className="absolute inset-x-0 -bottom-2 h-3 text-sun" /></span> : <span key={i}>{p}</span>)}
+    </H>
+  );
+}
+
+/** Big headline on one side, a blob-masked plant picture with floating stickers on the other. */
+function HeroBlock({ s, lang, t }: { s: Settings; lang: Lang; t: TFn }) {
+  const Arrow = dirOf(lang) === "rtl" ? ArrowLeft : ArrowRight;
   const slides = s.hero.slides.length ? s.hero.slides : [{ image: "", title: { [lang]: s.store.name } as Record<string, string>, sub: s.store.tagline, cta: { [lang]: t("home.hero.cta") } as Record<string, string>, href: "/shop" }];
   return (
-    <section className="mx-auto grid max-w-[84rem] gap-3 lg:grid-cols-[16rem_1fr]" aria-roledescription="carousel">
-      <nav className="panel hidden lg:block" aria-label={t("shop.category")}>
-        <div className="bar bar-brand"><h2>{t("shop.category")}</h2></div>
-        <ul>
-          <li><Link href="/shop" className="flex items-center justify-between border-b border-line px-4 py-2.5 font-bold hover:bg-sunken hover:text-brand">{t("shop.allCategories")}<Arrow className="size-4" /></Link></li>
-          {cats.map((c) => <li key={c.slug}><Link href={`/category/${c.slug}`} className="flex items-center justify-between border-b border-line px-4 py-2.5 last:border-0 hover:bg-sunken hover:text-brand"><span>{tr(c.name, lang)}</span><span className="num text-xs text-muted">{c.count}</span></Link></li>)}
-        </ul>
-      </nav>
-      <div className="scroll-snap-x flex gap-3">
+    <section className="relative mx-auto max-w-[78rem] overflow-x-clip px-4 pt-4 md:pt-8" aria-roledescription="carousel">
+      <div className={slides.length > 1 ? "scroll-snap-x flex gap-6 py-3" : "py-3"}>
         {slides.map((sl, i) => (
-          <div key={i} className="relative min-h-[17rem] overflow-hidden border border-line bg-secondary md:min-h-[24rem]" aria-roledescription="slide">
-            {sl.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(sl.image)} alt="" className="absolute inset-0 size-full object-cover" loading={i === 0 ? "eager" : "lazy"} fetchPriority={i === 0 ? "high" : "auto"} />}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/40 to-transparent rtl:bg-gradient-to-l" />
-            <div className="relative flex min-h-[17rem] max-w-xl flex-col justify-center p-6 text-white md:min-h-[24rem] md:p-10">
-              <p className="mb-2 w-fit bg-accent px-2 py-0.5 text-xs font-extrabold uppercase tracking-wider text-accent-ink">{t("cod.payOnDelivery")}</p>
-              {i === 0 ? <h1 className="display text-3xl sm:text-4xl md:text-5xl">{tr(sl.title, lang)}</h1> : <h2 className="display text-3xl sm:text-4xl md:text-5xl">{tr(sl.title, lang)}</h2>}
-              <p className="mt-2 max-w-md text-base text-white/90">{tr(sl.sub, lang)}</p>
-              <div className="mt-5 flex flex-wrap gap-2">
-                {tr(sl.cta, lang) && <Link href={sl.href || "/shop"} className="btn btn-primary btn-lg px-6">{tr(sl.cta, lang)}</Link>}
-                {"cta2" in sl && sl.cta2 && tr(sl.cta2, lang) && <Link href={sl.href2 || "/shop"} className="btn btn-lg border-white bg-transparent text-white hover:bg-white/15">{tr(sl.cta2, lang)}</Link>}
+          <div key={i} className="grid items-center gap-8 md:grid-cols-[1.05fr_.95fr] md:gap-12" aria-roledescription="slide">
+            <div className="relative order-2 md:order-1">
+              <p className="sticker mb-4"><Sprout className="size-4" aria-hidden />{t("home.heroTag")}</p>
+              <Headline text={tr(sl.title, lang)} as={i === 0 ? "h1" : "h2"} />
+              <p className="mt-5 max-w-lg text-lg text-muted">{tr(sl.sub, lang)}</p>
+              <div className="mt-7 flex flex-wrap gap-3">
+                {tr(sl.cta, lang) && <Link href={sl.href || "/shop"} className="btn btn-primary btn-lg">{tr(sl.cta, lang)}<Arrow className="size-5" /></Link>}
+                {"cta2" in sl && sl.cta2 && tr(sl.cta2, lang) ? <Link href={sl.href2 || "/shop"} className="btn btn-outline btn-lg">{tr(sl.cta2, lang)}</Link> : <Link href="/shop" className="btn btn-outline btn-lg">{t("home.heroCta2")}</Link>}
               </div>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <span className="sticker coral"><Banknote className="size-4" aria-hidden />{t("cod.payOnDelivery")}</span>
+                <span className="sticker mint"><Truck className="size-4" aria-hidden />{t("trust.delivery")}</span>
+              </div>
+            </div>
+            <div className="relative order-1 mx-auto w-full max-w-[26rem] md:order-2 md:max-w-none">
+              <Dots className="absolute -start-4 bottom-6 w-16 text-edge/50" />
+              <div className="blob relative aspect-square overflow-hidden border-[3px] border-edge bg-mint shadow-[8px_8px_0_var(--edge)]">
+                {sl.image ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(sl.image)} alt="" className="size-full object-cover" loading={i === 0 ? "eager" : "lazy"} fetchPriority={i === 0 ? "high" : "auto"} /> : <div className="grid size-full place-items-center"><Monstera className="sway w-2/3 text-[#2f8452]" /></div>}
+              </div>
+              <div className="floaty absolute -start-2 top-6 grid size-24 -rotate-12 place-items-center rounded-full border-2 border-edge bg-coral p-2 text-center text-[0.72rem] font-bold leading-tight text-white shadow-[3px_3px_0_var(--edge)] sm:size-28 sm:text-xs" style={{ ["--r" as string]: "-12deg" }}>{t("home.heroCare")}</div>
+              <Sparkle className="floaty absolute -end-1 top-4 size-10" />
+              <Sparkle className="floaty absolute bottom-10 end-4 size-7" fill="#ff6b4a" />
+              <Sprig className="sway absolute -bottom-4 -end-3 w-16 text-[#2f8452] sm:w-20" />
             </div>
           </div>
         ))}

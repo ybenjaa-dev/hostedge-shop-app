@@ -10,7 +10,7 @@ export function Gallery({ images, alt, closeLabel }: { images: { key: string; al
   const [idx, setIdx] = useState(0);
   const [zoomed, setZoomed] = useState(false);
   const [origin, setOrigin] = useState("50% 50%");
-  if (!images.length) return <div className="grid aspect-square place-items-center border border-line bg-sunken text-5xl text-muted">▢</div>;
+  if (!images.length) return <div className="grid aspect-square place-items-center rounded-[3rem] border-2 border-edge bg-mint text-6xl shadow-[5px_5px_0_var(--edge)]">🌱</div>;
 
   const go = (i: number) => {
     const n = Math.max(0, Math.min(images.length - 1, i));
@@ -24,9 +24,9 @@ export function Gallery({ images, alt, closeLabel }: { images: { key: string; al
   };
 
   return (
-    <div className="md:flex md:flex-row-reverse md:gap-3">
-      <div className="relative min-w-0 md:flex-1">
-        <div ref={scroller} onScroll={onScroll} className="scroll-snap-x flex aspect-square overflow-x-auto border border-line bg-white" tabIndex={0} aria-label={alt}>
+    <div className="space-y-4">
+      <div className="relative min-w-0">
+        <div ref={scroller} onScroll={onScroll} className="scroll-snap-x flex aspect-square overflow-x-auto rounded-[3rem_1.25rem_3rem_1.25rem] border-2 border-edge bg-mint shadow-[6px_6px_0_var(--edge)] sm:rounded-[4rem_1.5rem_4rem_1.5rem]" tabIndex={0} aria-label={alt}>
           {images.map((im, i) => (
             <button key={im.key} type="button" onClick={() => { setIdx(i); dialog.current?.showModal(); }} className="relative block size-full cursor-zoom-in" aria-label={`Zoom ${i + 1}/${images.length}`}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -34,22 +34,22 @@ export function Gallery({ images, alt, closeLabel }: { images: { key: string; al
             </button>
           ))}
         </div>
-        <span className="pointer-events-none absolute end-2 top-2 grid size-8 place-items-center border border-line bg-surface"><ZoomIn className="size-4" /></span>
+        <span className="pointer-events-none absolute end-4 top-4 grid size-9 place-items-center rounded-full border-2 border-edge bg-sun text-[#1f3d2b]"><ZoomIn className="size-4" /></span>
         {images.length > 1 && (
           <>
-            <button type="button" aria-label="Previous" onClick={() => go(idx - 1)} className="absolute start-2 top-1/2 hidden size-10 -translate-y-1/2 place-items-center border border-line bg-surface hover:bg-sunken md:grid"><ChevronLeft className="size-5 rtl:rotate-180" /></button>
-            <button type="button" aria-label="Next" onClick={() => go(idx + 1)} className="absolute end-2 top-1/2 hidden size-10 -translate-y-1/2 place-items-center border border-line bg-surface hover:bg-sunken md:grid"><ChevronRight className="size-5 rtl:rotate-180" /></button>
-            <div className="absolute inset-x-0 bottom-3 flex justify-center gap-1.5">
-              {images.map((_, i) => <span key={i} className={`h-1.5 transition-all ${i === idx ? "w-5 bg-brand" : "w-1.5 bg-rule"}`} />)}
+            <button type="button" aria-label="Previous" onClick={() => go(idx - 1)} className="absolute start-3 top-1/2 hidden size-11 -translate-y-1/2 place-items-center rounded-full border-2 border-edge bg-surface shadow-[2px_2px_0_var(--edge)] hover:bg-sun hover:text-[#1f3d2b] md:grid"><ChevronLeft className="size-5 rtl:rotate-180" /></button>
+            <button type="button" aria-label="Next" onClick={() => go(idx + 1)} className="absolute end-3 top-1/2 hidden size-11 -translate-y-1/2 place-items-center rounded-full border-2 border-edge bg-surface shadow-[2px_2px_0_var(--edge)] hover:bg-sun hover:text-[#1f3d2b] md:grid"><ChevronRight className="size-5 rtl:rotate-180" /></button>
+            <div className="absolute inset-x-0 bottom-4 flex justify-center gap-1.5">
+              {images.map((_, i) => <span key={i} className={`h-2.5 rounded-full border-2 border-edge transition-all ${i === idx ? "w-7 bg-sun" : "w-2.5 bg-surface"}`} />)}
             </div>
           </>
         )}
       </div>
       {images.length > 1 && (
-        <div className="hidden gap-2 md:flex md:w-16 md:shrink-0 md:flex-col">
+        <div className="flex flex-wrap justify-center gap-3">
           {images.map((im, i) => (
             // eslint-disable-next-line @next/next/no-img-element
-            <button key={im.key} type="button" onClick={() => go(i)} aria-label={`${i + 1}`} className={`size-16 overflow-hidden border-2 ${i === idx ? "border-brand" : "border-line opacity-80 hover:opacity-100"}`}><img src={fileUrl(im.key, "thumb")} alt="" className="size-full object-cover" loading="lazy" /></button>
+            <button key={im.key} type="button" onClick={() => go(i)} aria-label={`${i + 1}`} className={`size-16 overflow-hidden rounded-full border-2 border-edge transition ${i === idx ? "bg-sun shadow-[3px_3px_0_var(--edge)] -translate-y-0.5" : "opacity-80 hover:opacity-100"}`}><img src={fileUrl(im.key, "thumb")} alt="" className="size-full object-cover" loading="lazy" /></button>
           ))}
         </div>
       )}

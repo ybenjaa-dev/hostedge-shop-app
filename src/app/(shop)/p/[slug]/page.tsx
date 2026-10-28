@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Star } from "lucide-react";
+import { Star, Sprout } from "lucide-react";
 import { getSettings } from "@/lib/settings";
 import { getT } from "@/lib/i18n";
 import { tr } from "@/lib/i18n-core";
@@ -12,7 +12,10 @@ import { Banknote, Truck } from "lucide-react";
 import { getProduct, listBundles, listCities, listProducts, listReviews, listCategories } from "@/features/catalog/queries";
 import { Gallery } from "@/features/catalog/components/gallery";
 import { ProductBuy } from "@/features/checkout/components/product-buy";
-import { ProductCard } from "@/features/catalog/components/product-card";
+import { ProductCard, ProductGrid } from "@/features/catalog/components/product-card";
+import { careOf } from "@/features/catalog/care";
+import { CareTiles, CareTabs, BoxList } from "@/features/catalog/components/plant-care";
+import { Sprig } from "@/components/botanical";
 import { ReviewForm } from "@/features/catalog/components/review-form";
 import { ViewContent } from "@/features/catalog/components/view-content";
 
@@ -67,25 +70,32 @@ export default async function ProductPage({ params, searchParams }: Props) {
   const cur = s.store.currency;
   const dist = [5, 4, 3, 2, 1].map((n) => ({ n, c: reviews.filter((r) => r.rating === n).length }));
   const maxC = Math.max(1, ...dist.map((d) => d.c));
-  const tab = "border-e border-line px-5 py-3 text-sm font-extrabold uppercase tracking-wide hover:bg-sunken hover:text-brand";
+  const care = careOf(p.slug);
+  const kind = care?.kind ?? "plant";
+  const crumb = "chip !py-0 !text-xs";
   return (
-    <article className="mx-auto max-w-[84rem] px-3 py-3 pb-28 md:pb-6">
+    <article className="mx-auto max-w-[78rem] px-4 pb-48 pt-5 md:pb-10 md:pt-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <ViewContent id={p.id} value={p.price} currency={cur} />
-      <nav aria-label="Breadcrumb" className="mb-3 text-xs text-muted">
-        <Link href="/" className="hover:text-brand hover:underline">{t("nav.home")}</Link> › <Link href="/shop" className="hover:text-brand hover:underline">{t("nav.shop")}</Link> › {cat && <><Link href={`/category/${cat.slug}`} className="hover:text-brand hover:underline">{tr(cat.name, lang)}</Link> › </>}<span className="font-bold text-ink">{name}</span>
+      <nav aria-label="Breadcrumb" className="mb-5 flex flex-wrap items-center gap-1.5">
+        <Link href="/" className={crumb}>{t("nav.home")}</Link><span aria-hidden>/</span><Link href="/shop" className={crumb}>{t("nav.shop")}</Link><span aria-hidden>/</span>{cat && <><Link href={`/category/${cat.slug}`} className={crumb}>{tr(cat.name, lang)}</Link><span aria-hidden>/</span></>}<span className={`${crumb} is-on`}>{name}</span>
       </nav>
-      <div className="panel grid gap-6 p-4 md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)_17rem]">
-        <Gallery images={p.images} alt={name} closeLabel={t("cod.close")} />
+      <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-12">
+        <div className="relative md:sticky md:top-24 md:self-start">
+          <Sprig className="pointer-events-none absolute -top-4 -end-2 z-10 hidden w-14 rotate-12 text-[#2f8452] sm:block" />
+          <Gallery images={p.images} alt={name} closeLabel={t("cod.close")} />
+        </div>
         <div>
-          <h1 className="text-2xl font-extrabold leading-tight sm:text-3xl">{name}</h1>
-          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-line pb-3 text-sm">
-            {p.rating != null ? <span className="inline-flex items-center gap-1"><span className="flex">{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`size-4 ${i < Math.round(p.rating!) ? "fill-accent text-accent" : "text-rule"}`} />)}</span><a href="#reviews" className="font-bold text-brand hover:underline"><span className="num">{p.rating}</span> · {t("p.reviews", { n: p.reviewCount })}</a></span> : <span className="text-muted">{t("p.noReviews")}</span>}
-            {p.sku && <span className="text-muted">SKU: <span className="num font-semibold text-ink">{p.sku}</span></span>}
-            <span className={`font-extrabold ${inStock ? "text-ok" : "text-danger"}`}>{inStock ? t("p.inStock") : t("p.soldOut")}</span>
+          {cat && <Link href={`/category/${cat.slug}`} className="sticker mb-3">{tr(cat.name, lang)}</Link>}
+          <h1 className="display text-4xl sm:text-5xl">{name}</h1>
+          <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
+            {p.rating != null ? <a href="#reviews" className="chip"><span className="flex">{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`size-4 ${i < Math.round(p.rating!) ? "fill-accent text-ink" : "text-ink/30"}`} />)}</span><span className="num font-bold">{p.rating}</span> · {t("p.reviews", { n: p.reviewCount })}</a> : <span className="text-muted">{t("p.noReviews")}</span>}
+            <span className={`chip ${inStock ? "!bg-mint !text-[#1f3d2b]" : "!bg-blush !text-[#1f3d2b]"}`}>{inStock ? t("p.inStock") : t("p.soldOut")}</span>
+            {p.sku && <span className="text-muted">SKU <span className="num font-semibold text-ink">{p.sku}</span></span>}
           </p>
-          <p className="mt-3 leading-relaxed text-muted">{tr(p.shortDesc, lang)}</p>
-          <div className="mt-4">
+          <p className="mt-4 text-lg leading-relaxed text-muted">{tr(p.shortDesc, lang)}</p>
+          <div className="mt-5"><CareTiles care={care} t={t} /></div>
+          <div className="nb mt-6 p-5">
             <ProductBuy
               autoOpen={sp.order === "1"}
               product={{ id: p.id, slug: p.slug, name: p.name, price: p.price, compareAt: p.compareAt, stock: p.stock, trackStock: p.trackStock, variants: p.variants, image: p.images[0]?.key ?? null }}
@@ -93,40 +103,41 @@ export default async function ProductPage({ params, searchParams }: Props) {
               cities={cities}
             />
           </div>
+          <aside className="mt-5 rounded-3xl border-2 border-dashed border-edge bg-surface/70 p-4 text-sm" aria-label={t("p.delivery")}>
+            <h2 className="display mb-2 text-lg">{t("p.delivery")}</h2>
+            <ul className="space-y-2.5">
+              <li className="flex gap-3"><Banknote className="size-5 shrink-0 text-coral" /><span><b className="block">{t("cod.payOnDelivery")}</b><span className="text-muted">{t("p.deliveryText")}</span></span></li>
+              {s.trust.slice(1).map((b, i) => <li key={i} className="flex gap-3"><Truck className="size-5 shrink-0 text-coral" /><span><b className="block">{tr(b.title, lang)}</b><span className="text-muted">{tr(b.text, lang)}</span></span></li>)}
+              {wa && <li><a href={wa} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm w-full">{t("p.shareWa")}</a></li>}
+            </ul>
+          </aside>
         </div>
-        <aside className="h-fit border border-line bg-sunken text-sm md:col-span-2 xl:col-span-1 xl:sticky xl:top-36" aria-label={t("p.delivery")}>
-          <h2 className="bar bar-brand !text-xs">{t("p.delivery")}</h2>
-          <ul className="divide-y divide-line">
-            <li className="flex gap-3 p-3"><Banknote className="size-5 shrink-0 text-brand" /><span><b className="block">{t("cod.payOnDelivery")}</b><span className="text-muted">{t("p.deliveryText")}</span></span></li>
-            {s.trust.slice(1).map((b, i) => <li key={i} className="flex gap-3 p-3"><Truck className="size-5 shrink-0 text-brand" /><span><b className="block">{tr(b.title, lang)}</b><span className="text-muted">{tr(b.text, lang)}</span></span></li>)}
-            {wa && <li className="p-3"><a href={wa} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm w-full">{t("p.shareWa")}</a></li>}
-          </ul>
-        </aside>
       </div>
 
-      <nav aria-label="Sections" className="panel sticky top-[6.2rem] z-20 mt-3 flex overflow-x-auto md:top-[7.4rem]">
-        <a href="#description" className={tab}>{t("p.description")}</a>
-        <a href="#details" className={tab}>{t("p.details")}</a>
-        <a href="#reviews" className={tab}>{t("p.reviews", { n: p.reviewCount })}</a>
-      </nav>
+      <div className="mt-14 grid gap-8 lg:grid-cols-[1.4fr_1fr]">
+        {care?.light && (
+          <section id="care" className="nb p-6 sm:p-8" aria-labelledby="care-h">
+            <h2 id="care-h" className="display mb-5 flex items-center gap-2 text-3xl"><Sprout className="size-7 text-[#2f8452]" aria-hidden />{t("care.title")}</h2>
+            <CareTabs care={care} t={t} />
+          </section>
+        )}
+        <section className={`nb bg-sun/40 p-6 sm:p-8 ${care?.light ? "" : "lg:col-span-2"}`}><BoxList kind={kind} t={t} /></section>
+      </div>
 
-      <section id="description" className="panel mt-3 scroll-mt-48 p-4">
-        <h2 className="mb-2 text-lg font-extrabold">{t("p.description")}</h2>
-        <div className="prose-lite max-w-3xl"><p>{tr(p.longDesc, lang) || tr(p.shortDesc, lang)}</p></div>
-      </section>
-
-      <section id="details" className="panel mt-3 scroll-mt-48 p-4">
-        <h2 className="mb-3 text-lg font-extrabold">{t("p.details")}</h2>
+      <section id="description" className="nb mt-8 scroll-mt-28 p-6 sm:p-8">
+        <h2 className="display mb-3 text-3xl">{t("p.description")}</h2>
+        <div className="prose-lite max-w-3xl text-lg"><p>{tr(p.longDesc, lang) || tr(p.shortDesc, lang)}</p></div>
+        <h2 id="details" className="display mb-3 mt-8 text-2xl">{t("p.details")}</h2>
         <table className="spec">
           <tbody>
             {p.sku && <tr><th>SKU</th><td className="num">{p.sku}</td></tr>}
-            {cat && <tr><th>{t("shop.category")}</th><td><Link href={`/category/${cat.slug}`} className="text-brand hover:underline">{tr(cat.name, lang)}</Link></td></tr>}
+            {cat && <tr><th>{t("shop.category")}</th><td><Link href={`/category/${cat.slug}`} className="font-semibold underline decoration-coral decoration-2 underline-offset-4">{tr(cat.name, lang)}</Link></td></tr>}
             <tr><th>{t("track.status")}</th><td>{inStock ? t("p.inStock") : t("p.soldOut")}</td></tr>
             <tr><th>{t("cod.payOnDelivery")}</th><td>{t("p.deliveryText")}</td></tr>
           </tbody>
         </table>
         {p.variants.length > 0 && (
-          <div className="mt-3 overflow-x-auto">
+          <div className="mt-4 overflow-x-auto">
             <table className="spec">
               <thead><tr><th>{t("p.chooseOptions")}</th><th>SKU</th><th>{t("shop.price")}</th><th>{t("track.status")}</th></tr></thead>
               <tbody>{p.variants.map((v) => <tr key={v.id}><td className="font-semibold">{v.name}</td><td className="num">{v.sku ?? "—"}</td><td className="num"><bdi dir="ltr">{formatMoney(v.price, cur, lang)}</bdi></td><td className={v.stock > 0 || !p.trackStock ? "font-bold text-ok" : "font-bold text-danger"}>{v.stock > 0 || !p.trackStock ? t("p.inStock") : t("p.soldOut")}</td></tr>)}</tbody>
@@ -135,32 +146,34 @@ export default async function ProductPage({ params, searchParams }: Props) {
         )}
       </section>
 
-      <section id="reviews" className="panel mt-3 scroll-mt-48 p-4" aria-labelledby="reviews-h">
-        <h2 id="reviews-h" className="mb-3 text-lg font-extrabold">{t("p.reviews", { n: p.reviewCount })}</h2>
-        <div className="grid gap-6 md:grid-cols-[16rem_1fr_20rem]">
-          <div>
-            {p.rating != null ? <><p className="num text-5xl font-extrabold">{p.rating}<span className="text-xl text-muted">/5</span></p>
-              <ul className="mt-2 space-y-1 text-xs">{dist.map((d) => <li key={d.n} className="flex items-center gap-2"><span className="num w-3">{d.n}</span><Star className="size-3 fill-accent text-accent" /><span className="h-2.5 flex-1 bg-sunken"><span className="block h-full bg-accent" style={{ width: `${(d.c / maxC) * 100}%` }} /></span><span className="num w-4 text-end text-muted">{d.c}</span></li>)}</ul></> : <p className="text-muted">{t("p.noReviews")}</p>}
+      <section id="reviews" className="mt-14 scroll-mt-28" aria-labelledby="reviews-h">
+        <h2 id="reviews-h" className="display mb-6 text-3xl sm:text-4xl">{t("p.reviews", { n: p.reviewCount })}</h2>
+        <div className="grid gap-8 md:grid-cols-[14rem_1fr] lg:grid-cols-[14rem_1fr_20rem]">
+          <div className="nb h-fit p-5">
+            {p.rating != null ? <><p className="display num text-6xl">{p.rating}<span className="text-xl text-muted">/5</span></p>
+              <ul className="mt-3 space-y-1.5 text-xs">{dist.map((d) => <li key={d.n} className="flex items-center gap-2"><span className="num w-3">{d.n}</span><Star className="size-3 fill-accent text-ink" /><span className="h-3 flex-1 overflow-hidden rounded-full border-2 border-edge bg-surface"><span className="block h-full bg-coral" style={{ width: `${(d.c / maxC) * 100}%` }} /></span><span className="num w-4 text-end text-muted">{d.c}</span></li>)}</ul></> : <p className="text-muted">{t("p.noReviews")}</p>}
           </div>
-          <ul className="divide-y divide-line border border-line">
-            {reviews.map((r) => (
-              <li key={r.id} className="p-3">
-                <div className="flex items-center justify-between gap-2"><span className="font-bold">{r.name}{r.city && <span className="font-normal text-muted"> — {r.city}</span>}</span><span className="flex" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`size-3.5 ${i < r.rating ? "fill-accent text-accent" : "text-rule"}`} />)}</span></div>
-                <p className="mt-1">{r.body}</p>
+          <ul className="grid content-start gap-4 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-1">
+            {reviews.map((r, i) => (
+              <li key={r.id} className={`sticky-note p-4 text-[#1f3d2b] ${NOTE_BG[i % NOTE_BG.length]}`} style={{ transform: `rotate(${[-0.8, 0.6][i % 2]}deg)` }}>
+                <div className="flex items-center justify-between gap-2"><span className="display">{r.name}{r.city && <span className="font-sans text-sm font-normal opacity-70"> · {r.city}</span>}</span><span className="flex" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, k) => <Star key={k} className={`size-3.5 ${k < r.rating ? "fill-[#ff6b4a] text-[#1f3d2b]" : "text-[#1f3d2b]/30"}`} />)}</span></div>
+                <p className="mt-1.5">{r.body}</p>
               </li>
             ))}
-            {reviews.length === 0 && <li className="p-4 text-muted">{t("p.noReviews")}</li>}
+            {reviews.length === 0 && <li className="nb p-5 text-muted">{t("p.noReviews")}</li>}
           </ul>
-          <div className="h-fit border border-line bg-sunken p-4"><h3 className="mb-2 font-extrabold">{t("p.writeReview")}</h3><ReviewForm productId={p.id} /></div>
+          <div className="nb h-fit p-5 md:col-span-2 lg:col-span-1"><h3 className="display mb-3 text-xl">{t("p.writeReview")}</h3><ReviewForm productId={p.id} /></div>
         </div>
       </section>
 
       {related.items.length > 0 && (
-        <section className="panel mt-3">
-          <div className="bar"><h2>{t("p.related")}</h2></div>
-          <div className="rail">{related.items.map((r) => <ProductCard key={r.id} p={r} lang={lang} t={t} currency={cur} codMode={s.checkout.codMode} />)}</div>
+        <section className="mt-16">
+          <h2 className="display mb-6 text-3xl sm:text-4xl">{t("p.related")}</h2>
+          <ProductGrid>{related.items.map((r) => <ProductCard key={r.id} p={r} lang={lang} t={t} currency={cur} codMode={s.checkout.codMode} />)}</ProductGrid>
         </section>
       )}
     </article>
   );
 }
+
+const NOTE_BG = ["bg-sun", "bg-mint", "bg-blush", "bg-sky"];

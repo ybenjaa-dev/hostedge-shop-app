@@ -69,7 +69,7 @@ export const DEFAULT_SETTINGS: Settings = {
   setupDone: false,
   store: {
     name: BRAND.name,
-    tagline: {},
+    tagline: { en: "Plants, pots & garden joy, delivered", fr: "Plantes, pots et joie du jardin, livrés chez vous", ar: "نباتات وأوانٍ وسعادة الحديقة إلى باب بيتك" },
     country: "MA",
     currency: "MAD",
     defaultLang: "fr",
@@ -87,11 +87,11 @@ export const DEFAULT_SETTINGS: Settings = {
   branding: {
     logo: BRAND.logo,
     favicon: BRAND.icon,
-    primary: "#d9480f",
-    secondary: "#232f3e",
-    accent: "#ffb703",
-    buttonStyle: "square",
-    fontLatin: "Roboto",
+    primary: "#1f3d2b",
+    secondary: "#1f3d2b",
+    accent: "#ffc83d",
+    buttonStyle: "pill",
+    fontLatin: "DM Sans",
     fontArabic: "Cairo",
   },
   checkout: {

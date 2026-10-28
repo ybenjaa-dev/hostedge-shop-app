@@ -114,7 +114,7 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
                   const out = tracked && v.stock <= 0;
                   return (
                     <button key={v.id} type="button" disabled={out} aria-pressed={variantId === v.id} onClick={() => setVariantId(v.id)}
-                      className={`border px-4 py-2 text-sm font-semibold ${variantId === v.id ? "border-brand bg-brand-soft font-bold text-brand outline outline-2 -outline-offset-2 outline-brand" : "border-rule bg-surface hover:border-ink"} ${out ? "cursor-not-allowed line-through opacity-40" : ""}`}>
+                      className={`chip !px-4 !py-2 !text-base ${variantId === v.id ? "is-on shadow-[3px_3px_0_var(--coral)]" : ""} ${out ? "cursor-not-allowed line-through opacity-40" : ""}`}>
                       {v.name}
                       {v.price !== product.price && <span className="num ms-2 text-xs opacity-70">{fmt(v.price)}</span>}
                     </button>
@@ -131,7 +131,7 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
                     const possible = product.variants.some((v) => v.options[k] === val && groupKeys.every((g) => g === k || !sel[g] || v.options[g] === sel[g]) && (!tracked || v.stock > 0));
                     return (
                       <button key={val} type="button" disabled={!possible} aria-pressed={sel[k] === val} onClick={() => setSel((s) => ({ ...s, [k]: val }))}
-                        className={`border px-4 py-2 text-sm font-semibold ${sel[k] === val ? "border-brand bg-brand-soft font-bold text-brand outline outline-2 -outline-offset-2 outline-brand" : "border-rule bg-surface hover:border-ink"} ${!possible ? "cursor-not-allowed line-through opacity-40" : ""}`}>{val}</button>
+                        className={`chip !px-4 !py-2 !text-base ${sel[k] === val ? "is-on shadow-[3px_3px_0_var(--coral)]" : ""} ${!possible ? "cursor-not-allowed line-through opacity-40" : ""}`}>{val}</button>
                     );
                   })}
                 </div>
@@ -144,10 +144,10 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
       {(!hasOffers || customQty || !offers.some((o) => o.qty === qty)) && <div>
         <span className="label" id="qty-l">{t("p.qty")}</span>
         <div className="flex items-center gap-3">
-          <div role="group" aria-labelledby="qty-l" className="inline-flex items-center border border-rule bg-surface">
-            <button type="button" aria-label="−" className="grid size-11 place-items-center hover:bg-sunken disabled:opacity-40" onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={qty <= 1}><Minus className="size-4" /></button>
+          <div role="group" aria-labelledby="qty-l" className="nb-pill inline-flex items-center">
+            <button type="button" aria-label="−" className="grid size-11 place-items-center rounded-full hover:bg-sun hover:text-[#1f3d2b] disabled:opacity-40" onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={qty <= 1}><Minus className="size-4" /></button>
             <output className="num w-10 text-center font-bold" aria-live="polite">{qty}</output>
-            <button type="button" aria-label="+" className="grid size-11 place-items-center hover:bg-sunken disabled:opacity-40" onClick={() => setQty((q) => Math.min(maxQty, q + 1))} disabled={qty >= maxQty}><Plus className="size-4" /></button>
+            <button type="button" aria-label="+" className="grid size-11 place-items-center rounded-full hover:bg-sun hover:text-[#1f3d2b] disabled:opacity-40" onClick={() => setQty((q) => Math.min(maxQty, q + 1))} disabled={qty >= maxQty}><Plus className="size-4" /></button>
           </div>
           {tracked && available != null && available > 0 && available <= 5 && <span className="text-sm font-semibold text-danger">{t("p.onlyLeft", { n: available })}</span>}
         </div>
@@ -155,7 +155,7 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
       {st.bundlesInForm && !hasOffers && bundleTiers.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {bundleTiers.map(([n, p]) => (
-            <button key={n} type="button" onClick={() => setQty(Math.min(maxQty, n))} className={`border px-3 py-1.5 text-xs font-bold ${qty >= n ? "border-accent bg-accent/25 text-ink" : "border-dashed border-rule bg-surface hover:border-ink"}`}>
+            <button key={n} type="button" onClick={() => setQty(Math.min(maxQty, n))} className={`chip !text-xs ${qty >= n ? "!bg-sun !text-[#1f3d2b]" : "!border-dashed"}`}>
               🎁 {t("cod.bundle", { n, pct: p })}
             </button>
           ))}
@@ -181,9 +181,9 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
   return (
     <div>
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <span dir="ltr" className="num text-4xl font-extrabold text-brand">{fmt(unit)}</span>
+        <span dir="ltr" className="display num rounded-full border-2 border-edge bg-sun px-4 py-0.5 text-4xl text-[#1f3d2b] shadow-[3px_3px_0_var(--edge)]">{fmt(unit)}</span>
         {product.compareAt && product.compareAt > unit && <span dir="ltr" className="num text-lg text-muted line-through">{fmt(product.compareAt)}</span>}
-        {product.compareAt && product.compareAt > unit && <span className="bg-danger px-2 py-0.5 text-xs font-extrabold text-white">{t("p.save", { pct: Math.round(((product.compareAt - unit) / product.compareAt) * 100) })}</span>}
+        {product.compareAt && product.compareAt > unit && <span className="sticker coral">{t("p.save", { pct: Math.round(((product.compareAt - unit) / product.compareAt) * 100) })}</span>}
       </div>
       {pct > 0 && !hasOffers && <p className="mt-1 text-sm font-semibold text-ok">🎁 {t("cod.bundle", { n: qty, pct })}</p>}
 
@@ -206,7 +206,7 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
       {/* popup placement: bottom sheet on mobile, modal on desktop */}
       {st.codMode && st.placement === "popup" && (
         <dialog ref={dialogRef} aria-label={t("cod.title")}
-          className="m-0 mt-auto max-h-[94dvh] w-full max-w-none overflow-y-auto overscroll-contain rounded-t-3xl bg-bg p-0 text-ink backdrop:bg-black/55 backdrop:backdrop-blur-[2px] open:animate-sheet-up md:m-auto md:max-w-lg md:rounded-3xl"
+          className="m-0 mt-auto max-h-[94dvh] w-full max-w-none overflow-y-auto overscroll-contain rounded-t-[2rem] border-2 border-edge bg-bg p-0 text-ink backdrop:bg-black/55 backdrop:backdrop-blur-[2px] open:animate-sheet-up md:m-auto md:max-w-lg md:rounded-[2rem]"
           onClick={(e) => { if (e.target === dialogRef.current) dialogRef.current?.close(); }}>
           <div className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-bg/95 px-5 py-3 backdrop-blur">
             <div className="min-w-0"><h2 className="display text-lg font-extrabold">{t("cod.title")}</h2><p className="truncate text-xs text-muted">{productLabel}</p></div>
@@ -219,10 +219,10 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
       )}
 
       {/* sticky mobile bar */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-rule bg-surface p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-2px_8px_rgba(0,0,0,.12)] md:hidden">
-        <div className="mx-auto flex max-w-lg items-center gap-3">
-          <div className="min-w-0 leading-tight"><p className="truncate text-xs text-muted">{productLabel}</p><p dir="ltr" className="num text-lg font-extrabold">{fmt(lineTotal)}</p></div>
-          {cta("btn-lg ms-auto flex-1 !text-base", true)}
+      <div className="nb-pill fixed inset-x-3 bottom-[5.25rem] z-30 mx-auto max-w-sm bg-surface/95 p-2 ps-4 backdrop-blur md:hidden">
+        <div className="flex items-center gap-3">
+          <div className="min-w-0 leading-tight"><p className="truncate text-xs text-muted">{productLabel}</p><p dir="ltr" className="num text-lg">{fmt(lineTotal)}</p></div>
+          {cta("btn-sm !min-h-11 ms-auto flex-1 !text-base", true)}
         </div>
       </div>
     </div>
