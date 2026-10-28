@@ -103,7 +103,7 @@ export default async function Home() {
                   <blockquote className="text-lg font-semibold leading-snug">{r.body}</blockquote>
                   <div className="mt-4 flex items-center justify-between gap-2 border-t-2 border-ink pt-3">
                     <figcaption className="text-sm font-extrabold uppercase">{r.name}{r.city && <span className="font-medium normal-case text-muted"> · {r.city}</span>}</figcaption>
-                    <span className="flex" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, k) => <Star key={k} className={`size-4 ${k < r.rating ? "fill-ink text-ink" : "text-line"}`} />)}</span>
+                    <span className="flex" role="img" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, k) => <Star key={k} className={`size-4 ${k < r.rating ? "fill-ink text-ink" : "text-line"}`} />)}</span>
                   </div>
                 </figure>
               ))}

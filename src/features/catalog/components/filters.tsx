@@ -1,10 +1,11 @@
 import { SlidersHorizontal } from "lucide-react";
+import { FilterExtras } from "./filter-extras";
 
 type Props = {
   action: string;
-  values: { q: string; category: string; min: string; max: string; stock: string; sort: string };
+  values: { q: string; category: string; min: string; max: string; stock: string; sort: string; opt?: string };
   categories: { slug: string; name: string }[];
-  labels: { filters: string; category: string; all: string; price: string; min: string; max: string; stock: string; apply: string; clear: string; sort: string; search: string; sorts: Record<string, string> };
+  labels: { filters: string; category: string; all: string; price: string; min: string; max: string; stock: string; active?: string; clearAll?: string; apply: string; clear: string; sort: string; search: string; sorts: Record<string, string> };
 };
 
 /** Plain GET form: zero client JS, works on the slowest phones. */
@@ -37,6 +38,7 @@ export function CatalogFilters({ action, values, categories, labels }: Props) {
           <input name="max" inputMode="decimal" placeholder={labels.max} defaultValue={values.max} className="field" aria-label={labels.max} />
         </div>
       </div>
+      <FilterExtras q={values.q} category={values.category} min={values.min} max={values.max} opt={values.opt ?? ""} labels={{ price: labels.price, active: labels.active ?? "Active filters", clearAll: labels.clearAll ?? "Clear all" }} />
       <label className="flex items-center gap-2 text-sm font-medium"><input type="checkbox" name="stock" value="1" defaultChecked={values.stock === "1"} className="size-5 accent-[var(--brand)]" />{labels.stock}</label>
       <div className="flex gap-2">
         <button className="btn btn-primary flex-1">{labels.apply}</button>

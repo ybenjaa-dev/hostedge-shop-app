@@ -1,4 +1,4 @@
-import { getSessionUser } from "@/lib/auth";
+import { userCan } from "@/lib/auth";
 import { getEnv } from "@/lib/env";
 import { buildWhere } from "@/features/orders/queries";
 import { toMajorString } from "@/lib/money";
@@ -15,7 +15,7 @@ const esc = (v: unknown) => {
 const plainItems = (s: string) => (s ?? "").replace(/\{[^{}]*\}/g, (m) => tr(m, "en", "fr"));
 
 export async function GET(req: Request) {
-  if (!(await getSessionUser())) return new Response("Unauthorized", { status: 401 });
+  if (!(await userCan("orders.export"))) return new Response("Unauthorized", { status: 401 });
   const u = new URL(req.url);
   const ids = u.searchParams.get("ids")?.split(",").filter(Boolean);
   const db = getEnv().DB;
