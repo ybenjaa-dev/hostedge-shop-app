@@ -9,10 +9,11 @@ import { fileUrl } from "@/lib/storage";
 import { toMajorString, formatMoney } from "@/lib/money";
 import { whatsappLink } from "@/lib/phone";
 import { Banknote, Truck } from "lucide-react";
+import { splitBookDesc } from "@/features/catalog/book-meta";
 import { getProduct, listBundles, listCities, listProducts, listReviews, listCategories } from "@/features/catalog/queries";
 import { Gallery } from "@/features/catalog/components/gallery";
 import { ProductBuy } from "@/features/checkout/components/product-buy";
-import { ProductCard } from "@/features/catalog/components/product-card";
+import { ProductCard, ProductGrid } from "@/features/catalog/components/product-card";
 import { ReviewForm } from "@/features/catalog/components/review-form";
 import { ViewContent } from "@/features/catalog/components/view-content";
 
@@ -45,6 +46,8 @@ export default async function ProductPage({ params, searchParams }: Props) {
   ]);
   const cat = cats.find((c) => c.id === p.categoryId);
   const name = tr(p.name, lang);
+  const author = tr(p.shortDesc, lang);
+  const { body: sample, meta } = splitBookDesc(tr(p.longDesc, lang));
   const inStock = !p.trackStock || (p.variants.length ? p.variants.some((v) => v.stock > 0) : p.stock > 0);
   const jsonLd = {
     "@context": "https://schema.org",
@@ -67,25 +70,27 @@ export default async function ProductPage({ params, searchParams }: Props) {
   const cur = s.store.currency;
   const dist = [5, 4, 3, 2, 1].map((n) => ({ n, c: reviews.filter((r) => r.rating === n).length }));
   const maxC = Math.max(1, ...dist.map((d) => d.c));
-  const tab = "border-e border-line px-5 py-3 text-sm font-extrabold uppercase tracking-wide hover:bg-sunken hover:text-brand";
   return (
-    <article className="mx-auto max-w-[84rem] px-3 py-3 pb-28 md:pb-6">
+    <article className="mx-auto max-w-[80rem] px-4 py-6 pb-28 sm:py-10 md:pb-12">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <ViewContent id={p.id} value={p.price} currency={cur} />
-      <nav aria-label="Breadcrumb" className="mb-3 text-xs text-muted">
-        <Link href="/" className="hover:text-brand hover:underline">{t("nav.home")}</Link> › <Link href="/shop" className="hover:text-brand hover:underline">{t("nav.shop")}</Link> › {cat && <><Link href={`/category/${cat.slug}`} className="hover:text-brand hover:underline">{tr(cat.name, lang)}</Link> › </>}<span className="font-bold text-ink">{name}</span>
+      <nav aria-label="Breadcrumb" className="eyebrow !text-muted mb-6">
+        <Link href="/" className="hover:text-brand">{t("nav.home")}</Link> / <Link href="/shop" className="hover:text-brand">{t("nav.shop")}</Link>{cat && <> / <Link href={`/category/${cat.slug}`} className="hover:text-brand">{tr(cat.name, lang)}</Link></>}
       </nav>
-      <div className="panel grid gap-6 p-4 md:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)_17rem]">
-        <Gallery images={p.images} alt={name} closeLabel={t("cod.close")} />
-        <div>
-          <h1 className="text-2xl font-extrabold leading-tight sm:text-3xl">{name}</h1>
-          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-line pb-3 text-sm">
-            {p.rating != null ? <span className="inline-flex items-center gap-1"><span className="flex">{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`size-4 ${i < Math.round(p.rating!) ? "fill-accent text-accent" : "text-rule"}`} />)}</span><a href="#reviews" className="font-bold text-brand hover:underline"><span className="num">{p.rating}</span> · {t("p.reviews", { n: p.reviewCount })}</a></span> : <span className="text-muted">{t("p.noReviews")}</span>}
-            {p.sku && <span className="text-muted">SKU: <span className="num font-semibold text-ink">{p.sku}</span></span>}
-            <span className={`font-extrabold ${inStock ? "text-ok" : "text-danger"}`}>{inStock ? t("p.inStock") : t("p.soldOut")}</span>
+
+      <div className="grid gap-10 lg:grid-cols-[minmax(0,27rem)_minmax(0,1fr)] lg:gap-16">
+        <div className="self-start border border-line bg-sunken/70 px-6 py-10 sm:px-12 lg:sticky lg:top-6">
+          <Gallery images={p.images} alt={name} closeLabel={t("cod.close")} />
+        </div>
+        <div className="min-w-0">
+          {cat && <Link href={`/category/${cat.slug}`} className="pill is-on !px-3 !py-0.5 !text-[0.7rem] uppercase tracking-widest rtl:tracking-normal">{tr(cat.name, lang)}</Link>}
+          <h1 className="display mt-3 text-4xl sm:text-5xl lg:text-6xl">{name}</h1>
+          {author && <p className="italic-serif mt-2 text-xl text-muted sm:text-2xl">{t("bk.byline", { name: author })}</p>}
+          <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 border-y border-line py-3 text-sm">
+            {p.rating != null ? <span className="inline-flex items-center gap-1.5"><span className="flex">{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`size-4 ${i < Math.round(p.rating!) ? "fill-accent text-accent" : "text-rule"}`} />)}</span><a href="#reviews" className="font-semibold hover:text-brand hover:underline"><span className="num">{p.rating}</span> · {t("p.reviews", { n: p.reviewCount })}</a></span> : <span className="text-muted">{t("p.noReviews")}</span>}
+            <span className={`text-xs font-bold uppercase tracking-[0.14em] rtl:tracking-normal ${inStock ? "text-ok" : "text-danger"}`}>{inStock ? t("p.inStock") : t("p.soldOut")}</span>
           </p>
-          <p className="mt-3 leading-relaxed text-muted">{tr(p.shortDesc, lang)}</p>
-          <div className="mt-4">
+          <div className="mt-6">
             <ProductBuy
               autoOpen={sp.order === "1"}
               product={{ id: p.id, slug: p.slug, name: p.name, price: p.price, compareAt: p.compareAt, stock: p.stock, trackStock: p.trackStock, variants: p.variants, image: p.images[0]?.key ?? null }}
@@ -93,72 +98,69 @@ export default async function ProductPage({ params, searchParams }: Props) {
               cities={cities}
             />
           </div>
+          <aside className="mt-8 border-t border-line pt-5 text-sm" aria-label={t("p.delivery")}>
+            <h2 className="eyebrow mb-3">{t("p.delivery")}</h2>
+            <ul className="space-y-3">
+              <li className="flex gap-3"><Banknote className="size-5 shrink-0 text-brand" aria-hidden /><span><b className="block">{t("cod.payOnDelivery")}</b><span className="text-muted">{t("p.deliveryText")}</span></span></li>
+              {s.trust.slice(1).map((b, i) => <li key={i} className="flex gap-3"><Truck className="size-5 shrink-0 text-brand" aria-hidden /><span><b className="block">{tr(b.title, lang)}</b><span className="text-muted">{tr(b.text, lang)}</span></span></li>)}
+              {wa && <li><a href={wa} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm">{t("p.shareWa")}</a></li>}
+            </ul>
+          </aside>
         </div>
-        <aside className="h-fit border border-line bg-sunken text-sm md:col-span-2 xl:col-span-1 xl:sticky xl:top-36" aria-label={t("p.delivery")}>
-          <h2 className="bar bar-brand !text-xs">{t("p.delivery")}</h2>
-          <ul className="divide-y divide-line">
-            <li className="flex gap-3 p-3"><Banknote className="size-5 shrink-0 text-brand" /><span><b className="block">{t("cod.payOnDelivery")}</b><span className="text-muted">{t("p.deliveryText")}</span></span></li>
-            {s.trust.slice(1).map((b, i) => <li key={i} className="flex gap-3 p-3"><Truck className="size-5 shrink-0 text-brand" /><span><b className="block">{tr(b.title, lang)}</b><span className="text-muted">{tr(b.text, lang)}</span></span></li>)}
-            {wa && <li className="p-3"><a href={wa} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm w-full">{t("p.shareWa")}</a></li>}
-          </ul>
-        </aside>
       </div>
 
-      <nav aria-label="Sections" className="panel sticky top-[6.2rem] z-20 mt-3 flex overflow-x-auto md:top-[7.4rem]">
-        <a href="#description" className={tab}>{t("p.description")}</a>
-        <a href="#details" className={tab}>{t("p.details")}</a>
-        <a href="#reviews" className={tab}>{t("p.reviews", { n: p.reviewCount })}</a>
-      </nav>
-
-      <section id="description" className="panel mt-3 scroll-mt-48 p-4">
-        <h2 className="mb-2 text-lg font-extrabold">{t("p.description")}</h2>
-        <div className="prose-lite max-w-3xl"><p>{tr(p.longDesc, lang) || tr(p.shortDesc, lang)}</p></div>
-      </section>
-
-      <section id="details" className="panel mt-3 scroll-mt-48 p-4">
-        <h2 className="mb-3 text-lg font-extrabold">{t("p.details")}</h2>
-        <table className="spec">
-          <tbody>
-            {p.sku && <tr><th>SKU</th><td className="num">{p.sku}</td></tr>}
-            {cat && <tr><th>{t("shop.category")}</th><td><Link href={`/category/${cat.slug}`} className="text-brand hover:underline">{tr(cat.name, lang)}</Link></td></tr>}
-            <tr><th>{t("track.status")}</th><td>{inStock ? t("p.inStock") : t("p.soldOut")}</td></tr>
-            <tr><th>{t("cod.payOnDelivery")}</th><td>{t("p.deliveryText")}</td></tr>
-          </tbody>
-        </table>
-        {p.variants.length > 0 && (
-          <div className="mt-3 overflow-x-auto">
-            <table className="spec">
-              <thead><tr><th>{t("p.chooseOptions")}</th><th>SKU</th><th>{t("shop.price")}</th><th>{t("track.status")}</th></tr></thead>
-              <tbody>{p.variants.map((v) => <tr key={v.id}><td className="font-semibold">{v.name}</td><td className="num">{v.sku ?? "—"}</td><td className="num"><bdi dir="ltr">{formatMoney(v.price, cur, lang)}</bdi></td><td className={v.stock > 0 || !p.trackStock ? "font-bold text-ok" : "font-bold text-danger"}>{v.stock > 0 || !p.trackStock ? t("p.inStock") : t("p.soldOut")}</td></tr>)}</tbody>
+      <div className="rule-double mt-14 grid gap-10 border-b border-line pb-12 pt-10 lg:grid-cols-[19rem_minmax(0,1fr)] lg:gap-16">
+        <section id="details" aria-labelledby="details-h">
+          <h2 id="details-h" className="display mb-2 text-2xl">{t("bk.details")}</h2>
+          <table className="spec">
+            <tbody>
+              {author && <tr><th>{t("bk.author")}</th><td className="serif text-base italic">{author}</td></tr>}
+              {cat && <tr><th>{t("bk.genre")}</th><td><Link href={`/category/${cat.slug}`} className="hover:text-brand hover:underline">{tr(cat.name, lang)}</Link></td></tr>}
+              {meta.map(([k, v]) => <tr key={k}><th>{k}</th><td className="num">{v}</td></tr>)}
+              {p.sku && <tr><th>SKU</th><td className="num">{p.sku}</td></tr>}
+              <tr><th>{t("track.status")}</th><td>{inStock ? t("p.inStock") : t("p.soldOut")}</td></tr>
+            </tbody>
+          </table>
+          {p.variants.length > 0 && (
+            <table className="spec mt-4">
+              <thead><tr><th>{t("p.chooseOptions")}</th><th>{t("shop.price")}</th></tr></thead>
+              <tbody>{p.variants.map((v) => <tr key={v.id}><td className="font-semibold">{v.name}</td><td className="num"><bdi dir="ltr">{formatMoney(v.price, cur, lang)}</bdi></td></tr>)}</tbody>
             </table>
-          </div>
-        )}
-      </section>
+          )}
+        </section>
+        <section id="description" aria-labelledby="desc-h" className="min-w-0">
+          <p className="eyebrow">{t("bk.sample")}</p>
+          <h2 id="desc-h" className="sr-only">{t("p.description")}</h2>
+          <div className="sample mt-4 max-w-2xl"><p>{sample || author}</p></div>
+          <p className="display mt-2 text-center text-2xl tracking-[0.5em] text-brand" aria-hidden>❦</p>
+        </section>
+      </div>
 
-      <section id="reviews" className="panel mt-3 scroll-mt-48 p-4" aria-labelledby="reviews-h">
-        <h2 id="reviews-h" className="mb-3 text-lg font-extrabold">{t("p.reviews", { n: p.reviewCount })}</h2>
-        <div className="grid gap-6 md:grid-cols-[16rem_1fr_20rem]">
-          <div>
-            {p.rating != null ? <><p className="num text-5xl font-extrabold">{p.rating}<span className="text-xl text-muted">/5</span></p>
-              <ul className="mt-2 space-y-1 text-xs">{dist.map((d) => <li key={d.n} className="flex items-center gap-2"><span className="num w-3">{d.n}</span><Star className="size-3 fill-accent text-accent" /><span className="h-2.5 flex-1 bg-sunken"><span className="block h-full bg-accent" style={{ width: `${(d.c / maxC) * 100}%` }} /></span><span className="num w-4 text-end text-muted">{d.c}</span></li>)}</ul></> : <p className="text-muted">{t("p.noReviews")}</p>}
+      <section id="reviews" className="scroll-mt-8 py-12" aria-labelledby="reviews-h">
+        <h2 id="reviews-h" className="display mb-8 text-center text-3xl sm:text-4xl">{t("bk.readers")}</h2>
+        <div className="grid gap-10 lg:grid-cols-[14rem_minmax(0,1fr)_20rem]">
+          <div className="text-center lg:text-start">
+            {p.rating != null ? <><p className="num display text-6xl">{p.rating}<span className="text-xl text-muted">/5</span></p>
+              <ul className="mx-auto mt-3 max-w-[14rem] space-y-1 text-xs">{dist.map((d) => <li key={d.n} className="flex items-center gap-2"><span className="num w-3">{d.n}</span><Star className="size-3 fill-accent text-accent" /><span className="h-1.5 flex-1 rounded-full bg-sunken"><span className="block h-full rounded-full bg-brand" style={{ width: `${(d.c / maxC) * 100}%` }} /></span><span className="num w-4 text-end text-muted">{d.c}</span></li>)}</ul></> : <p className="italic-serif text-muted">{t("p.noReviews")}</p>}
           </div>
-          <ul className="divide-y divide-line border border-line">
+          <ul className="space-y-6">
             {reviews.map((r) => (
-              <li key={r.id} className="p-3">
-                <div className="flex items-center justify-between gap-2"><span className="font-bold">{r.name}{r.city && <span className="font-normal text-muted"> — {r.city}</span>}</span><span className="flex" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`size-3.5 ${i < r.rating ? "fill-accent text-accent" : "text-rule"}`} />)}</span></div>
-                <p className="mt-1">{r.body}</p>
+              <li key={r.id} className="border-s-2 border-brand ps-5">
+                <span className="flex" aria-label={`${r.rating}/5`}>{Array.from({ length: 5 }).map((_, i) => <Star key={i} className={`size-3.5 ${i < r.rating ? "fill-accent text-accent" : "text-rule"}`} />)}</span>
+                <p className="serif mt-1.5 text-lg italic leading-relaxed">“{r.body}”</p>
+                <p className="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-muted rtl:tracking-normal">{r.name}{r.city && <span className="font-normal normal-case tracking-normal"> — {r.city}</span>}</p>
               </li>
             ))}
-            {reviews.length === 0 && <li className="p-4 text-muted">{t("p.noReviews")}</li>}
+            {reviews.length === 0 && <li className="italic-serif text-muted">{t("p.noReviews")}</li>}
           </ul>
-          <div className="h-fit border border-line bg-sunken p-4"><h3 className="mb-2 font-extrabold">{t("p.writeReview")}</h3><ReviewForm productId={p.id} /></div>
+          <div className="h-fit border border-ink bg-surface p-5 shadow-[4px_4px_0_var(--ink)]"><h3 className="display mb-3 text-xl">{t("p.writeReview")}</h3><ReviewForm productId={p.id} /></div>
         </div>
       </section>
 
       {related.items.length > 0 && (
-        <section className="panel mt-3">
-          <div className="bar"><h2>{t("p.related")}</h2></div>
-          <div className="rail">{related.items.map((r) => <ProductCard key={r.id} p={r} lang={lang} t={t} currency={cur} codMode={s.checkout.codMode} />)}</div>
+        <section className="rule-double pt-10">
+          <h2 className="display mb-2 text-center text-3xl sm:text-4xl">{t("p.related")}</h2>
+          <ProductGrid>{related.items.map((r) => <ProductCard key={r.id} p={r} lang={lang} t={t} currency={cur} codMode={s.checkout.codMode} />)}</ProductGrid>
         </section>
       )}
     </article>

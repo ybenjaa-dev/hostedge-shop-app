@@ -1,81 +1,63 @@
 import Link from "next/link";
-import { Search, Menu, Phone, PackageSearch, LayoutGrid, ChevronDown } from "lucide-react";
+import { Search, PackageSearch } from "lucide-react";
 import type { Settings } from "@/lib/settings";
 import { tr, type Lang } from "@/lib/i18n-core";
 import type { TFn } from "@/lib/dict";
 import { fileUrl } from "@/lib/storage";
-import { formatPhoneIntl } from "@/lib/phone";
 import { LangSwitcher } from "./lang-switcher";
 import { ThemeToggle } from "./theme-toggle";
 import { CartButton } from "@/features/checkout/components/cart-button";
 
-/** Classic three-tier header: utility bar · logo + wide search + help · department nav. */
+/** Editorial masthead: slim notice strip · centred wordmark between search and cart · category links under a double rule. */
 export function SiteHeader({ s, lang, t, categories }: { s: Settings; lang: Lang; t: TFn; categories: { slug: string; name: string }[] }) {
   const logo = fileUrl(s.branding.logo);
   const ann = s.announcement.enabled ? tr(s.announcement.text, lang) : "";
-  const phone = s.store.phones.filter(Boolean)[0];
-  const logoEl = logo ? (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src={logo} alt={s.store.name} className="brand-logo h-9 w-auto max-w-44 object-contain sm:h-11" height={44} />
-  ) : (
-    <span dir="auto" className="display text-[1.55rem] font-extrabold tracking-tight text-brand sm:text-3xl">{s.store.name}</span>
-  );
-  const searchForm = (idp: string) => (
-    <form action="/shop" role="search" className="flex w-full">
-      <label className="sr-only" htmlFor={`${idp}-q`}>{t("nav.search")}</label>
-      <select name="category" aria-label={t("shop.category")} className="field hidden !w-56 shrink-0 !rounded-e-none !border-e-0 bg-sunken font-semibold md:block" defaultValue="">
-        <option value="">{t("shop.allCategories")}</option>
-        {categories.map((c) => <option key={c.slug} value={c.slug}>{tr(c.name, lang)}</option>)}
-      </select>
-      <input id={`${idp}-q`} name="q" type="search" placeholder={t("shop.searchPh")} className="field min-w-0 flex-1 md:!rounded-none" enterKeyHint="search" />
-      <button className="btn btn-primary !rounded-s-none px-4" aria-label={t("common.search")}><Search className="size-5" /></button>
-    </form>
-  );
+  const tagline = tr(s.store.tagline, lang) || t("bk.tagline");
   return (
-    <header className="sticky top-0 z-40 shadow-sm">
-      <div className="topbar bg-secondary text-[0.8rem] text-white">
-        <div className="mx-auto flex h-8 max-w-[84rem] items-center justify-between gap-3 px-3">
-          <p className="min-w-0 truncate font-medium">{ann || s.store.name}</p>
+    <header className="relative z-40">
+      <div className="border-b border-line">
+        <div className="mx-auto flex h-9 max-w-[80rem] items-center justify-between gap-3 px-4">
+          <p className="italic-serif min-w-0 truncate text-[0.82rem] text-muted">{ann || t("bk.tagline")}</p>
           <div className="flex shrink-0 items-center">
-            {phone && <a href={`tel:+${phone.replace(/\D/g, "")}`} dir="ltr" className="btn btn-ghost me-1 hidden items-center gap-1.5 sm:inline-flex"><Phone className="size-3.5" />{formatPhoneIntl(phone.replace(/\D/g, ""))}</a>}
-            <Link href="/track" className="btn btn-ghost hidden sm:inline-flex"><PackageSearch className="size-3.5" />{t("nav.track")}</Link>
+            <Link href="/track" className="btn btn-ghost btn-sm hidden !min-h-8 sm:inline-flex"><PackageSearch className="size-3.5" aria-hidden />{t("nav.track")}</Link>
             <LangSwitcher current={lang} langs={s.store.langs} label={t("nav.language")} />
-            <ThemeToggle className="btn btn-ghost" />
+            <ThemeToggle className="btn btn-ghost btn-sm !min-h-8" />
           </div>
         </div>
       </div>
 
-      <div className="border-b border-line bg-surface">
-        <div className="mx-auto flex max-w-[84rem] items-center gap-3 px-3 py-2.5 md:gap-6">
-          <details className="relative md:hidden">
-            <summary aria-label={t("nav.menu")} className="btn btn-outline btn-sm list-none !px-2 [&::-webkit-details-marker]:hidden"><Menu className="size-5" /></summary>
-            <nav className="absolute start-0 top-full z-50 mt-2 w-72 border border-rule bg-surface shadow-lg" aria-label={t("nav.menu")}>
-              <Link href="/shop" className="block border-b border-line px-4 py-3 font-bold hover:bg-sunken">{t("nav.shop")}</Link>
-              {categories.map((c) => <Link key={c.slug} href={`/category/${c.slug}`} className="block border-b border-line px-4 py-3 hover:bg-sunken">{tr(c.name, lang)}</Link>)}
-              <Link href="/track" className="block px-4 py-3 hover:bg-sunken">{t("nav.track")}</Link>
-            </nav>
-          </details>
-          <Link href="/" aria-label={s.store.name} className="shrink-0">{logoEl}</Link>
-          <div className="hidden flex-1 md:block">{searchForm("d")}</div>
-          <div className="ms-auto flex items-center gap-2">
-            {s.store.whatsapp && <p className="hidden text-end text-xs leading-tight text-muted xl:block">{t("common.whatsapp")}<br /><b dir="ltr" className="text-sm text-ink">{formatPhoneIntl(s.store.whatsapp.replace(/\D/g, ""))}</b></p>}
-            {!s.checkout.codMode && <CartButton label={t("nav.cart")} />}
-          </div>
+      <div className="mx-auto grid max-w-[80rem] grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 pb-3 pt-4 sm:pt-6">
+        <details className="group relative justify-self-start">
+          <summary aria-label={t("nav.search")} className="btn btn-ghost btn-sm cursor-pointer list-none !px-2 [&::-webkit-details-marker]:hidden"><Search className="size-5" aria-hidden /><span className="hidden text-xs sm:inline">{t("common.search")}</span></summary>
+          <form action="/shop" role="search" className="absolute start-0 top-full z-50 mt-2 flex w-[min(21rem,calc(100vw-2rem))] border border-ink bg-surface p-1.5 shadow-[4px_4px_0_var(--ink)]">
+            <label className="sr-only" htmlFor="hdr-q">{t("nav.search")}</label>
+            <input id="hdr-q" name="q" type="search" placeholder={t("bk.searchPh")} className="field min-w-0 flex-1 !border-0 !bg-transparent" enterKeyHint="search" />
+            <button className="btn btn-primary btn-sm !shadow-none" aria-label={t("common.search")}><Search className="size-4" /></button>
+          </form>
+        </details>
+
+        <Link href="/" aria-label={s.store.name} className="group flex flex-col items-center text-center">
+          {logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logo} alt={s.store.name} className="brand-logo h-10 w-auto max-w-56 object-contain sm:h-14" height={56} />
+          ) : (
+            <span dir="auto" className="display max-w-[11rem] text-[1.45rem] leading-[1.05] sm:max-w-none sm:text-5xl lg:text-[3.4rem]">{s.store.name}</span>
+          )}
+          <span className="eyebrow mt-1.5 hidden !text-[0.62rem] !text-muted sm:block">{tagline}</span>
+        </Link>
+
+        <div className="flex items-center gap-1 justify-self-end">
+          <Link href="/track" aria-label={t("nav.track")} className="btn btn-ghost btn-sm !px-2 sm:hidden"><PackageSearch className="size-5" /></Link>
+          {!s.checkout.codMode && <CartButton label={t("nav.cart")} />}
         </div>
-        <div className="px-3 pb-2.5 md:hidden">{searchForm("m")}</div>
       </div>
 
-      <nav className="hidden bg-secondary/95 text-white md:block" aria-label="Main">
-        <div className="mx-auto flex max-w-[84rem] items-stretch px-3">
-          <details className="group relative">
-            <summary className="flex h-11 cursor-pointer list-none items-center gap-2 bg-brand px-4 text-sm font-extrabold uppercase tracking-wide text-brand-ink [&::-webkit-details-marker]:hidden"><LayoutGrid className="size-4" />{t("shop.allCategories")}<ChevronDown className="size-4 transition group-open:rotate-180" /></summary>
-            <ul className="absolute start-0 top-full z-50 w-64 border border-rule bg-surface py-1 text-ink shadow-lg">
-              {categories.map((c) => <li key={c.slug}><Link href={`/category/${c.slug}`} className="block px-4 py-2 hover:bg-sunken">{tr(c.name, lang)}</Link></li>)}
-              {categories.length === 0 && <li className="px-4 py-2 text-muted">—</li>}
-            </ul>
-          </details>
-          <Link href="/shop" className="flex h-11 items-center px-4 text-sm font-bold uppercase hover:bg-white/10">{t("nav.shop")}</Link>
-          {categories.slice(0, 6).map((c) => <Link key={c.slug} href={`/category/${c.slug}`} className="flex h-11 items-center px-4 text-sm font-semibold hover:bg-white/10">{tr(c.name, lang)}</Link>)}
+      <nav aria-label="Main" className="rule-double border-b border-line">
+        <div className="mx-auto max-w-[80rem] px-4">
+          <ul className="no-scrollbar flex items-center gap-x-6 overflow-x-auto overflow-y-hidden sm:justify-center sm:gap-x-9">
+            <li><Link href="/shop" className="mast-link !text-brand">{t("bk.allBooks")}</Link></li>
+            {categories.map((c) => <li key={c.slug}><Link href={`/category/${c.slug}`} className="mast-link">{tr(c.name, lang)}</Link></li>)}
+          </ul>
         </div>
       </nav>
     </header>

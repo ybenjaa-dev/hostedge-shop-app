@@ -20,10 +20,11 @@ export type ProductCard = {
   featured: boolean;
   variantNames: string[];
   variantCount: number;
+  shortDesc: string; // JSON i18n — for books: the author
 };
 
 const CARD_SELECT = `
-  p.id, p.slug, p.name, p.price, p.compare_at AS compareAt, p.category_id AS categoryId, p.featured,
+  p.id, p.slug, p.name, p.short_desc AS shortDesc, p.price, p.compare_at AS compareAt, p.category_id AS categoryId, p.featured,
   (SELECT key FROM product_images i WHERE i.product_id = p.id ORDER BY i.position LIMIT 1) AS image,
   (SELECT COUNT(*) FROM product_variants v WHERE v.product_id = p.id) AS variantCount,
   (SELECT COALESCE(SUM(v.stock),0) FROM product_variants v WHERE v.product_id = p.id) AS variantStock,
@@ -41,6 +42,7 @@ function toCard(r: Row): ProductCard {
     id: r.id as string,
     slug: r.slug as string,
     name: r.name as string,
+    shortDesc: (r.shortDesc as string | null) ?? "",
     price: r.price as number,
     compareAt: (r.compareAt as number | null) ?? null,
     image: (r.image as string | null) ?? null,

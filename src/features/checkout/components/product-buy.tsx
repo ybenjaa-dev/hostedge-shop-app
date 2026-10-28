@@ -181,22 +181,22 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
   return (
     <div>
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        <span dir="ltr" className="num text-4xl font-extrabold text-brand">{fmt(unit)}</span>
+        <span dir="ltr" className="num display text-4xl text-brand sm:text-5xl">{fmt(unit)}</span>
         {product.compareAt && product.compareAt > unit && <span dir="ltr" className="num text-lg text-muted line-through">{fmt(product.compareAt)}</span>}
-        {product.compareAt && product.compareAt > unit && <span className="bg-danger px-2 py-0.5 text-xs font-extrabold text-white">{t("p.save", { pct: Math.round(((product.compareAt - unit) / product.compareAt) * 100) })}</span>}
+        {product.compareAt && product.compareAt > unit && <span className="rounded-full bg-accent px-2.5 py-0.5 text-xs font-extrabold text-accent-ink">{t("p.save", { pct: Math.round(((product.compareAt - unit) / product.compareAt) * 100) })}</span>}
       </div>
       {pct > 0 && !hasOffers && <p className="mt-1 text-sm font-semibold text-ok">🎁 {t("cod.bundle", { n: qty, pct })}</p>}
 
       <div className="mt-6">{picker}</div>
 
       <div className="mt-6">{cta("btn-lg w-full text-base")}</div>
-      {st.codMode && <p className="mt-2 text-center text-xs text-muted">{t("cod.payOnDelivery")}</p>}
+      {st.codMode && <p className="italic-serif mt-3 text-center text-sm text-muted">{t("cod.payOnDelivery")}</p>}
 
       {/* inline placement */}
       {st.codMode && st.placement === "inline" && open && (
         <section id="order" className="card mt-6 scroll-mt-24 animate-fade p-5" aria-label={t("cod.title")}>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="display text-xl font-extrabold">{t("cod.title")}</h2>
+            <h2 className="display text-2xl">{t("cod.title")}</h2>
             <button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(false)} aria-label={t("cod.close")}><X className="size-4" /></button>
           </div>
           <OrderForm lines={lines} bundles={bundles} cities={cities} source="product-inline" productName={productLabel} />
@@ -209,7 +209,7 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
           className="m-0 mt-auto max-h-[94dvh] w-full max-w-none overflow-y-auto overscroll-contain rounded-t-3xl bg-bg p-0 text-ink backdrop:bg-black/55 backdrop:backdrop-blur-[2px] open:animate-sheet-up md:m-auto md:max-w-lg md:rounded-3xl"
           onClick={(e) => { if (e.target === dialogRef.current) dialogRef.current?.close(); }}>
           <div className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-bg/95 px-5 py-3 backdrop-blur">
-            <div className="min-w-0"><h2 className="display text-lg font-extrabold">{t("cod.title")}</h2><p className="truncate text-xs text-muted">{productLabel}</p></div>
+            <div className="min-w-0"><h2 className="display text-xl">{t("cod.title")}</h2><p className="truncate text-xs text-muted">{productLabel}</p></div>
             <button type="button" className="btn btn-ghost btn-sm" onClick={() => dialogRef.current?.close()} aria-label={t("cod.close")}><X className="size-5" /></button>
           </div>
           <div className="p-5 pb-8">
