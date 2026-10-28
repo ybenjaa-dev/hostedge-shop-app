@@ -21,7 +21,7 @@ export const metadata = { title: "Order" };
 
 const fill = (tpl: string, v: Record<string, string>) => Object.entries(v).reduce((s, [k, x]) => s.replaceAll(`{${k}}`, x), tpl);
 
-export default async function OrderDetail({ params }: { params: Promise<{ id: string }> }) {
+export default async function OrderDetail({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ converted?: string }> }) {
   const me = await requirePerm("orders.view");
   const mayStatus = (TRANSITIONS_FILTER: string[]) => TRANSITIONS_FILTER.filter((x) => canSetStatus(me.role, x));
   const { id } = await params;
@@ -44,8 +44,10 @@ export default async function OrderDetail({ params }: { params: Promise<{ id: st
   const cityRow = o.city_id ? await getEnv().DB.prepare("SELECT default_carrier FROM cities WHERE id = ?").bind(o.city_id).first<{ default_carrier: string | null }>() : null;
   const risky = prior.returned > 0 || blocked || (prior.n > 0 && prior.delivered === 0);
 
+  const converted = (await searchParams).converted === "1";
   return (
     <>
+      {converted && <p role="status" className="mb-4 rounded-lg bg-ok/10 p-3 text-sm font-semibold text-ok">Order created from the abandoned checkout. The checkout is now marked as converted.</p>}
       <Link href="/admin/orders" className="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-muted hover:text-ink"><ArrowLeft className="size-4 rtl:rotate-180" />Orders</Link>
       <PageHeader
         title={`Order #${o.number}`}

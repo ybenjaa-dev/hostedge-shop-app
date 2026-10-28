@@ -353,11 +353,37 @@ export const abandonedOrders = sqliteTable(
     city: text("city"),
     productId: text("product_id"),
     productName: text("product_name"),
+    /** Legacy flag kept in sync (converted => true). Never used to hide rows. */
     recovered: integer("recovered", { mode: "boolean" }).notNull().default(false),
+    /** new -> contacted -> converted | dismissed (dismissed is reversible). */
+    status: text("status").notNull().default("new"),
+    note: text("note"),
+    contactedAt: integer("contacted_at"),
+    contactedCount: integer("contacted_count").notNull().default(0),
+    convertedOrderId: text("converted_order_id"),
+    address: text("address"),
+    /** JSON: [{productId, variantId, name, variantName, qty, unitPrice}] */
+    lines: text("lines"),
+    subtotal: integer("subtotal"),
+    total: integer("total"),
+    currency: text("currency"),
+    coupon: text("coupon"),
+    lang: text("lang"),
+    /** Short human label: utm source / referrer host / click id kind. */
+    source: text("source"),
+    device: text("device"),
+    /** JSON: page url, referrer, utm_*, phone country. */
+    extra: text("extra"),
+    saves: integer("saves").notNull().default(1),
+    lastSeenAt: integer("last_seen_at"),
     createdAt: ts("created_at"),
     updatedAt: ts("updated_at"),
   },
-  (t) => [index("abandoned_updated_idx").on(t.recovered, t.updatedAt)],
+  (t) => [
+    index("abandoned_updated_idx").on(t.recovered, t.updatedAt),
+    index("abandoned_status_idx").on(t.status, t.updatedAt),
+    index("abandoned_phone_idx").on(t.phone),
+  ],
 );
 
 export const pages = sqliteTable(

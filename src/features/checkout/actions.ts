@@ -10,6 +10,7 @@ import { normalizePhone } from "@/lib/phone";
 import { newId } from "@/lib/id";
 import { getSettings } from "@/lib/settings";
 import { quoteInputSchema } from "@/features/orders/schema";
+import { deviceClass, parseLines, sourceLabel } from "@/features/abandoned/lib";
 
 export async function placeOrder(payload: unknown): Promise<CreateOrderResult> {
   try {
@@ -42,26 +43,62 @@ const abandonedSchema = z.object({
   phoneCountry: z.string().length(2),
   name: z.string().max(80).optional(),
   city: z.string().max(80).optional(),
+  address: z.string().max(300).optional(),
+  notes: z.string().max(500).optional(),
   productId: z.string().max(40).optional(),
   productName: z.string().max(200).optional(),
+  lines: z
+    .array(z.object({
+      productId: z.string().min(1).max(40),
+      variantId: z.string().max(40).nullish(),
+      name: z.string().max(200),
+      variantName: z.string().max(120).nullish(),
+      qty: z.number().int().min(1).max(99),
+      unitPrice: z.number().int().min(0).max(1e10),
+    }))
+    .max(30)
+    .optional(),
+  subtotal: z.number().int().min(0).max(1e11).optional(),
+  total: z.number().int().min(0).max(1e11).optional(),
+  currency: z.string().max(8).optional(),
+  coupon: z.string().max(40).optional(),
+  lang: z.string().max(5).optional(),
+  page: z.object({
+    url: z.string().max(500).optional(),
+    referrer: z.string().max(500).optional(),
+    utm: z.record(z.string().max(40), z.string().max(120)).optional(),
+    fbclid: z.boolean().optional(),
+    ttclid: z.boolean().optional(),
+  }).optional(),
 });
 
-/** Saves a partially filled order form so the seller can follow up on WhatsApp. */
+/** Saves a partially filled order form so the seller can follow up on WhatsApp. Rows are never deleted: re-saves only refresh the details. */
 export async function saveAbandoned(input: unknown) {
   const p = abandonedSchema.safeParse(input);
   if (!p.success) return;
-  const ph = normalizePhone(p.data.phone, p.data.phoneCountry);
+  const d = p.data;
+  const ph = normalizePhone(d.phone, d.phoneCountry);
   if (!ph.ok) return;
   await ensureSchema();
   const ip = await clientIp();
   if (!(await rateLimit(`aband:${ip}`, 40, 3600)).ok) return;
   const now = Date.now();
+  const lines = d.lines?.length ? JSON.stringify(parseLines(d.lines)) : null;
+  const device = deviceClass((await headers()).get("user-agent"));
+  const pg = d.page;
+  const source = pg ? sourceLabel({ utmSource: pg.utm?.utm_source, fbclid: pg.fbclid, ttclid: pg.ttclid, referrer: pg.referrer }) : null;
+  const extra = JSON.stringify({ country: ph.country, url: pg?.url, referrer: pg?.referrer, utm: pg?.utm, customerNotes: d.notes });
   await getEnv()
     .DB.prepare(
-      `INSERT INTO abandoned_orders (id, phone, name, city, product_id, product_name, recovered, created_at, updated_at) VALUES (?,?,?,?,?,?,0,?,?)
-       ON CONFLICT(id) DO UPDATE SET phone = excluded.phone, name = excluded.name, city = excluded.city, updated_at = excluded.updated_at`,
+      `INSERT INTO abandoned_orders (id, phone, name, city, address, product_id, product_name, lines, subtotal, total, currency, coupon, lang, source, device, extra, status, recovered, contacted_count, saves, last_seen_at, created_at, updated_at)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?, 'new', 0, 0, 1, ?, ?, ?)
+       ON CONFLICT(id) DO UPDATE SET phone = excluded.phone, name = COALESCE(excluded.name, name), city = COALESCE(excluded.city, city), address = COALESCE(excluded.address, address),
+         product_id = COALESCE(excluded.product_id, product_id), product_name = COALESCE(excluded.product_name, product_name), lines = COALESCE(excluded.lines, lines),
+         subtotal = COALESCE(excluded.subtotal, subtotal), total = COALESCE(excluded.total, total), currency = COALESCE(excluded.currency, currency), coupon = excluded.coupon,
+         lang = COALESCE(excluded.lang, lang), source = COALESCE(source, excluded.source), device = COALESCE(device, excluded.device), extra = excluded.extra,
+         saves = saves + 1, last_seen_at = excluded.last_seen_at, updated_at = excluded.updated_at`,
     )
-    .bind(p.data.id, ph.e164, p.data.name ?? null, p.data.city ?? null, p.data.productId ?? null, p.data.productName ?? null, now, now)
+    .bind(d.id, ph.e164, d.name ?? null, d.city ?? null, d.address ?? null, d.productId ?? null, d.productName ?? null, lines, d.subtotal ?? null, d.total ?? null, d.currency ?? null, d.coupon ?? null, d.lang ?? null, source, device, extra, now, now, now)
     .run();
 }
 
