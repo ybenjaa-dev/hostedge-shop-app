@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getEnv } from "@/lib/env";
+import { clearMemo } from "@/lib/mem-cache";
 import { ensureSchema } from "@/db/ensure-schema";
 import { createSession, createUser, hasAnyUser, logActivity } from "@/lib/auth";
 import { DEFAULT_SETTINGS, saveSettings } from "@/lib/settings";
@@ -49,6 +50,7 @@ export async function runSetup(_prev: SetupState, form: FormData): Promise<Setup
       slides: [{ image: "uploads/sample-hero.svg", title: { en: "Bring the *jungle* home", fr: "Faites entrer la *jungle* chez vous", ar: "أدخل *الغابة* إلى بيتك" }, sub: { en: "Healthy plants, playful pots and friendly tools. Order in 20 seconds and pay the courier on arrival.", fr: "Plantes en pleine forme, pots joyeux et outils sympas. Commandez en 20 secondes, payez à la livraison.", ar: "نباتات سليمة وأوانٍ مرحة وأدوات لطيفة. اطلب في 20 ثانية وادفع عند الاستلام." }, cta: { en: "Shop plants", fr: "Voir les plantes", ar: "تسوّق النباتات" }, href: "/shop" }],
     });
   }
+  clearMemo();
   await createSession(userId);
   await logActivity({ id: userId, name: d.name }, "setup.completed", "store", undefined, { country: country.code });
   redirect("/admin");
