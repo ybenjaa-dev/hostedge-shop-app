@@ -5,6 +5,7 @@ import { tr } from "@/lib/i18n-core";
 import { listCategories, listProducts, type ListParams } from "@/features/catalog/queries";
 import { ProductCard, ProductGrid, ProductRow } from "@/features/catalog/components/product-card";
 import { toMinor } from "@/lib/money";
+import { parseOptions } from "@/lib/shop-filters";
 import { CatalogFilters } from "@/features/catalog/components/filters";
 
 export const metadata = { title: "Shop" };
@@ -28,6 +29,7 @@ export async function Catalog({ sp, categorySlug }: { sp: Record<string, string 
     minPrice: Number.isFinite(min) ? min : undefined,
     maxPrice: Number.isFinite(max) ? max : undefined,
     inStock: sp.stock === "1",
+    options: parseOptions(sp.opt),
     sort: sortOk.find((x) => x === sp.sort) ?? "new",
     page: Math.max(1, parseInt(sp.page ?? "1", 10) || 1),
     perPage: 12,
@@ -58,9 +60,9 @@ export async function Catalog({ sp, categorySlug }: { sp: Record<string, string 
       </header>
       <CatalogFilters
         action={base}
-        values={{ q: sp.q ?? "", category: cat?.slug ?? "", min: sp.min ?? "", max: sp.max ?? "", stock: sp.stock ?? "", sort: activeSort, view }}
+        values={{ q: sp.q ?? "", category: cat?.slug ?? "", min: sp.min ?? "", max: sp.max ?? "", stock: sp.stock ?? "", sort: activeSort, view, opt: sp.opt ?? "" }}
         categories={cats.map((c) => ({ slug: c.slug, name: tr(c.name, lang), count: c.count }))}
-        labels={{ filters: t("lux.refine"), category: t("shop.category"), all: t("shop.allCategories"), price: t("shop.price"), min: t("shop.min"), max: t("shop.max"), stock: t("shop.inStock"), apply: t("shop.apply"), clear: t("shop.clear"), search: t("shop.searchPh") }}
+        labels={{ filters: t("lux.refine"), category: t("shop.category"), all: t("shop.allCategories"), price: t("shop.price"), min: t("shop.min"), max: t("shop.max"), stock: t("shop.inStock"), active: t("shop.filter.active"), clearAll: t("shop.filter.clearAll"), apply: t("shop.apply"), clear: t("shop.clear"), search: t("shop.searchPh") }}
       />
       <div className="mt-8 flex flex-wrap items-center justify-between gap-x-8 gap-y-3 border-b border-line pb-4">
         <p className="flex flex-wrap items-center gap-x-6 gap-y-2"><span className="eyebrow !text-muted">{t("shop.sort")}</span>

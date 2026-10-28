@@ -1,3 +1,4 @@
+import { RichText } from "@/components/rich-text";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -17,7 +18,7 @@ import { ReviewForm } from "@/features/catalog/components/review-form";
 import { ViewContent } from "@/features/catalog/components/view-content";
 
 function Stars({ v, cls = "text-xs" }: { v: number; cls?: string }) {
-  return <span className={`tracking-[0.2em] text-brand ${cls}`} aria-label={`${v}/5`}>{"✦".repeat(Math.round(v))}<span className="text-[var(--rule)]">{"✦".repeat(5 - Math.round(v))}</span></span>;
+  return <span className={`tracking-[0.2em] text-brand ${cls}`} role="img" aria-label={`${v}/5`}>{"✦".repeat(Math.round(v))}<span className="text-[var(--rule)]">{"✦".repeat(5 - Math.round(v))}</span></span>;
 }
 
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ order?: string }> };
@@ -30,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = tr(p.seoTitle, lang) || tr(p.name, lang);
   const desc = tr(p.seoDesc, lang) || tr(p.shortDesc, lang);
   const img = p.images[0] ? fileUrl(p.images[0].key) : undefined;
-  return { title, description: desc, openGraph: { title, description: desc, images: img ? [img] : undefined, type: "website" }, alternates: { canonical: `/p/${p.slug}` } };
+  return { title, description: desc, openGraph: { title, description: desc, images: img ? [img] : undefined, type: "website" } };
 }
 
 export default async function ProductPage({ params, searchParams }: Props) {
@@ -111,7 +112,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
 
             <section id="description" className="mt-20 scroll-mt-28">
               <h2 className={h2}>{t("lux.story")}</h2>
-              <div className="prose-lite text-lg leading-8 text-muted"><p>{story || tr(p.shortDesc, lang)}</p></div>
+              <RichText html={story || tr(p.shortDesc, lang)} className="prose-lite text-lg leading-8 text-muted" />
             </section>
 
             <section id="details" className="mt-16 scroll-mt-28">

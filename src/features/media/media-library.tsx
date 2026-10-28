@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { AlertTriangle, Check, CheckCircle2, Copy, ImageOff, Loader2, Search, Trash2, UploadCloud, X } from "lucide-react";
 import { fileUrl } from "@/lib/storage";
 import { formatBytes, uploadMedia, type MediaItem } from "@/lib/media-client";
+import { useConfirm } from "@/components/confirm";
 import { useToast } from "@/components/toast";
 import { deleteMediaAction, updateMediaAction } from "./actions";
 
@@ -16,6 +17,7 @@ export function MediaLibrary({ mode, multiple = false, initial, onConfirm, onCan
   mode: "page" | "picker"; multiple?: boolean; initial?: Page; onConfirm?: (items: MediaItem[]) => void; onCancel?: () => void; confirmLabel?: string;
 }) {
   const toast = useToast();
+  const ask = useConfirm();
   const router = useRouter();
   const [data, setData] = useState<Page>(initial ?? { items: [], total: 0, next: null });
   const [loading, setLoading] = useState(!initial);
@@ -76,7 +78,7 @@ export function MediaLibrary({ mode, multiple = false, initial, onConfirm, onCan
 
   const bulkDelete = async (force = false) => {
     if (!selectedItems.length) return;
-    if (!force && !window.confirm(`Delete ${selectedItems.length} file${selectedItems.length === 1 ? "" : "s"} from the library? This can’t be undone.`)) return;
+    if (!force && !(await ask({ title: "Delete files", message: `Delete ${selectedItems.length} file${selectedItems.length === 1 ? "" : "s"} from the library? This can’t be undone.`, confirmLabel: "Delete" }))) return;
     const f = new FormData(); f.set("ids", JSON.stringify(selectedItems.map((i) => i.id))); if (force) f.set("force", "1");
     const r = await deleteMediaAction(undefined, f);
     if (r?.error) { toast("error", r.error); return; }
@@ -175,6 +177,7 @@ export function MediaLibrary({ mode, multiple = false, initial, onConfirm, onCan
 
 function Detail({ item, onClose, onChanged, onDeleted }: { item: MediaItem; onClose: () => void; onChanged: (m: MediaItem) => void; onDeleted: () => void }) {
   const toast = useToast();
+  const ask = useConfirm();
   const [name, setName] = useState(item.name);
   const [alt, setAlt] = useState(item.alt ?? "");
   const [usage, setUsage] = useState<Usage | null>(null);
@@ -215,7 +218,7 @@ function Detail({ item, onClose, onChanged, onDeleted }: { item: MediaItem; onCl
       <div className="flex flex-wrap gap-2">
         <button type="button" className="btn btn-outline btn-sm" onClick={async () => { try { await navigator.clipboard.writeText(url); toast("success", "Link copied"); } catch { toast("error", "Couldn’t copy"); } }}><Copy className="size-4" aria-hidden />Copy link</button>
         <button type="button" className="btn btn-outline btn-sm text-danger" onClick={async () => {
-          if (!window.confirm(used ? "This picture is still in use. Deleting it will leave a broken image there. Delete anyway?" : "Delete this file? This can’t be undone.")) return;
+          if (!(await ask({ title: "Delete file", message: used ? "This picture is still in use. Deleting it will leave a broken image there. Delete anyway?" : "Delete this file? This can’t be undone.", confirmLabel: "Delete" }))) return;
           const f = new FormData(); f.set("ids", JSON.stringify([item.id])); if (used) f.set("force", "1");
           const r = await deleteMediaAction(undefined, f);
           if (r?.error) toast("error", r.error); else { toast("success", "Deleted"); onDeleted(); }

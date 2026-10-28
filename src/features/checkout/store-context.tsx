@@ -1,14 +1,14 @@
 "use client";
 import { createContext, useContext, type ReactNode } from "react";
 import type { Lang } from "@/lib/i18n-core";
-import { makeT, type DictKey, type TFn } from "@/lib/dict";
+import type { DictKey, TFn } from "@/lib/dict";
 import type { CityOpt } from "@/features/catalog/queries";
 
 export type ClientStore = {
   lang: Lang;
   currency: string;
   codMode: boolean;
-  placement: "inline" | "popup" | "page";
+  placement: "inline" | "inline-open" | "popup" | "page";
   codFee: number;
   defaultShippingFee: number;
   freeThreshold: number;
@@ -35,7 +35,7 @@ export function useT(): TFn {
   const { dict, lang } = useStore();
   // build a TFn over the provided dictionary subset
   return (key, vars) => {
-    let s = dict[key] ?? makeT(lang)(key);
+    let s = dict[key] ?? key;
     if (vars) for (const [k, v] of Object.entries(vars)) s = s.replaceAll(`{${k}}`, String(v));
     return s;
   };

@@ -117,7 +117,7 @@ export default async function Home() {
             <div className="grid divide-y divide-[var(--line)] border-y border-line md:grid-cols-3 md:divide-x md:divide-y-0 rtl:md:divide-x-reverse">
               {reviews.slice(0, 3).map((r) => (
                 <figure key={r.id} className="px-2 py-12 text-center md:px-10">
-                  <p className="text-brand" aria-label={`${r.rating}/5`}>{"✦".repeat(r.rating)}<span className="text-[var(--rule)]">{"✦".repeat(5 - r.rating)}</span></p>
+                  <p className="text-brand" role="img" aria-label={`${r.rating}/5`}>{"✦".repeat(r.rating)}<span className="text-[var(--rule)]">{"✦".repeat(5 - r.rating)}</span></p>
                   <blockquote className="display mt-6 text-2xl italic leading-snug md:text-3xl">“{r.body}”</blockquote>
                   <figcaption className="caps mt-6 text-[0.64rem] text-muted">{r.name}{r.city && <> — {r.city}</>}</figcaption>
                 </figure>

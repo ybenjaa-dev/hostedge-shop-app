@@ -1,16 +1,17 @@
 import Link from "next/link";
+import { FilterExtras } from "./filter-extras";
 
 type Props = {
   action: string;
-  values: { q: string; category: string; min: string; max: string; stock: string; sort: string; view: string };
+  values: { q: string; category: string; min: string; max: string; stock: string; sort: string; view: string; opt?: string };
   categories: { slug: string; name: string; count: number }[];
-  labels: { filters: string; category: string; all: string; price: string; min: string; max: string; stock: string; apply: string; clear: string; search: string };
+  labels: { filters: string; category: string; all: string; price: string; min: string; max: string; stock: string; active?: string; clearAll?: string; apply: string; clear: string; search: string };
 };
 
 /** Maison filters: category names set in a centred row, price / availability folded into a quiet "Refine" drawer. Plain GET forms — no client JS. */
 export function CatalogFilters({ action, values, categories, labels }: Props) {
-  const keep = (extra: Record<string, string>) => { const u = new URLSearchParams(); for (const [k, v] of Object.entries({ q: values.q, min: values.min, max: values.max, stock: values.stock, sort: values.sort === "new" ? "" : values.sort, view: values.view === "grid" ? "" : values.view, ...extra })) if (v) u.set(k, v); const s = u.toString(); return s ? `?${s}` : ""; };
-  const active = Boolean(values.min || values.max || values.stock || values.q);
+  const keep = (extra: Record<string, string>) => { const u = new URLSearchParams(); for (const [k, v] of Object.entries({ q: values.q, min: values.min, max: values.max, stock: values.stock, opt: values.opt ?? "", sort: values.sort === "new" ? "" : values.sort, view: values.view === "grid" ? "" : values.view, ...extra })) if (v) u.set(k, v); const s = u.toString(); return s ? `?${s}` : ""; };
+  const active = Boolean(values.min || values.max || values.stock || values.q || values.opt);
   return (
     <div>
       {categories.length > 0 && (
@@ -40,6 +41,7 @@ export function CatalogFilters({ action, values, categories, labels }: Props) {
             <label className="label" htmlFor="f-max">{labels.price} · {labels.max}</label>
             <input id="f-max" name="max" inputMode="decimal" defaultValue={values.max} className="field" />
           </div>
+          <div className="sm:col-span-2 lg:col-span-4"><FilterExtras q={values.q} category={values.category} min={values.min} max={values.max} opt={values.opt ?? ""} labels={{ price: labels.price, active: labels.active ?? "Active filters", clearAll: labels.clearAll ?? "Clear all" }} /></div>
           <label className="flex min-h-[2.9rem] items-center gap-3 text-sm"><input type="checkbox" name="stock" value="1" defaultChecked={values.stock === "1"} className="size-4 accent-[var(--brand)]" />{labels.stock}</label>
           <div className="flex gap-3 sm:col-span-2 lg:col-span-4 lg:justify-center"><button className="btn btn-primary">{labels.apply}</button><a href={action} className="btn btn-outline">{labels.clear}</a></div>
         </form>

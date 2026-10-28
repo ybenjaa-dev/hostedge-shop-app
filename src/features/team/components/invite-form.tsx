@@ -5,10 +5,12 @@ import { AdminForm } from "@/features/admin/components/admin-form";
 import { Field } from "@/features/admin/components/fields";
 import type { ActionState } from "@/features/admin/run";
 import { inviteUser } from "../actions";
+import { ROLES, ROLE_INFO, type Role } from "@/lib/permissions";
 
 export function InviteForm() {
   const [link, setLink] = useState<{ url: string; email: string } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [role, setRole] = useState<Role>("confirmer");
   const onDone = useCallback((s: ActionState) => {
     if (s?.ok && !s.error && s.fields?.path) { setLink({ url: `${window.location.origin}${s.fields.path}`, email: s.fields.email ?? "" }); setCopied(false); }
   }, []);
@@ -16,7 +18,7 @@ export function InviteForm() {
     <div className="space-y-4">
       <AdminForm action={inviteUser} submitLabel="Create invite link" onDone={onDone} resetOnSuccess className="grid items-end gap-4 sm:grid-cols-[2fr_1fr_auto]">
         <Field label="Email" htmlFor="inv-email"><input id="inv-email" name="email" type="email" required autoComplete="off" className="field" dir="ltr" /></Field>
-        <Field label="Role" htmlFor="inv-role"><select id="inv-role" name="role" className="field" defaultValue="staff"><option value="staff">Staff</option><option value="owner">Owner</option></select></Field>
+        <Field label="Role" htmlFor="inv-role" hint={ROLE_INFO[role].blurb}><select id="inv-role" name="role" className="field" value={role} onChange={(e) => setRole(e.target.value as Role)}>{ROLES.map((r) => <option key={r} value={r}>{ROLE_INFO[r].label}</option>)}</select></Field>
       </AdminForm>
       {link && (
         <div role="status" className="rounded-xl border border-brand/40 bg-brand-soft p-4">

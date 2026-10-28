@@ -10,6 +10,9 @@ import { tr } from "@/lib/i18n-core";
 import { useStore, useT, type CityOpt } from "../store-context";
 import { OrderForm } from "./order-form";
 import { OfferCards } from "./offer-cards";
+import { TogetherCard } from "./together-card";
+import { getTogether } from "@/features/catalog/together";
+import type { Companion } from "@/features/catalog/links";
 import { cart, setDrawer } from "../cart-store";
 import { useToast } from "@/components/toast";
 import { track } from "@/lib/track";
@@ -39,6 +42,10 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
   const [open, setOpen] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [shake, setShake] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [formEl, setFormEl] = useState<HTMLElement | null>(null);
+  const [formInView, setFormInView] = useState(false);
+  const always = st.codMode && st.placement === "inline-open";
 
   const variant: Variant | null = useMemo(() => {
     if (!hasVariants) return null;
@@ -56,6 +63,21 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
 
   useEffect(() => { if (qty > maxQty) setQty(maxQty); }, [maxQty, qty]);
 
+  // The sticky "Order now" bar has no business on screen while the order form is: hide it when the form is in view (or the sheet is open).
+  useEffect(() => {
+    if (!formEl) { setFormInView(false); return; }
+    // threshold 0: the form is taller than a phone screen, so a ratio would never be reached; any visible part counts
+    let visible = false, focused = false;
+    const sync = () => setFormInView(visible || focused);
+    const io = new IntersectionObserver(([e]) => { visible = !!e?.isIntersecting; sync(); }, { threshold: 0 });
+    io.observe(formEl);
+    // typing in the form (keyboard open) always hides the bar
+    const fin = () => { focused = true; sync(); };
+    const fout = () => { focused = false; setTimeout(sync, 0); };
+    formEl.addEventListener("focusin", fin); formEl.addEventListener("focusout", fout);
+    return () => { io.disconnect(); formEl.removeEventListener("focusin", fin); formEl.removeEventListener("focusout", fout); };
+  }, [formEl]);
+
   const bundleTiers = useMemo(() => {
     const tiers = new Map<number, number>();
     for (const b of bundles) if ((b.productId === null || b.productId === product.id) && (!tiers.has(b.minQty) || tiers.get(b.minQty)! < b.percent)) tiers.set(b.minQty, b.percent);
@@ -66,6 +88,12 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
   const hasOffers = offers.length > 1;
   const lineTotal = bundleLineTotal(product.id, unit, qty, bundles);
   const [customQty, setCustomQty] = useState(false);
+
+  // "Frequently bought together": companions the owner linked in the admin; ticked ones join the order.
+  const [together, setTogether] = useState<Companion[]>([]);
+  const [skipped, setSkipped] = useState<string[]>([]);
+  useEffect(() => { let live = true; getTogether(product.id).then((c) => { if (live) setTogether(c); }).catch(() => {}); return () => { live = false; }; }, [product.id]);
+  const extras = together.filter((c) => !skipped.includes(c.id));
 
   function requireChoice(): boolean {
     if (!needsChoice) return true;
@@ -80,7 +108,7 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
     if (!anyInStock || soldOutSelected) return; // sold out: never open the form
     if (!requireChoice()) return;
     track("AddToCart", { value: unit * qty, currency: st.currency, ids: [product.id] });
-    if (st.placement === "popup") dialogRef.current?.showModal();
+    if (st.placement === "popup") { dialogRef.current?.showModal(); setSheetOpen(true); }
     else {
       setOpen(true);
       setTimeout(() => {
@@ -89,7 +117,8 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
       }, 60);
     }
   }
-  useEffect(() => { if (autoOpen && st.placement !== "page" && !hasVariants) setTimeout(openOrder, 200); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+  useEffect(() => { if (autoOpen && st.placement !== "page" && !always && !hasVariants) setTimeout(openOrder, 200); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+  useEffect(() => { if (autoOpen && always) setTimeout(() => document.getElementById("order")?.scrollIntoView({ behavior: "smooth", block: "start" }), 300); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
 
   function addToCart() {
     if (!requireChoice()) return;
@@ -98,8 +127,8 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
     setDrawer(true);
   }
 
-  const lines = [{ productId: product.id, variantId: variant?.id ?? null, name: product.name, variantName: variant?.name ?? null, unitPrice: unit, qty, image: product.image }];
-  const pageHref = `/checkout?p=${product.id}${variant ? `&v=${variant.id}` : ""}&q=${qty}`;
+  const lines = [{ productId: product.id, variantId: variant?.id ?? null, name: product.name, variantName: variant?.name ?? null, unitPrice: unit, qty, image: product.image }, ...extras.map((c) => ({ productId: c.id, variantId: c.variantId, name: tr(c.name, st.lang) || c.slug, variantName: c.variantName, unitPrice: c.price, qty: 1, image: c.image }))];
+  const pageHref = `/checkout?p=${product.id}${variant ? `&v=${variant.id}` : ""}&q=${qty}${extras.length ? `&x=${extras.map((c) => `${c.id}${c.variantId ? `.${c.variantId}` : ""}`).join(",")}` : ""}`;
   const productLabel = tr(product.name, st.lang);
 
   const picker = (
@@ -170,6 +199,9 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
     if (st.codMode && st.placement === "page" && canOrder && !needsChoice) {
       return <Link href={pageHref} className={`btn btn-primary ${cls}`}><Zap className="size-5" aria-hidden />{sticky ? t("cod.orderNowShort") : ctaLabel}</Link>;
     }
+    if (always) {
+      return <button type="button" disabled={!canOrder} onClick={() => { if (!requireChoice()) return; document.getElementById("order")?.scrollIntoView({ behavior: "smooth", block: "start" }); setTimeout(() => document.getElementById("of-name")?.focus({ preventScroll: true }), 450); }} className={`btn btn-primary ${cls}`}><Zap className="size-5" aria-hidden />{sticky ? t("cod.orderNowShort") : ctaLabel}</button>;
+    }
     return (
       <button type="button" disabled={!canOrder} onClick={st.codMode ? openOrder : addToCart} className={`btn btn-primary ${cls}`}>
         {st.codMode ? <Zap className="size-5" aria-hidden /> : <ShoppingBag className="size-5" aria-hidden />}
@@ -189,23 +221,30 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
 
       <div className="mt-6">{picker}</div>
 
-      <div className="mt-6">{cta("btn-lg w-full text-base")}</div>
-      {st.codMode && <p className="caps mt-4 text-center text-[0.6rem] text-muted">{t("cod.payOnDelivery")}</p>}
+      {together.length > 0 && <TogetherCard items={together} skipped={skipped} onToggle={(id) => setSkipped((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]))} mainName={tr(product.name, st.lang)} mainImage={product.image} mainTotal={lineTotal} fmt={fmt} />}
+
+      {(!always || !canOrder) && <div className="mt-6">{cta("btn-lg w-full text-base")}</div>}
+      {st.codMode && (!always || !canOrder) && <p className="caps mt-4 text-center text-[0.6rem] text-muted">{t("cod.payOnDelivery")}</p>}
 
       {/* inline placement */}
-      {st.codMode && st.placement === "inline" && open && (
-        <section id="order" className="card mt-6 scroll-mt-24 animate-fade p-5" aria-label={t("cod.title")}>
+      {st.codMode && ((st.placement === "inline" && open) || (always && canOrder)) && (
+        <section id="order" ref={setFormEl} className="card mt-6 scroll-mt-24 animate-fade p-5" aria-label={t("cod.title")}>
           <div className="mb-4 flex items-center justify-between">
             <h2 className="display text-3xl">{t("cod.title")}</h2>
-            <button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(false)} aria-label={t("cod.close")}><X className="size-4" /></button>
+            {!always && <button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(false)} aria-label={t("cod.close")}><X className="size-4" /></button>}
           </div>
-          <OrderForm lines={lines} bundles={bundles} cities={cities} source="product-inline" productName={productLabel} />
+          {always && needsChoice ? (
+            <p className="rounded-xl bg-sunken p-4 text-center text-sm font-semibold text-muted">{t("cod.err.variant")}</p>
+          ) : (
+            <OrderForm lines={lines} bundles={bundles} cities={cities} source="product-inline" productName={productLabel} />
+          )}
+          {always && <p className="mt-3 text-center text-xs text-muted">{t("cod.payOnDelivery")}</p>}
         </section>
       )}
 
       {/* popup placement: bottom sheet on mobile, modal on desktop */}
       {st.codMode && st.placement === "popup" && (
-        <dialog ref={dialogRef} aria-label={t("cod.title")}
+        <dialog ref={dialogRef} aria-label={t("cod.title")} onClose={() => setSheetOpen(false)}
           className="m-0 mt-auto max-h-[94dvh] w-full max-w-none overflow-y-auto overscroll-contain border-t border-line bg-bg p-0 text-ink backdrop:bg-black/55 backdrop:backdrop-blur-[2px] open:animate-sheet-up md:m-auto md:max-w-lg md:border md:border-line"
           onClick={(e) => { if (e.target === dialogRef.current) dialogRef.current?.close(); }}>
           <div className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-bg/95 px-5 py-3 backdrop-blur">
@@ -219,7 +258,7 @@ export function ProductBuy({ product, bundles, cities, autoOpen }: { product: P;
       )}
 
       {/* sticky mobile bar */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-bg/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md md:hidden">
+      <div aria-hidden={formInView || sheetOpen} className={`fixed inset-x-0 bottom-0 z-30 border-t border-line bg-bg/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md transition duration-200 md:hidden ${formInView || sheetOpen ? "pointer-events-none translate-y-full opacity-0" : ""}`}>
         <div className="mx-auto flex max-w-lg items-center gap-3">
           <div className="min-w-0 leading-tight"><p className="truncate text-xs text-muted">{productLabel}</p><p dir="ltr" className="lx-num text-xl">{fmt(lineTotal)}</p></div>
           {cta("btn-lg ms-auto flex-1 !text-base", true)}

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { ProductCard as P } from "../queries";
 import { tr, type Lang } from "@/lib/i18n-core";
-import { fileUrl } from "@/lib/storage";
+import { imgProps } from "@/lib/image-sizes";
 import { Money } from "@/components/money";
 import type { TFn } from "@/lib/dict";
 
@@ -14,7 +14,7 @@ function Photo({ p, name, priority, className = "aspect-[4/5]" }: { p: P; name: 
     <span className={`lx-spot block ${className}`}>
       {p.image ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={fileUrl(p.image, "md")} alt={name} width={480} height={600} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={`size-full object-cover ${p.inStock ? "" : "opacity-40 grayscale"}`} />
+        <img {...imgProps(p.image, "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw")} alt={name} width={480} height={600} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={`size-full object-cover ${p.inStock ? "" : "opacity-40 grayscale"}`} />
       ) : <span className="grid size-full place-items-center text-3xl text-muted">◇</span>}
     </span>
   );
@@ -25,7 +25,7 @@ export function ProductCard({ p, lang, t, currency, priority, rank }: { p: P; la
   const name = tr(p.name, lang);
   return (
     <article className="group">
-      <Link href={`/p/${p.slug}`} aria-label={name} className="block">
+      <Link href={`/p/${p.slug}`} className="block">
         <Photo p={p} name={name} priority={priority} />
         <span className="mt-5 flex items-baseline justify-between gap-4">
           <span className="display text-xl leading-tight md:text-2xl">{rank != null && <span className="lx-num me-2 text-sm text-brand">{ROMAN[rank - 1] ?? rank}</span>}{name}</span>

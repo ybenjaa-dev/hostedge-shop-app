@@ -1,3 +1,4 @@
+import { requirePerm } from "@/lib/auth";
 import Link from "next/link";
 import { Plus, Upload, Download } from "lucide-react";
 import { listAdminProducts, listCategoryOptions } from "@/features/catalog-admin/queries";
@@ -9,6 +10,7 @@ import { ProductsTable } from "@/features/catalog-admin/products-table";
 export const metadata = { title: "Products" };
 
 export default async function ProductsPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  await requirePerm("products.view");
   const sp = await searchParams;
   const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
   const [{ rows, total, perPage }, cats, s] = await Promise.all([listAdminProducts({ q: sp.q, status: sp.status, category: sp.category, page }), listCategoryOptions(), getSettings()]);
