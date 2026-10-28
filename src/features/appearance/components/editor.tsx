@@ -118,6 +118,18 @@ export function AppearanceEditor({ initial, original, storeName, tagline, curren
   const initialRef = useRef(initial);
   // After a successful save the server re-sends `initial`; keep our edits and just track the new baseline.
   useEffect(() => { initialRef.current = initial; }, [initial]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        document.querySelector<HTMLFormElement>("form:has(input[name=payload])")?.requestSubmit();
+      }
+    };
+    const onLeave = (e: BeforeUnloadEvent) => { if (dirty) e.preventDefault(); };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("beforeunload", onLeave);
+    return () => { window.removeEventListener("keydown", onKey); window.removeEventListener("beforeunload", onLeave); };
+  }, [dirty]);
   const set = <K extends keyof AppearanceState>(k: K, val: AppearanceState[K]) => setV((x) => ({ ...x, [k]: val }));
   const setBrand = (p: Partial<AppearanceState["branding"]>) => set("branding", { ...v.branding, ...p });
   const slides = v.hero.slides;
@@ -151,13 +163,13 @@ export function AppearanceEditor({ initial, original, storeName, tagline, curren
         <div className="ms-auto flex flex-wrap items-center gap-2">
           {dirty && <><span className="text-sm font-semibold text-danger" role="status">Unsaved changes</span><button type="button" className="btn btn-ghost btn-sm" onClick={() => { setV(initialRef.current); setSlide(0); }}><RotateCcw className="size-4" aria-hidden />Discard</button></>}
           <a className="btn btn-outline btn-sm" href="/" target="_blank" rel="noopener noreferrer"><Eye className="size-4" aria-hidden />View store</a>
-          <SubmitButton pendingText="Saving…">Save appearance</SubmitButton>
+          <SubmitButton pendingText="Saving…"><span title="Ctrl/⌘ + S">Save appearance</span></SubmitButton>
         </div>
       </div>
 
       <div className="grid min-h-0 flex-1 grid-cols-1 overflow-y-auto lg:grid-cols-[26rem_minmax(0,1fr)] lg:overflow-hidden">
         <div className="min-w-0 space-y-4 border-line bg-bg p-4 lg:min-h-0 lg:overflow-y-auto lg:border-e lg:p-5">
-          <div role="tablist" aria-label="Appearance sections" className="tabnav w-full flex-wrap !overflow-visible">
+          <div role="tablist" aria-label="Appearance sections" className="tabnav sticky top-0 z-10 w-full flex-wrap !overflow-visible shadow-sm">
             {TABS.map(([id, label]) => (
               <button key={id} type="button" role="tab" id={`tab-${id}`} aria-selected={tab === id} aria-controls={`panel-${id}`} tabIndex={tab === id ? 0 : -1} onClick={() => { setTab(id); setRegion(id === "home" ? "" : id); }}>{label}</button>
             ))}
