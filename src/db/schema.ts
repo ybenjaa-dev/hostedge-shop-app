@@ -525,3 +525,19 @@ export const blockedFingerprints = sqliteTable("blocked_fingerprints", {
   reason: text("reason"),
   createdAt: ts("created_at"),
 });
+
+/** Everything known about a blocked visitor: kind = vid | fp | ipua | phone. Enforced at the Worker edge and in the app. */
+export const blockedSignals = sqliteTable(
+  "blocked_signals",
+  {
+    id: text("id").primaryKey(),
+    kind: text("kind").notNull(),
+    value: text("value").notNull(),
+    visitorId: text("visitor_id"),
+    reason: text("reason"),
+    createdAt: ts("created_at"),
+    lastHitAt: integer("last_hit_at"),
+    hits: integer("hits").notNull().default(0),
+  },
+  (t) => [uniqueIndex("blocked_signals_kind_value_idx").on(t.kind, t.value), index("blocked_signals_visitor_idx").on(t.visitorId)],
+);

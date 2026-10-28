@@ -27,7 +27,7 @@ export default async function VisitorsPage({ searchParams }: { searchParams: Pro
   const where = w.join(" AND ");
   const [rows, total, stats, countries] = await db.batch([
     db.prepare(`SELECT v.id, v.fp, v.country, v.city, v.browser, v.os, v.device, v.visits, v.page_views AS pageViews, v.orders, v.push, v.last_seen AS lastSeen, v.phone,
-        (SELECT 1 FROM blocked_fingerprints b WHERE b.fp = v.fp) AS blocked FROM visitors v WHERE ${where} ORDER BY v.last_seen DESC LIMIT ? OFFSET ?`).bind(...a, PER, (page - 1) * PER),
+        ((SELECT 1 FROM blocked_signals s WHERE s.visitor_id = v.id LIMIT 1) OR (SELECT 1 FROM blocked_fingerprints b WHERE b.fp = v.fp)) AS blocked FROM visitors v WHERE ${where} ORDER BY v.last_seen DESC LIMIT ? OFFSET ?`).bind(...a, PER, (page - 1) * PER),
     db.prepare(`SELECT COUNT(*) AS n FROM visitors v WHERE ${where}`).bind(...a),
     db.prepare("SELECT COUNT(*) AS n, SUM(push) AS push, SUM(orders > 0) AS buyers, SUM(last_seen > ?) AS today FROM visitors").bind(Date.now() - 864e5),
     db.prepare("SELECT DISTINCT country AS v FROM visitors WHERE country IS NOT NULL ORDER BY 1 LIMIT 80"),

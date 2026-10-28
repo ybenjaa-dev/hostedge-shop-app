@@ -5,6 +5,8 @@ import { ensureSchema } from "@/db/ensure-schema";
 import { newId } from "@/lib/id";
 import { parseUA } from "@/lib/ua";
 import { isLang } from "@/lib/i18n-core";
+import { loadBlocks, invalidateBlocks } from "./block-index";
+import { clientIpOf, extractSignals, ipuaHash, learnSignals, matchSignals, type Signal } from "./signals";
 
 export type Geo = { ip: string | null; country: string | null; region: string | null; city: string | null; timezone: string | null; latitude: string | null; longitude: string | null; network: string | null };
 
@@ -66,16 +68,23 @@ export async function linkOrderToVisitor(vid: string | null, orderId: string, ph
   ]);
 }
 
-export async function isBlockedFingerprint(fp: string | null | undefined): Promise<boolean> {
-  if (!fp || !/^[a-f0-9]{16,64}$/.test(fp)) return false;
-  return !!(await getEnv().DB.prepare("SELECT 1 AS x FROM blocked_fingerprints WHERE fp = ?").bind(fp).first());
+/** Which blocked signal (if any) matches this request: he_vid cookie, device fingerprint, phone, or IP + device class. Crawlers never match. */
+export async function findBlock(h: Headers, extra: { fp?: string | null; phone?: string | null; vid?: string | null } = {}): Promise<Signal | null> {
+  await ensureSchema();
+  const { index, salt } = await loadBlocks(getEnv().DB, getEnv().SECRETS_KEY);
+  if (!index.size) return null;
+  const s = await extractSignals(h, salt);
+  if (s.bot) return null;
+  return matchSignals(index, { ...s, vid: extra.vid ?? s.vid, fp: extra.fp, phone: extra.phone });
 }
 
-/** A visitor is shut out when their device fingerprint, or the phone number they ordered with, has been blocked. */
-export async function isVisitorBlocked(vid: string | null | undefined): Promise<boolean> {
-  if (!vid || !/^[a-z0-9]{16,32}$/.test(vid)) return false;
-  const r = await getEnv().DB.prepare(`SELECT 1 AS x FROM visitors v WHERE v.id = ? AND (
-      (v.fp IS NOT NULL AND EXISTS (SELECT 1 FROM blocked_fingerprints b WHERE b.fp = v.fp))
-      OR (v.phone IS NOT NULL AND EXISTS (SELECT 1 FROM blocked_phones p WHERE p.phone = v.phone)))`).bind(vid).first();
-  return !!r;
+/** Remember the new cookie / fingerprint / network of a visitor who just matched a strong signal, so the next request is stopped at the edge. */
+export async function learnBlocked(h: Headers, match: Signal, fp: string | null | undefined, vid: string | null) {
+  const { index, salt } = await loadBlocks(getEnv().DB, getEnv().SECRETS_KEY);
+  const ipua = await ipuaHash(clientIpOf(h), h.get("user-agent") ?? "", salt);
+  const add = learnSignals(index, match, { vid, fp, ipua });
+  if (!add.length) return;
+  const db = getEnv().DB, now = Date.now();
+  await db.batch(add.map((a) => db.prepare("INSERT OR IGNORE INTO blocked_signals (id, kind, value, visitor_id, reason, created_at, hits) VALUES (?,?,?,?,?,?,0)").bind(newId(16), a.kind, a.value, match.visitorId, "learned", now)));
+  invalidateBlocks();
 }
