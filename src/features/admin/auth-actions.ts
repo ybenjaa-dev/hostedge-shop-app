@@ -11,8 +11,6 @@ export async function loginAction(_p: ActionState, form: FormData): Promise<Acti
   if (!parsed.success) return { error: "Enter a valid email and password." };
   const r = await login(parsed.data.email, parsed.data.password);
   if (!r.ok) return { error: r.error };
-  const u = await getSessionUser();
-  if (u) await logActivity(u, "auth.login");
   redirect("/admin");
 }
 
