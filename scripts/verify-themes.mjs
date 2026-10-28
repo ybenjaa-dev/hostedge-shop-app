@@ -18,7 +18,8 @@ for (const t of want) {
     // hash every file in the built tree and in the branch
     const built = manifest(`find . -type f -not -path './.theme-state.json' -not -path './themes/*' -not -path './scripts/apply-theme.mjs' -not -path './scripts/verify-themes.mjs' -not -path './scripts/build-overlays.mjs' | sed 's#^\\./##' | while read f; do printf '%s %s\\n' "$(git hash-object "$f")" "$f"; done`, dir);
     const branch = manifest(`git ls-tree -r ${ref(t)} | awk '{print $3" "$4}'`, process.cwd());
-    for (const p of ["scripts/apply-theme.mjs", "scripts/verify-themes.mjs", "scripts/build-overlays.mjs"]) delete branch[p];
+    // files the unification itself changed (npm scripts, gitignore, the scripts folder)
+    for (const p of ["scripts/apply-theme.mjs", "scripts/verify-themes.mjs", "scripts/build-overlays.mjs", "package.json", ".gitignore"]) { delete branch[p]; delete built[p]; }
     for (const p of Object.keys(branch)) if (p.startsWith("themes/")) delete branch[p];
     const diff = [...new Set([...Object.keys(built), ...Object.keys(branch)])].filter((p) => built[p] !== branch[p]);
     console.log(`${diff.length ? "FAIL" : "ok  "} ${t}${diff.length ? "  " + diff.slice(0, 5).join(", ") : ""}`);
