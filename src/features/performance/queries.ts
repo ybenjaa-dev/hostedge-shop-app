@@ -65,7 +65,7 @@ const toBreakdown = (rows: unknown, name: (k: string | null) => string): Breakdo
 
 async function abandoned(db: D1Database, from: number, to: number): Promise<Abandoned> {
   try {
-    const r = await db.prepare("SELECT COUNT(*) AS total, COALESCE(SUM(CASE WHEN recovered THEN 1 ELSE 0 END),0) AS recovered FROM abandoned_orders WHERE created_at >= ?1 AND created_at < ?2").bind(from, to).first<{ total: number; recovered: number }>();
+    const r = await db.prepare("SELECT COUNT(*) AS total, COALESCE(SUM(CASE WHEN status = 'converted' THEN 1 ELSE 0 END),0) AS recovered FROM abandoned_orders WHERE created_at >= ?1 AND created_at < ?2").bind(from, to).first<{ total: number; recovered: number }>();
     return r ? { total: r.total, recovered: r.recovered } : null;
   } catch { return null; }
 }
