@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Star } from "lucide-react";
 import type { ProductCard as P } from "../queries";
 import { tr, type Lang } from "@/lib/i18n-core";
-import { fileUrl } from "@/lib/storage";
+import { imgProps } from "@/lib/image-sizes";
 import { Money } from "@/components/money";
 import type { TFn } from "@/lib/dict";
 
@@ -16,7 +16,7 @@ export function ProductCard({ p, lang, t, currency, codMode, priority, rank }: {
         <span className="arch block size-full overflow-hidden bg-sunken">
           {p.image ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={fileUrl(p.image, "md")} alt={name} width={480} height={600} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={`size-full object-cover transition duration-700 group-hover:scale-105 ${p.inStock ? "" : "opacity-50 grayscale"}`} />
+            <img {...imgProps(p.image, "(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw")} alt={name} width={480} height={600} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} decoding="async" className={`size-full object-cover transition duration-700 group-hover:scale-105 ${p.inStock ? "" : "opacity-50 grayscale"}`} />
           ) : (
             <span className="bg-zel grid size-full place-items-center text-3xl text-gold">✦</span>
           )}

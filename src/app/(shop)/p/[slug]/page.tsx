@@ -1,3 +1,4 @@
+import { RichText } from "@/components/rich-text";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -25,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = tr(p.seoTitle, lang) || tr(p.name, lang);
   const desc = tr(p.seoDesc, lang) || tr(p.shortDesc, lang);
   const img = p.images[0] ? fileUrl(p.images[0].key) : undefined;
-  return { title, description: desc, openGraph: { title, description: desc, images: img ? [img] : undefined, type: "website" }, alternates: { canonical: `/p/${p.slug}` } };
+  return { title, description: desc, openGraph: { title, description: desc, images: img ? [img] : undefined, type: "website" } };
 }
 
 export default async function ProductPage({ params, searchParams }: Props) {
@@ -93,7 +94,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
           </div>
           <div className="mt-8 text-start">
             {tr(p.longDesc, lang) && (
-              <details className={acc} open><summary className={sum}>{t("p.description")}{plus}</summary><div className="prose-lite border-t border-gold/40 px-5 py-4 text-muted"><p>{tr(p.longDesc, lang)}</p></div></details>
+              <details className={acc} open><summary className={sum}>{t("p.description")}{plus}</summary><div className="prose-lite border-t border-gold/40 px-5 py-4 text-muted"><RichText html={tr(p.longDesc, lang)} /></div></details>
             )}
             <details className={acc}><summary className={sum}>{t("p.delivery")}{plus}</summary><div className="border-t border-gold/40 px-5 py-4 text-muted"><p>{t("p.deliveryText")}</p>{wa && <a href={wa} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm mt-3">{t("p.shareWa")}</a>}</div></details>
           </div>

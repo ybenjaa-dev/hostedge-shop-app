@@ -13,8 +13,9 @@ import { Badge } from "@/features/admin/components/ui";
 export type Row = { id: string; number: string; status: string; name: string; phone: string; city: string; total: number; currency: string; carrierId: string | null; trackingNumber: string | null; attempts: number; createdAt: number; itemsCount: number; shipmentError: string | null };
 type Carrier = { id: string; name: string };
 
-export function OrdersTable({ rows, labels, colors, carriers, exportQs, bulkCarrier }: {
+export function OrdersTable({ rows, labels, colors, carriers, exportQs, bulkCarrier, statuses = [...ORDER_STATUSES], canExport = true, canPrint = true }: {
   rows: Row[]; labels: Record<string, string>; colors: Record<string, string>; carriers: Carrier[]; exportQs: string;
+  statuses?: string[]; canExport?: boolean; canPrint?: boolean;
   bulkCarrier?: (ids: string[], carrierId: string) => Promise<{ orderId: string; ok: boolean; error?: string }[]>;
 }) {
   const [sel, setSel] = useState<Set<string>>(new Set());
@@ -40,10 +41,10 @@ export function OrdersTable({ rows, labels, colors, carriers, exportQs, bulkCarr
       {sel.size > 0 && (
         <div className="sticky top-16 z-20 mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-brand bg-brand-soft p-3 shadow-lg" role="toolbar" aria-label="Bulk actions">
           <span className="text-sm font-bold">{sel.size} selected</span>
-          <button className="btn btn-primary btn-sm" disabled={pending} onClick={() => bulk("confirmed")}><CheckCircle2 className="size-4" />Confirm</button>
+          {statuses.includes("confirmed") && <button className="btn btn-primary btn-sm" disabled={pending} onClick={() => bulk("confirmed")}><CheckCircle2 className="size-4" />Confirm</button>}
           <select aria-label="Change status" className="field !min-h-9 !w-auto !py-1 text-sm" disabled={pending} value="" onChange={(e) => e.target.value && bulk(e.target.value)}>
             <option value="">Change status…</option>
-            {ORDER_STATUSES.map((s) => <option key={s} value={s}>{labels[s]}</option>)}
+            {statuses.map((s) => <option key={s} value={s}>{labels[s]}</option>)}
           </select>
           {bulkCarrier && carriers.length > 0 && (
             <select aria-label="Send to carrier" className="field !min-h-9 !w-auto !py-1 text-sm" disabled={pending} value="" onChange={(e) => {
@@ -54,7 +55,7 @@ export function OrdersTable({ rows, labels, colors, carriers, exportQs, bulkCarr
               {carriers.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           )}
-          <a className="btn btn-outline btn-sm" target="_blank" href={`/admin/print?type=slip&ids=${ids.join(",")}`}><Printer className="size-4" />Packing slips</a>
+          {canPrint && <a className="btn btn-outline btn-sm" target="_blank" href={`/admin/print?type=slip&ids=${ids.join(",")}`}><Printer className="size-4" />Packing slips</a>}
           <a className="btn btn-outline btn-sm" href={`/admin/orders/export?ids=${ids.join(",")}`}><Download className="size-4" />CSV</a>
           <button className="btn btn-ghost btn-sm ms-auto" onClick={() => setSel(new Set())}>Clear</button>
         </div>
@@ -78,7 +79,7 @@ export function OrdersTable({ rows, labels, colors, carriers, exportQs, bulkCarr
           </tr>
         ))}
       </DataTable>
-      <a href={`/admin/orders/export?${exportQs}`} className="btn btn-outline btn-sm mt-3"><Download className="size-4" />Export filtered CSV</a>
+      {canExport && <a href={`/admin/orders/export?${exportQs}`} className="btn btn-outline btn-sm mt-3"><Download className="size-4" />Export filtered CSV</a>}
     </div>
   );
 }

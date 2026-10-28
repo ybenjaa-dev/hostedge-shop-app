@@ -11,7 +11,7 @@ import { useStore, useT, type CityOpt } from "../store-context";
 import { CityCombobox } from "./city-combobox";
 import { useToast } from "@/components/toast";
 import { cart } from "../cart-store";
-import { track } from "@/lib/track";
+import { track, trackingContext } from "@/lib/track";
 
 export type FormLine = { productId: string; variantId: string | null; name: string; variantName: string | null; unitPrice: number; qty: number; image: string | null };
 
@@ -122,7 +122,7 @@ export function OrderForm({ lines, bundles, cities, header, source, clearCartOnS
       idemKey: idemRef.current,
       items: lines.map((l) => ({ productId: l.productId, variantId: l.variantId, qty: l.qty })),
       name, phone, phoneCountry: pc, cityId, address, notes: notes || undefined,
-      couponCode: coupon?.code, hp, source, lang: st.lang,
+      couponCode: coupon?.code, hp, source, lang: st.lang, tracking: trackingContext(),
     });
     if (!res.ok) {
       setStatus("idle");
@@ -133,10 +133,10 @@ export function OrderForm({ lines, bundles, cities, header, source, clearCartOnS
       return;
     }
     setStatus("done");
-    if (!res.duplicate) track("Purchase", { value: res.total, currency: res.currency, ids: res.items.map((i) => i.productId), eventId: res.number });
+    if (!res.duplicate) track(res.pixelEvent ?? "Purchase", { value: res.total, currency: res.currency, ids: res.items.map((i) => i.productId), eventId: res.number });
     if (clearCartOnSuccess) cart.clear();
     toast("success", res.duplicate ? t("cod.dupe", { n: res.number }) : t("cod.success"));
-    router.push(`/order/${res.number}?t=${res.token}`);
+    router.push(res.duplicate ? `/order/${res.number}?t=${res.token}` : `/order/${res.number}/offer?t=${res.token}`);
   }
 
   const countryList = COUNTRIES.filter((c) => st.countries.includes(c.code));
@@ -146,9 +146,9 @@ export function OrderForm({ lines, bundles, cities, header, source, clearCartOnS
   return (
     <form onSubmit={submit} noValidate className="space-y-4" aria-busy={sending}>
       {header}
-      {/* honeypot — hidden from humans & assistive tech */}
-      <div aria-hidden className="absolute -start-[9999px] h-0 w-0 overflow-hidden">
-        <label>Website<input tabIndex={-1} autoComplete="off" value={hp} onChange={(e) => setHp(e.target.value)} name="website" /></label>
+      {/* honeypot — hidden from humans & assistive tech. No label and a neutral name: a "Website" field gets auto-filled by browsers and password managers, which silently turned real orders into fake ones. */}
+      <div aria-hidden="true" className="pointer-events-none absolute -start-[9999px] h-0 w-0 overflow-hidden opacity-0">
+        <input type="text" tabIndex={-1} autoComplete="off" data-lpignore="true" data-1p-ignore="true" data-form-type="other" inputMode="none" value={hp} onChange={(e) => setHp(e.target.value)} name="zq_ref_41" aria-label="Leave this field empty" />
       </div>
 
       <div>

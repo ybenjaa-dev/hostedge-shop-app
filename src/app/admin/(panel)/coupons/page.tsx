@@ -1,122 +1,85 @@
-import { DateField } from "@/features/admin/components/date-picker";
 import { asc, desc } from "drizzle-orm";
-import Link from "next/link";
 import { Plus } from "lucide-react";
-import { requireUser } from "@/lib/auth";
+import { requirePerm } from "@/lib/auth";
 import { getDb, schema } from "@/db";
 import { getSettings } from "@/lib/settings";
 import { formatMoney, toMajorString } from "@/lib/money";
-import { fileUrl } from "@/lib/storage";
-import { tr } from "@/lib/i18n-core";
 import { AdminForm } from "@/features/admin/components/admin-form";
-import { Field, ImageField, Toggle } from "@/features/admin/components/fields";
-import { Badge, Empty, PageHeader, Panel } from "@/features/admin/components/ui";
+import { Toggle } from "@/features/admin/components/fields";
+import { Badge, Empty, PageHeader, Stat } from "@/features/admin/components/ui";
+import { DataTable } from "@/features/settings/components/table";
+import { Drawer } from "@/features/admin/components/drawer";
 import { nowMs } from "@/features/settings/lib";
 import { ActionButton } from "@/features/settings/components/action-button";
-import { OfferTemplatePicker } from "@/features/catalog-admin/components/offer-template-picker";
-import { CouponTypeValue } from "@/features/catalog-admin/components/coupon-fields";
-import { saveCoupon, deleteCoupon, saveBundle, deleteBundle, saveOfferTemplate } from "@/features/catalog-admin/promo-actions";
+import { CouponFields } from "@/features/catalog-admin/components/coupon-fields";
+import { saveCoupon, deleteCoupon } from "@/features/catalog-admin/promo-actions";
 
-export const metadata = { title: "Coupons & bundles" };
+export const metadata = { title: "Coupons" };
 type Coupon = typeof schema.coupons.$inferSelect;
-type Bundle = typeof schema.bundles.$inferSelect;
 const day = (ms: number | null) => (ms ? new Date(ms).toISOString().slice(0, 10) : "");
+const short = (ms: number) => new Date(ms).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 
 function CouponForm({ c, cur }: { c?: Coupon; cur: string }) {
   const k = c?.id ?? "new";
+  const value = c ? (c.type === "fixed" ? toMajorString(c.value, cur) : c.type === "percent" ? String(c.value) : "") : "";
   return (
     <AdminForm action={saveCoupon} submitLabel={c ? "Save coupon" : "Create coupon"} resetOnSuccess={!c}>
       <input type="hidden" name="id" value={c?.id ?? ""} />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Field label="Code" htmlFor={`${k}-code`}><input id={`${k}-code`} name="code" required defaultValue={c?.code} maxLength={30} dir="ltr" autoCapitalize="characters" className="field uppercase" /></Field>
-        <CouponTypeValue idp={k} type={c?.type} currency={cur} value={c ? (c.type === "fixed" ? toMajorString(c.value, cur) : c.type === "percent" ? String(c.value) : "") : ""} />
-        <Field label={`Minimum subtotal (${cur})`} htmlFor={`${k}-min`} hint="0 = no minimum"><input id={`${k}-min`} name="minSubtotal" inputMode="decimal" defaultValue={toMajorString(c?.minSubtotal ?? 0, cur)} className="field num" /></Field>
-        <Field label="Max uses" htmlFor={`${k}-max`} hint="Empty = unlimited"><input id={`${k}-max`} name="maxUses" type="number" min={1} defaultValue={c?.maxUses ?? ""} className="field num" /></Field>
-        <DateField name="startsAt" label="Starts" defaultValue={day(c?.startsAt ?? null)} placeholder="Immediately" />
-        <DateField name="endsAt" label="Ends" defaultValue={day(c?.endsAt ?? null)} placeholder="No end date" />
-      </div>
-      <Toggle name="active" label="Active" defaultChecked={c?.active ?? true} />
-    </AdminForm>
-  );
-}
-
-function BundleForm({ b, products }: { b?: Bundle; products: { id: string; name: string }[] }) {
-  const k = b?.id ?? "new";
-  return (
-    <AdminForm action={saveBundle} submitLabel={b ? "Save bundle" : "Create bundle"} resetOnSuccess={!b}>
-      <input type="hidden" name="id" value={b?.id ?? ""} />
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Field label="Applies to" htmlFor={`${k}-prod`}><select id={`${k}-prod`} name="productId" defaultValue={b?.productId ?? ""} className="field"><option value="">All products</option>{products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></Field>
-        <Field label="Buy at least (qty)" htmlFor={`${k}-qty`}><input id={`${k}-qty`} name="minQty" type="number" min={2} max={1000} required defaultValue={b?.minQty ?? 2} className="field num" /></Field>
-        <Field label="Save (%)" htmlFor={`${k}-pct`}><input id={`${k}-pct`} name="percent" type="number" min={1} max={90} required defaultValue={b?.percent ?? 10} className="field num" /></Field>
-      </div>
-      <ImageField label="Photo (optional)" name="image" value={b?.image ?? ""} hint="Shown on this offer card on the product page, e.g. a photo of the pack." />
-      <Toggle name="active" label="Active" defaultChecked={b?.active ?? true} />
+      <CouponFields idp={k} currency={cur} initial={{ code: c?.code ?? "", type: c?.type ?? "percent", value, minSubtotal: toMajorString(c?.minSubtotal ?? 0, cur), maxUses: c?.maxUses != null ? String(c.maxUses) : "", startsAt: day(c?.startsAt ?? null), endsAt: day(c?.endsAt ?? null) }} />
+      <Toggle name="active" label="Active" hint="Inactive coupons are rejected at checkout." defaultChecked={c?.active ?? true} />
     </AdminForm>
   );
 }
 
 export default async function CouponsPage() {
-  await requireUser();
+  await requirePerm("coupons.manage");
   const db = getDb();
   const s = await getSettings();
   const cur = s.store.currency;
-  const [coupons, bundles, prods] = await Promise.all([
-    db.select().from(schema.coupons).orderBy(desc(schema.coupons.active), asc(schema.coupons.code)),
-    db.select().from(schema.bundles).orderBy(asc(schema.bundles.minQty)),
-    db.select({ id: schema.products.id, name: schema.products.name }).from(schema.products).orderBy(asc(schema.products.slug)).limit(500),
-  ]);
-  const products = prods.map((p) => ({ id: p.id, name: tr(p.name, "en") || p.id }));
-  const nameOf = new Map(products.map((p) => [p.id, p.name]));
+  const coupons = await db.select().from(schema.coupons).orderBy(desc(schema.coupons.active), asc(schema.coupons.code));
   const now = nowMs();
+  const state = (c: Coupon) => {
+    if (!c.active) return { label: "Inactive", color: "#64748b" };
+    if (c.endsAt != null && c.endsAt < now) return { label: "Expired", color: "#dc2626" };
+    if (c.maxUses != null && c.used >= c.maxUses) return { label: "Used up", color: "#d97706" };
+    if (c.startsAt != null && c.startsAt > now) return { label: "Scheduled", color: "#2563eb" };
+    return { label: "Live", color: "#16a34a" };
+  };
+  const live = coupons.filter((c) => state(c).label === "Live").length;
+  const redeemed = coupons.reduce((a, c) => a + c.used, 0);
+  const soon = coupons.filter((c) => state(c).label === "Live" && c.endsAt != null && c.endsAt - now < 7 * 864e5).length;
   return (
-    <div className="space-y-8">
-      <PageHeader title="Coupons & bundles" sub="Discount codes and quantity discounts." />
-
-      <section aria-labelledby="coupons-h" className="space-y-3">
-        <h2 id="coupons-h" className="display text-xl font-extrabold">Coupons</h2>
-        <Panel><details><summary className="flex min-h-11 cursor-pointer items-center gap-2 font-bold"><Plus className="size-4" aria-hidden />New coupon</summary><div className="mt-4"><CouponForm cur={cur} /></div></details></Panel>
-        {coupons.length === 0 ? <Empty title="No coupons yet" hint="Create a code like WELCOME10 to reward first-time buyers." /> : (
-          <ul className="space-y-2">{coupons.map((c) => {
-            const expired = c.endsAt != null && c.endsAt < now, upcoming = c.startsAt != null && c.startsAt > now, exhausted = c.maxUses != null && c.used >= c.maxUses;
+    <div className="space-y-5">
+      <PageHeader title="Coupons" sub="Discount codes customers type at checkout. Quantity offers (“buy 2 for …”) are set up on each product."
+        actions={<Drawer trigger={<><Plus className="size-4" aria-hidden />New coupon</>} triggerClassName="btn btn-primary btn-sm" title="New coupon" sub="Preview on top shows what customers see."><CouponForm cur={cur} /></Drawer>} />
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Stat label="Live coupons" value={live} />
+        <Stat label="Redemptions" value={redeemed} />
+        <Stat label="Ending in 7 days" value={soon} tone={soon ? "danger" : undefined} />
+        <Stat label="All coupons" value={coupons.length} />
+      </div>
+      {coupons.length === 0 ? <Empty title="No coupons yet" hint="Create a code like WELCOME10 to reward first-time buyers." /> : (
+        <DataTable minWidth="52rem" head={["Code", "Discount", "Conditions", "Usage", "Validity", "Status", { label: "", end: true, narrow: true }]}>
+          {coupons.map((c) => {
+            const st = state(c);
+            const pct = c.maxUses ? Math.min(100, Math.round((c.used / c.maxUses) * 100)) : 0;
             return (
-              <li key={c.id} className="card"><details className="group">
-                <summary className="flex min-h-14 cursor-pointer list-none flex-wrap items-center gap-x-4 gap-y-1 p-3 [&::-webkit-details-marker]:hidden">
-                  <code className="rounded bg-sunken px-2 py-1 text-sm font-extrabold" dir="ltr">{c.code}</code>
-                  <span className="font-semibold">{c.type === "percent" ? `${c.value}% off` : c.type === "fixed" ? `${formatMoney(c.value, cur)} off` : "Free shipping"}</span>
-                  <span className="text-xs text-muted">{c.minSubtotal > 0 ? `min ${formatMoney(c.minSubtotal, cur)} · ` : ""}used <span className="num">{c.used}{c.maxUses != null ? `/${c.maxUses}` : ""}</span>{c.endsAt ? ` · ends ${day(c.endsAt)}` : ""}</span>
-                  <span className="ms-auto flex items-center gap-2">{!c.active ? <Badge>Inactive</Badge> : expired ? <Badge color="#dc2626">Expired</Badge> : exhausted ? <Badge color="#d97706">Used up</Badge> : upcoming ? <Badge color="#2563eb">Scheduled</Badge> : <Badge color="#16a34a">Live</Badge>}<span className="btn btn-outline btn-sm">Edit</span></span>
-                </summary>
-                <div className="space-y-4 border-t border-line p-4"><CouponForm c={c} cur={cur} />
-                  <ActionButton action={deleteCoupon} fields={{ id: c.id }} confirm={`Delete coupon ${c.code}?`} className="btn btn-ghost btn-sm text-danger">Delete coupon</ActionButton></div>
-              </details></li>
+              <tr key={c.id}>
+                <td><code className="rounded-md bg-sunken px-2 py-1 text-sm font-extrabold" dir="ltr">{c.code}</code></td>
+                <td className="font-semibold">{c.type === "percent" ? `${c.value}% off` : c.type === "fixed" ? `${formatMoney(c.value, cur)} off` : "Free shipping"}</td>
+                <td className="text-muted">{c.minSubtotal > 0 ? `Min ${formatMoney(c.minSubtotal, cur)}` : "None"}</td>
+                <td className="min-w-32"><span className="num text-sm">{c.used}{c.maxUses != null ? ` / ${c.maxUses}` : ""}</span>{c.maxUses != null && <span className="mt-1 block h-1.5 overflow-hidden rounded-full bg-sunken"><span className="block h-full rounded-full bg-brand" style={{ width: `${pct}%` }} /></span>}</td>
+                <td className="whitespace-nowrap text-sm text-muted">{c.startsAt || c.endsAt ? `${c.startsAt ? short(c.startsAt) : "Now"} → ${c.endsAt ? short(c.endsAt) : "no end"}` : "Always"}</td>
+                <td><Badge color={st.color}>{st.label}</Badge></td>
+                <td className="is-end"><Drawer trigger="Edit" title={c.code} sub={`${c.used} redemption${c.used === 1 ? "" : "s"}`}>
+                  <div className="space-y-6"><CouponForm c={c} cur={cur} />
+                    <div className="border-t border-line pt-4"><ActionButton action={deleteCoupon} fields={{ id: c.id }} confirm={`Delete coupon ${c.code}?`} className="btn btn-ghost btn-sm text-danger">Delete coupon</ActionButton></div></div>
+                </Drawer></td>
+              </tr>
             );
-          })}</ul>
-        )}
-      </section>
-
-      <section aria-labelledby="bundles-h" className="space-y-3">
-        <h2 id="bundles-h" className="display text-xl font-extrabold">Quantity bundles</h2>
-        <Panel title="Offer card layout">
-          <p className="mb-3 text-sm text-muted">How the “1 for 129 · 2 for 229 · 3 for 319” cards look on product pages. This is the default for every product — a product can pick its own layout in its <b>Quantity offers</b> section.</p>
-          <AdminForm action={saveOfferTemplate} submitLabel="Save layout for all products"><OfferTemplatePicker name="template" value={s.offers.template} /></AdminForm>
-        </Panel>
-        <Panel><details><summary className="flex min-h-11 cursor-pointer items-center gap-2 font-bold"><Plus className="size-4" aria-hidden />New bundle</summary><div className="mt-4"><BundleForm products={products} /></div></details></Panel>
-        {bundles.length === 0 ? <Empty title="No bundles yet" hint="“Buy 3, save 15%” encourages bigger orders." /> : (
-          <ul className="space-y-2">{bundles.map((b) => (
-            <li key={b.id} className="card"><details className="group">
-              <summary className="flex min-h-14 cursor-pointer list-none flex-wrap items-center gap-x-4 gap-y-1 p-3 [&::-webkit-details-marker]:hidden">
-                {b.image && /* eslint-disable-next-line @next/next/no-img-element */ <img src={fileUrl(b.image)} alt="" className="size-10 rounded-lg border border-line object-cover" />}
-                <span className="font-bold">{b.price != null ? `Buy ${b.minQty} for ${toMajorString(b.price, cur)}${b.label ? ` · ${b.label}` : ""}` : `Buy ${b.minQty}+, save ${b.percent}%`}</span>
-                <span className="text-sm text-muted">{b.productId ? nameOf.get(b.productId) ?? "Deleted product" : "All products"}</span>
-                <span className="ms-auto flex items-center gap-2">{b.active ? <Badge color="#16a34a">Active</Badge> : <Badge>Inactive</Badge>}<span className="btn btn-outline btn-sm">Edit</span></span>
-              </summary>
-              <div className="space-y-4 border-t border-line p-4">{b.price != null ? <p className="text-sm text-muted">Fixed-price offer — edit it in the product\u2019s <b>Quantity offers</b> section.{b.productId && <> <Link href={`/admin/products/${b.productId}`} className="font-bold text-brand underline">Open product</Link></>}</p> : <BundleForm b={b} products={products} />}
-                <ActionButton action={deleteBundle} fields={{ id: b.id }} confirm="Delete this bundle?" className="btn btn-ghost btn-sm text-danger">Delete bundle</ActionButton></div>
-            </details></li>
-          ))}</ul>
-        )}
-      </section>
+          })}
+        </DataTable>
+      )}
     </div>
   );
 }
