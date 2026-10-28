@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Trash2 } from "lucide-react";
-import { requireUser } from "@/lib/auth";
+import { requirePerm } from "@/lib/auth";
 import { PageHeader, Panel } from "@/features/admin/components/ui";
 import { getPhotoOverview } from "@/features/photos/queries";
 import { PhotoManager } from "@/features/photos/photo-manager";
@@ -13,7 +13,7 @@ import { ActionButton } from "@/features/settings/components/action-button";
 export const metadata = { title: "Media" };
 
 export default async function MediaPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
-  const user = await requireUser();
+  const user = await requirePerm("media.manage");
   const tab = (await searchParams).tab === "products" ? "products" : "library";
   const library = tab === "library" ? await listMedia({ limit: 60 }) : null;
   const overview = tab === "products" ? await getPhotoOverview() : null;
