@@ -101,7 +101,9 @@ const ERRORS: Record<string, string> = {
 };
 
 export async function convertAbandoned(_p: ActionState, form: FormData): Promise<ActionState> {
+  const T0 = Date.now(); const lap = (n: string) => console.log(`[t] convert ${n} +${Date.now() - T0}ms`);
   return run("orders.confirm", async (user) => {
+    lap("run-start");
     const parsed = convertSchema.safeParse({
       id: fd(form, "id"), name: fd(form, "name"), phone: fd(form, "phone"), cityId: fd(form, "cityId") || undefined, cityText: fd(form, "cityText") || undefined,
       address: fd(form, "address"), notes: fd(form, "notes") || undefined, coupon: fd(form, "coupon") || undefined, shippingFee: fd(form, "shippingFee") || undefined,
@@ -116,7 +118,7 @@ export async function convertAbandoned(_p: ActionState, form: FormData): Promise
     const lines = parseLines(raw);
     if (!lines.length) return fail("Add at least one product.");
     if (!d.cityId && !d.cityText) return fail("Choose the delivery city.");
-    const s = await getSettings();
+    lap("row"); const s = await getSettings();
     let shippingFee: number | undefined;
     if (d.shippingFee) {
       shippingFee = toMinor(d.shippingFee, s.store.currency);
@@ -131,6 +133,7 @@ export async function convertAbandoned(_p: ActionState, form: FormData): Promise
       },
       { ip: "admin", admin: { id: user.id, name: user.name }, shippingFee },
     );
+    lap("createOrder");
     if (!res.ok) {
       const f = res.fields && Object.keys(res.fields).length ? ` (${Object.keys(res.fields).join(", ")})` : "";
       return fail((ERRORS[res.code] ?? "Couldn't create the order. Please try again.") + (res.code === "validation" ? f : ""));
@@ -138,8 +141,8 @@ export async function convertAbandoned(_p: ActionState, form: FormData): Promise
     // createOrder already converts every checkout of this phone; make sure this exact row is linked too.
     await getEnv().DB.prepare("UPDATE abandoned_orders SET status = 'converted', recovered = 1, converted_order_id = ? WHERE id = ?").bind(res.orderId, d.id).run();
     await audit(user, "abandoned.convert", "abandoned", d.id, { order: res.number });
-    bump(d.id);
-    revalidatePath("/admin/orders");
+    lap("audit"); bump(d.id);
+    revalidatePath("/admin/orders"); lap("revalidate");
     redirect(`/admin/orders/${res.orderId}?converted=1`);
   });
 }

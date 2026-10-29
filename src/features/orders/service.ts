@@ -29,7 +29,8 @@ async function nextOrderNumber(): Promise<string> {
 
 /** Public tracking token = HMAC-less short code stored with the order id; lets confirmation page load the order. */
 export async function createOrder(raw: unknown, ctx: { ip: string; ua?: string | null; vid?: string | null; admin?: { id: string; name: string }; shippingFee?: number }): Promise<CreateOrderResult> {
-  await ensureSchema();
+  const T0 = Date.now(); const lap = (n: string) => console.log(`[t] createOrder ${n} +${Date.now() - T0}ms`);
+  await ensureSchema(); lap("schema");
   const parsed = orderInputSchema.safeParse(raw);
   if (!parsed.success) {
     const fields: Record<string, string> = {};
@@ -37,7 +38,7 @@ export async function createOrder(raw: unknown, ctx: { ip: string; ua?: string |
     return { ok: false, code: "validation", fields };
   }
   const input = parsed.data;
-  const s = await getSettings();
+  const s = await getSettings(); lap("settings");
 
   // Honeypot: pretend success so bots learn nothing.
   if (input.hp && !ctx.admin) return { ok: true, orderId: "", number: "0000", token: "x", total: 0, currency: s.store.currency, items: [], status: "new" };
@@ -53,6 +54,7 @@ export async function createOrder(raw: unknown, ctx: { ip: string; ua?: string |
     db.prepare("SELECT phone FROM blocked_phones WHERE phone = ?").bind(ph.e164).first(),
     db.prepare("SELECT id FROM customers WHERE phone = ?").bind(ph.e164).first<{ id: string }>(),
   ]);
+  lap("reads1");
   if (existingByKey) return await existingResult(existingByKey, true);
 
   // Staff-entered orders (admin context) skip the customer-facing throttles and the duplicate window.
@@ -70,6 +72,7 @@ export async function createOrder(raw: unknown, ctx: { ip: string; ua?: string |
     reqHeaders ? findBlock(reqHeaders, { fp: input.tracking?.fp, phone: ph.e164 }) : null,
     buildQuote({ items: input.items, cityId: input.cityId, couponCode: input.couponCode }, ctx.shippingFee != null ? { shippingFee: ctx.shippingFee } : {}),
   ]);
+  lap("block+quote");
   if (signal) return { ok: false, code: "blocked" };
   if (quote.errors.some((e) => e.reason === "stock")) return { ok: false, code: "stock" };
   if (quote.errors.length || !quote.lines.length) return { ok: false, code: "unavailable" };
@@ -95,7 +98,7 @@ export async function createOrder(raw: unknown, ctx: { ip: string; ua?: string |
   }
 
   const id = newId();
-  const number = await nextOrderNumber();
+  const number = await nextOrderNumber(); lap("number");
   const now = Date.now();
   const status: OrderStatus = s.checkout.confirmationStep ? "pending_confirmation" : "new";
   const t = quote.totals;
@@ -126,7 +129,7 @@ export async function createOrder(raw: unknown, ctx: { ip: string; ua?: string |
   stmts.push(db.prepare("UPDATE orders SET tracking = ? WHERE id = ?").bind(JSON.stringify({ ...(input.tracking ?? {}), ua: (ctx.ua ?? "").slice(0, 300) }), id));
 
   try {
-    await db.batch(stmts);
+    await db.batch(stmts); lap("batch");
   } catch (e) {
     // Unique idem_key race: a parallel request created it first.
     const again = await db.prepare("SELECT id, number, total, currency, status FROM orders WHERE idem_key = ?").bind(input.idemKey).first<{ id: string; number: string; total: number; currency: string; status: string }>();
@@ -135,7 +138,7 @@ export async function createOrder(raw: unknown, ctx: { ip: string; ua?: string |
     return { ok: false, code: "error" };
   }
 
-  await linkOrderToVisitor(ctx.vid ?? null, id, ph.e164).catch(() => {});
+  await linkOrderToVisitor(ctx.vid ?? null, id, ph.e164).catch(() => {}); lap("link");
   // server-side ad events (Meta / TikTok Conversions API) — in the background, never blocks or breaks the order
   void import("@/features/tracking/capi").then((m) => m.dispatchInBackground(id, "placed")).catch(() => {});
   return {
