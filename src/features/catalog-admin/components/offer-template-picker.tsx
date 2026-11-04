@@ -24,7 +24,7 @@ function RealPreview({ id, currency, lang, image }: { id: OfferTemplate; currenc
   const fmt = (n: number) => `${(n / 100).toFixed(0)} ${currency}`;
   return (
     <StoreProvider value={store}>
-      <div aria-hidden inert className={`${BRAND.themeClass} pointer-events-none select-none rounded-xl bg-bg p-3`} dir={dirOf(lang)}>
+      <div aria-hidden inert className={`${BRAND.themeClass} pointer-events-none min-h-0! select-none rounded-xl bg-bg p-3`} dir={dirOf(lang)}>
         <OfferCards offers={cards} qty={2} setQty={noop} maxQty={99} fmt={fmt} customQty={false} setCustomQty={noop} template={id} fallbackImage={image} />
       </div>
     </StoreProvider>
@@ -42,7 +42,7 @@ export function OfferTemplatePicker({ name, value, allowDefault, defaultLabel, o
     <fieldset>
       <legend className="sr-only">Offer card layout</legend>
       <input type="hidden" name={name} value={v} />
-      <div className="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid items-start gap-4 md:grid-cols-2">
         {items.map((it) => {
           const on = v === it.id;
           return (
