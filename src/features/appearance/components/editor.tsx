@@ -243,10 +243,10 @@ export function AppearanceEditor({ initial, original, storeName, tagline, curren
                   <ImageInput label="Image" value={sl.image} onChange={(k) => patchSlide(i, { image: k })} hint="Wide, 1600×900 recommended — keep the subject near the centre, text sits on top. Most layouts crop to the container." />
                   <LangInputs label="Title" value={sl.title} onChange={(t) => patchSlide(i, { title: t })} max={160} />
                   <LangInputs label="Subtitle" value={sl.sub} onChange={(t) => patchSlide(i, { sub: t })} max={300} />
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-3"><LangInputs label="Button text" value={sl.cta} onChange={(t) => patchSlide(i, { cta: t })} max={60} />
+                  <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,20rem),1fr))] gap-4">
+                    <div className="min-w-0 space-y-3"><LangInputs label="Button text" value={sl.cta} onChange={(t) => patchSlide(i, { cta: t })} max={60} />
                       <div><label className="label" htmlFor={`href-${i}`}>Button link</label><input id={`href-${i}`} className="field" dir="ltr" value={sl.href} onChange={(e) => patchSlide(i, { href: e.target.value })} placeholder="/shop" /></div></div>
-                    <div className="space-y-3"><LangInputs label="Second button (optional)" value={sl.cta2 ?? {}} onChange={(t) => patchSlide(i, { cta2: t })} max={60} />
+                    <div className="min-w-0 space-y-3"><LangInputs label="Second button (optional)" value={sl.cta2 ?? {}} onChange={(t) => patchSlide(i, { cta2: t })} max={60} />
                       <div><label className="label" htmlFor={`href2-${i}`}>Second button link</label><input id={`href2-${i}`} className="field" dir="ltr" value={sl.href2 ?? ""} onChange={(e) => patchSlide(i, { href2: e.target.value })} placeholder="/category/…" /></div></div>
                   </div>
                 </div>
