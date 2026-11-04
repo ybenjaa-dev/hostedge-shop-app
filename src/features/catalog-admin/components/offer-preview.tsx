@@ -31,7 +31,7 @@ export function OfferPreview({ offers, base, currency, template, image }: { offe
         </div>
       </div>
       <StoreProvider value={store}>
-        <div className={`${BRAND.themeClass} mx-auto max-w-md rounded-2xl bg-bg p-4`} dir={lang === "ar" ? "rtl" : "ltr"}>
+        <div className={`${BRAND.themeClass} mx-auto min-h-0! max-w-md rounded-2xl bg-bg p-4`} dir={lang === "ar" ? "rtl" : "ltr"}>
           <OfferCards offers={cards} qty={qty} setQty={setQty} maxQty={99} fmt={fmt} customQty={custom} setCustomQty={setCustom} template={template} fallbackImage={image} />
         </div>
       </StoreProvider>
