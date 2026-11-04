@@ -70,7 +70,7 @@ export function OfferCards({ offers, qty, setQty, maxQty, fmt, customQty, setCus
               {(o.popular || o.best || o.label) && <Flag o={o} />}
               <span className="offer-count">{count}</span>
               <span dir="ltr" className="num offer-price">{fmt(o.total)}</span>
-              {o.saved > 0 && <span dir="ltr" className="num text-xs text-muted line-through">{fmt(o.compareAt)}</span>}
+              {o.saved > 0 ? <span dir="ltr" className="num text-xs text-muted line-through">{fmt(o.compareAt)}</span> : <span className="text-xs text-muted">{t("offer.normal")}</span>}
               <Save o={o} compact />
             </label>
           );
